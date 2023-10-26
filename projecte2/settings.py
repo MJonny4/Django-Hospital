@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-ftu4t6v@4j+lppcl5g#tn7oulzzjom3^&9pk$7cnbcw7dvh8rb
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', "django-hospital-im.azurewebsites.net"]
+ALLOWED_HOSTS = ['.vercel.app']
 
 
 # Application definition
