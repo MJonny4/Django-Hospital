@@ -1,0 +1,266 @@
+{% extends 'layouts/base.html' %}
+{% block nav %}
+    {% include 'layouts/nav_metge.html' %}
+{% endblock %}
+{% block content %}
+<div class="container mx-auto">
+    {% if error %}
+    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+        <strong class="font-bold">Error!</strong>
+        <span class="block sm:inline">{{ error }}</span>
+        <span class="absolute top-0 bottom-0 right-0 px-4 py-3">
+            <svg class="fill-current h-6 w-6 text-red-500" role="button" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                <title>Tancar</title>
+                <path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z" />
+            </svg>
+        </span>
+    </div>
+    {% endif %}
+    {% if missatge %}
+    <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
+        <strong class="font-bold">Avis!</strong>
+        <span class="block sm:inline">{{ missatge }}</span>
+        <span class="absolute top-0 bottom-0 right-0 px-4 py-3">
+            <svg class="fill-current h-6 w-6 text-green-500" role="button" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                <title>Tancar</title>
+                <path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z" />
+            </svg>
+        </span>
+    </div>
+    {% endif %}
+    <div>
+        <img class="w-auto h-12 mx-auto m-5" src="https://tailwindui.com/img/logos/workflow-mark-on-white.svg"
+            alt="Workflow">
+    </div>
+    <h1 class="text-center">Sr/Sra <span class="text-indigo-600 font-bold">{{ user }}</span></h1>
+    <br>
+    <div id="calendar"></div>
+    <script>    
+        let agenda = {{ agenda|safe }};
+        let diesDeLaSetmana = ['Dilluns', 'Dimarts', 'Dimecres', 'Dijous', 'Divendres', 'Dissabte'];
+        let mesosDeLany = ['Gener', 'Febrer', 'Març', 'Abril', 'Maig', 'Juny', 'Juliol', 'Agost', 'Setembre', 'Octubre', 'Novembre', 'Desembre'];
+        let events = [];
+        agenda.forEach((event) => {
+            let dia = event.dia.split('-');
+            let hora = event.hora.split(':');
+            let data = new Date(dia[0], dia[1]-1, dia[2], hora[0], hora[1], hora[2]);
+            let diaDeLaSetmana = diesDeLaSetmana[data.getDay()];
+            let mes = mesosDeLany[data.getMonth()];
+            let diaDelMes = data.getDate();
+            let horaDelDia = data.getHours();
+            let minuts = data.getMinutes();
+            let horaAMostrar = horaDelDia + ':' + minuts;
+            let titol = event.pacient;
+
+            if (titol == 'Lliure') {
+                events.push({title: titol, start: event.dia + 'T' + event.hora, color: 'blue'});
+            } else {
+                if(event.realitzada == "s"){
+                    events.push({title: titol, start: event.dia + 'T' + event.hora, color: 'green'});
+                } else {
+                    events.push({title: titol, start: event.dia + 'T' + event.hora, color: 'red'});
+                }
+            }
+        });
+
+        let calendarEl = document.getElementById('calendar');
+        let calendar = new FullCalendar.Calendar(calendarEl, {
+            locale: 'ca',
+            firstDay: 1,
+            initialView: 'dayGridMonth',
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek,timeGridDay',
+            },
+            buttonText: {
+                today:    'Avui',
+                month:    'Mes',
+                week:     'Setmana',
+                day:      'Dia',
+            },
+            events: events, //Array of objects that contain the event data
+            eventClick: function(info) {
+                createModal(info);
+            },
+        });
+        calendar.render();
+
+        function createModal(info) {
+            if (info.event.borderColor == 'blue') {
+                f_crear_modal(info, 'Lliure');
+            } else {
+                if (info.event.borderColor == 'green') {
+                    f_crear_modal(info, 'Visita ja realitzada');
+                } else {
+                    if (info.event.borderColor == 'red') {
+                        f_crear_modal(info, 'Visita no realitzada');
+                    }
+                }
+            }
+        }
+
+        function f_crear_modal(info, titol) {
+            if (document.getElementById('modal')){
+                document.getElementById('modal').remove();
+            }
+
+            let modal = document.createElement('div');
+            modal.setAttribute('id', 'modal');
+            modal.setAttribute('class', 'fixed z-10 inset-0 overflow-y-auto');
+            modal.setAttribute('aria-labelledby', 'modal-title');
+            modal.setAttribute('role', 'dialog');
+            modal.setAttribute('aria-modal', 'true');
+
+            let modalContent = document.createElement('div');
+            modalContent.setAttribute('id', 'modal');
+            modalContent.setAttribute('class', 'fixed z-10 inset-0 overflow-y-auto');
+            modalContent.setAttribute('aria-labelledby', 'modal-title');
+            modalContent.setAttribute('role', 'dialog');
+            modalContent.setAttribute('aria-modal', 'true');
+
+            let modalDialog = document.createElement('div');
+            modalDialog.setAttribute('class', 'flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0');
+
+            let modalOverlay = document.createElement('div');
+            modalOverlay.setAttribute('class', 'fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity');
+            modalOverlay.setAttribute('aria-hidden', 'true');
+
+            let modalContainer = document.createElement('div');
+            modalContainer.setAttribute('class', 'inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full');
+
+            let modalHeader = document.createElement('div');
+            modalHeader.setAttribute('class', 'bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4');
+
+            let modalTitle = document.createElement('h3');
+            modalTitle.setAttribute('class', 'text-lg leading-6 font-medium text-gray-900 text-center');
+            modalTitle.setAttribute('id', 'modal-title');
+            modalTitle.innerHTML = titol;
+
+            let modalBody = document.createElement('div');
+            modalBody.setAttribute('class', 'bg-white px-4 py-3 sm:p-6 sm:pb-4');
+            if (info.event.title != 'Lliure') {
+                modalBody.innerHTML = info.event.title + ' ' + info.event.start.toLocaleString();
+                modalBody.setAttribute('class', 'bg-white px-4 py-3 sm:p-6 sm:pb-4 text-center');
+                if (info.event.borderColor == 'red') {
+                    let form = document.createElement('form');
+                    form.setAttribute('method', 'post');
+                    form.setAttribute('action', 'agenda');
+                    form.setAttribute('class', 'text-center');
+
+                    let csrf = document.createElement('input');
+                    csrf.setAttribute('type', 'hidden');
+                    csrf.setAttribute('name', 'csrfmiddlewaretoken');
+                    csrf.setAttribute('value', '{{ csrf_token }}');
+
+                    let input_pacient_hidden = document.createElement('input');
+                    input_pacient_hidden.setAttribute('type', 'hidden');
+                    input_pacient_hidden.setAttribute('name', 'pacient');
+                    input_pacient_hidden.setAttribute('value', info.event.title);
+
+                    let input_dia_hora_hidden = document.createElement('input');
+                    input_dia_hora_hidden.setAttribute('type', 'hidden');
+                    input_dia_hora_hidden.setAttribute('name', 'dia_hora');
+                    input_dia_hora_hidden.setAttribute('value', info.event.start.toLocaleString());
+
+                    let label = document.createElement('label');
+                    label.setAttribute('class', 'ml-2 block text-sm leading-5 text-gray-900 mt-2 text-bold text-2xl');
+                    label.innerHTML = 'Visita realitzada?';
+
+                    label_no = document.createElement('label');
+                    label_no.setAttribute('class', 'ml-2 block text-sm leading-5 text-gray-900 mt-2 text-bold text-2xl');
+                    label_no.innerHTML = 'No';
+
+                    label_si = document.createElement('label');
+                    label_si.setAttribute('class', 'ml-2 block text-sm leading-5 text-gray-900 mt-2 text-bold text-2xl');
+                    label_si.innerHTML = 'Si';
+
+
+                    let radio_no = document.createElement('input');
+                    radio_no.setAttribute('type', 'radio');
+                    radio_no.setAttribute('name', 'realitzada');
+                    radio_no.setAttribute('class', 'ml-2 text-md leading-5 text-gray-900 mt-2 text-bold text-2xl text-center form-radio flex-shrink-0');
+                    radio_no.setAttribute('value', 'n');
+                    radio_no.setAttribute('checked', 'checked');
+
+                    let radio_si = document.createElement('input');
+                    radio_si.setAttribute('type', 'radio');
+                    radio_si.setAttribute('name', 'realitzada');
+                    radio_si.setAttribute('class', 'ml-2 text-md leading-5 text-gray-900 mt-2 text-bold text-2xl text-center form-radio flex-shrink-0');
+                    radio_si.setAttribute('value', 's');
+
+                    let  informe = document.createElement('textarea');
+                    informe.setAttribute('name', 'informe');
+                    informe.setAttribute('class', 'form-textarea my-3 block w-full border-black-900 rounded-md');
+                    informe.setAttribute('rows', '3');
+                    informe.setAttribute('placeholder', 'Informe');
+                    informe.setAttribute('disabled', 'disabled');
+
+                    radio_no.addEventListener('click', function() {
+                        if (radio_no.checked) {
+                            radio_si.checked = false;
+                            informe.setAttribute('disabled', 'disabled');
+                        } else {
+                            radio_si.checked = true;
+                            informe.removeAttribute('disabled');
+                        }
+                    });
+
+                    radio_si.addEventListener('click', function() {
+                        if (radio_si.checked) {
+                            radio_no.checked = false;
+                            informe.removeAttribute('disabled');
+                        } else {
+                            radio_no.checked = true;
+                            informe.setAttribute('disabled', 'disabled');
+                        }
+                    });
+
+                    let submit = document.createElement('input');
+                    submit.setAttribute('type', 'submit');
+                    submit.setAttribute('value', 'Enviar');
+                    submit.setAttribute('class', 'inline-flex justify-center w-full rounded-md border border-transparent shadow-sm px-4 py-2 bg-gray-600 text-base font-medium text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm');
+
+                    form.appendChild(csrf);
+                    form.appendChild(input_pacient_hidden);
+                    form.appendChild(input_dia_hora_hidden);
+                    form.appendChild(label);
+                    form.appendChild(label_no);
+                    form.appendChild(radio_no);
+                    form.appendChild(label_si);
+                    form.appendChild(radio_si);
+                    form.appendChild(informe);
+                    form.appendChild(submit);
+
+                    modalBody.appendChild(form);
+                }
+            } else {
+                modalBody.innerHTML = info.event.title;
+            }
+            
+
+            let modalFooter = document.createElement('div');
+            modalFooter.setAttribute('class', 'bg-white px-4 py-3 sm:p-6 sm:pb-4');
+
+            let closeButton = document.createElement('button');
+            closeButton.setAttribute('type', 'button');
+            closeButton.setAttribute('class', 'inline-flex justify-center w-full rounded-md border border-transparent shadow-sm px-4 py-2 bg-gray-600 text-base font-medium text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm');
+            closeButton.innerHTML = 'Tancar';
+
+            modalFooter.appendChild(closeButton);
+            modalHeader.appendChild(modalTitle);
+            modalContainer.appendChild(modalHeader);
+            modalContainer.appendChild(modalBody);
+            modalContainer.appendChild(modalFooter);
+            modalDialog.appendChild(modalOverlay);
+            modalDialog.appendChild(modalContainer);
+            modalContent.appendChild(modalDialog);
+            document.body.appendChild(modalContent);
+
+            closeButton.addEventListener('click', function() {
+                document.getElementById('modal').remove();
+            });
+        }
+    </script>
+</div>
+{% endblock %}

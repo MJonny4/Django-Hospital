@@ -1,0 +1,7 @@
+django
+pandas
+python-dotenv
+pymongo
+openpyxl
+simplejson
+bycrypt
