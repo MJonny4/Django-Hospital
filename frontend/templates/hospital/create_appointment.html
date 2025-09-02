@@ -1,0 +1,131 @@
+{% extends 'hospital/base.html' %}
+
+{% block title %}Crear Cita - Hospital Management System{% endblock %}
+
+{% block page_title %}Crear Nueva Cita{% endblock %}
+
+{% block content %}
+    <form method="post">
+        {% csrf_token %}
+        
+        <h2>Programar Cita Médica</h2>
+        
+        <div>
+            <label for="doctor_profile_id">Médico:</label>
+            <select id="doctor_profile_id" name="doctor_profile_id" required>
+                <option value="">Seleccione un médico</option>
+                {% for doctor in doctors %}
+                <option value="{{ doctor.profile_id }}" {% if selected_doctor_id and doctor.profile_id == selected_doctor_id %}selected{% endif %}>
+                    {{ doctor.nombre }} {{ doctor.apellidos }} - {{ doctor.especialidad }} ({{ doctor.hospital_centro }})
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div>
+            <label for="appointment_date">Fecha y Hora:</label>
+            <input type="datetime-local" id="appointment_date" name="appointment_date" required>
+            <small>Formato: YYYY-MM-DD HH:MM</small>
+        </div>
+        
+        <div>
+            <label for="duration_minutes">Duración (minutos):</label>
+            <select id="duration_minutes" name="duration_minutes">
+                <option value="15">15 minutos</option>
+                <option value="20">20 minutos</option>
+                <option value="30" selected>30 minutos</option>
+                <option value="45">45 minutos</option>
+                <option value="60">60 minutos</option>
+            </select>
+        </div>
+        
+        <div>
+            <label for="appointment_type">Tipo de Cita:</label>
+            <select id="appointment_type" name="appointment_type">
+                <option value="consultation" selected>Consulta</option>
+                <option value="follow_up">Seguimiento</option>
+                <option value="emergency">Urgencia</option>
+                <option value="check_up">Revisión</option>
+                <option value="procedure">Procedimiento</option>
+                <option value="vaccination">Vacunación</option>
+            </select>
+        </div>
+        
+        <div>
+            <label for="priority">Prioridad:</label>
+            <select id="priority" name="priority">
+                <option value="low">Baja</option>
+                <option value="normal" selected>Normal</option>
+                <option value="high">Alta</option>
+                <option value="urgent">Urgente</option>
+            </select>
+        </div>
+        
+        <div>
+            <label for="reason">Motivo de la Cita:</label>
+            <textarea id="reason" name="reason" rows="3" placeholder="Describa el motivo de la consulta..."></textarea>
+        </div>
+        
+        <div>
+            <label for="notes">Notas Adicionales:</label>
+            <textarea id="notes" name="notes" rows="2" placeholder="Información adicional relevante..."></textarea>
+        </div>
+        
+        <div>
+            <button type="submit">Crear Cita</button>
+            <a href="{% url 'hospital:appointments' %}">Cancelar</a>
+        </div>
+    </form>
+    
+    <hr>
+    
+    <h3>Médicos Disponibles:</h3>
+    {% if doctors %}
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Especialidad</th>
+                    <th>Hospital</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for doctor in doctors %}
+                <tr>
+                    <td>{{ doctor.nombre }} {{ doctor.apellidos }}</td>
+                    <td>{{ doctor.especialidad }}</td>
+                    <td>{{ doctor.hospital_centro }}</td>
+                    <td>
+                        <a href="{% url 'hospital:doctor_detail' doctor.id %}" target="_blank">Ver Perfil</a>
+                        | <a href="#" onclick="selectDoctor({{ doctor.profile_id }}, '{{ doctor.nombre }} {{ doctor.apellidos }}')">Seleccionar</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No hay médicos disponibles en este momento.</p>
+    {% endif %}
+    
+    <h3>Importante:</h3>
+    <ul>
+        <li>Las citas deben programarse con al menos 2 horas de anticipación</li>
+        <li>No se pueden programar citas en el pasado</li>
+        <li>Verifique la disponibilidad del médico antes de enviar</li>
+        <li>Las citas quedan en estado "Programada" hasta confirmación del médico</li>
+    </ul>
+
+    <script>
+        function selectDoctor(doctorId, doctorName) {
+            document.getElementById('doctor_profile_id').value = doctorId;
+            alert('Médico seleccionado: ' + doctorName);
+        }
+        
+        // Set minimum date to 2 hours from now
+        const now = new Date();
+        now.setHours(now.getHours() + 2);
+        const minDateTime = now.toISOString().slice(0, 16);
+        document.getElementById('appointment_date').min = minDateTime;
+    </script>
+{% endblock %}

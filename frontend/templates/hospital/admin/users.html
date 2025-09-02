@@ -1,0 +1,75 @@
+{% extends 'hospital/base.html' %}
+
+{% block title %}Gestión de Usuarios - Hospital Management System{% endblock %}
+
+{% block page_title %}Gestión de Usuarios{% endblock %}
+
+{% block content %}
+    <div style="margin-bottom: 20px;">
+        <a href="{% url 'hospital:admin_panel' %}" style="text-decoration: none;">← Volver al Panel</a>
+    </div>
+    
+    <h2>Lista de Todos los Usuarios</h2>
+    
+    {% if users %}
+        <table border="1" style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="background-color: #f0f0f0;">
+                    <th>ID</th>
+                    <th>DNI</th>
+                    <th>Nombre Completo</th>
+                    <th>Email</th>
+                    <th>Teléfono</th>
+                    <th>Roles</th>
+                    <th>Estado</th>
+                    <th>Fecha Registro</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td>{{ user.id }}</td>
+                    <td>{{ user.dni }}</td>
+                    <td>{{ user.nombre }} {{ user.apellidos }}</td>
+                    <td>{{ user.email }}</td>
+                    <td>{{ user.telefono }}</td>
+                    <td>
+                        {% for role in user.roles %}
+                            <span style="background-color: #e0e0e0; padding: 2px 6px; border-radius: 3px; margin: 1px;">
+                                {{ role }}
+                            </span>
+                        {% endfor %}
+                    </td>
+                    <td>
+                        {% if user.is_active %}
+                            <span style="color: green;">✅ Activo</span>
+                        {% else %}
+                            <span style="color: red;">❌ Inactivo</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ user.created_at|date:"d/m/Y H:i"|default:"N/A" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        
+        <p><strong>Total de usuarios:</strong> {{ users|length }}</p>
+    {% else %}
+        <p>No se encontraron usuarios.</p>
+        <div style="background-color: #f0f0f0; padding: 15px; border-radius: 5px;">
+            <p><strong>Posibles causas:</strong></p>
+            <ul>
+                <li>Error de conexión con la API</li>
+                <li>No hay usuarios registrados en el sistema</li>
+                <li>Problema con los permisos de administrador</li>
+            </ul>
+        </div>
+    {% endif %}
+    
+    <h3>Acciones:</h3>
+    <ul>
+        <li><a href="{% url 'hospital:register' %}">Crear Nuevo Paciente</a></li>
+        <li><a href="{% url 'hospital:admin_register_doctor' %}">Registrar Nuevo Médico</a></li>
+        <li><a href="{% url 'hospital:admin_doctors' %}">Ver Lista de Médicos</a></li>
+    </ul>
+{% endblock %}

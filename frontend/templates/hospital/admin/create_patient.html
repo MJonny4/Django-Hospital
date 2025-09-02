@@ -1,0 +1,201 @@
+{% extends 'hospital/base.html' %}
+
+{% block title %}Crear Nuevo Paciente - Hospital Management System{% endblock %}
+
+{% block page_title %}Crear Nuevo Paciente (Admin){% endblock %}
+
+{% block content %}
+    <div style="margin-bottom: 20px;">
+        <a href="{% url 'hospital:admin_panel' %}" style="text-decoration: none;">← Volver al Panel de Administración</a>
+    </div>
+    
+    <div style="max-width: 600px; margin: 0 auto;">
+        <form method="post">
+            {% csrf_token %}
+            
+            <h2>Crear Cuenta de Paciente</h2>
+            <p style="color: #666; margin-bottom: 30px;">Como administrador, puedes crear nuevas cuentas de pacientes directamente.</p>
+            
+            <div style="margin-bottom: 20px;">
+                <label for="dni" style="display: block; margin-bottom: 5px; font-weight: bold;">DNI:</label>
+                <input type="text" id="dni" name="dni" placeholder="12345678Z" pattern="[0-9]{8}[A-Za-z]" required
+                       style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 16px;" 
+                       oninput="validateDNI(this)">
+                <small id="dni-help" style="color: #666;">Formato: 8 números + 1 letra (ej: 12345678Z, 87654321X)</small>
+                <div id="dni-suggestion" style="color: #28a745; font-weight: bold; margin-top: 5px; display: none;"></div>
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <label for="nombre" style="display: block; margin-bottom: 5px; font-weight: bold;">Nombre:</label>
+                <input type="text" id="nombre" name="nombre" required
+                       style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 16px;">
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <label for="apellidos" style="display: block; margin-bottom: 5px; font-weight: bold;">Apellidos:</label>
+                <input type="text" id="apellidos" name="apellidos" required
+                       style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 16px;">
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <label for="email" style="display: block; margin-bottom: 5px; font-weight: bold;">Email:</label>
+                <input type="email" id="email" name="email" required
+                       style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 16px;">
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <label for="telefono" style="display: block; margin-bottom: 5px; font-weight: bold;">Teléfono:</label>
+                <input type="tel" id="telefono" name="telefono" placeholder="612345678" pattern="[679][0-9]{8}" required
+                       style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 16px;">
+                <small style="color: #666;">Formato: números españoles (ej: 612345678)</small>
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <label for="direccion" style="display: block; margin-bottom: 5px; font-weight: bold;">Dirección:</label>
+                <input type="text" id="direccion" name="direccion" required
+                       style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 16px;">
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <label for="fecha_nacimiento" style="display: block; margin-bottom: 5px; font-weight: bold;">Fecha de Nacimiento:</label>
+                <input type="date" id="fecha_nacimiento" name="fecha_nacimiento" required
+                       style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 16px;">
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <label for="password" style="display: block; margin-bottom: 5px; font-weight: bold;">Contraseña:</label>
+                <input type="password" id="password" name="password" minlength="8" required
+                       style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 16px;">
+                <small style="color: #666;">Mínimo 8 caracteres</small>
+            </div>
+            
+            <div style="margin-bottom: 30px; padding: 15px; background-color: #e8f4fd; border-radius: 4px;">
+                <h4 style="margin: 0 0 10px 0; color: #0056b3;">ℹ️ Información:</h4>
+                <ul style="margin: 0; padding-left: 20px; color: #0056b3;">
+                    <li>El paciente será creado automáticamente con el rol de "patient"</li>
+                    <li>El paciente podrá iniciar sesión inmediatamente con las credenciales proporcionadas</li>
+                    <li>Puedes ver todos los usuarios creados en la sección "Ver Todos los Usuarios"</li>
+                </ul>
+            </div>
+            
+            <div style="text-align: center;">
+                <button type="submit" style="background-color: #28a745; color: white; padding: 12px 30px; border: none; border-radius: 4px; font-size: 16px; cursor: pointer;">
+                    ✅ Crear Paciente
+                </button>
+                <a href="{% url 'hospital:admin_panel' %}" style="display: inline-block; margin-left: 15px; padding: 12px 30px; background-color: #6c757d; color: white; text-decoration: none; border-radius: 4px;">
+                    ❌ Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+    
+    <hr style="margin: 40px 0;">
+    
+    <div style="background-color: #f8f9fa; padding: 20px; border-radius: 4px;">
+        <h3 style="margin-top: 0;">📋 Recordatorio de Validaciones:</h3>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div>
+                <h4>📝 DNI Español:</h4>
+                <ul>
+                    <li>8 dígitos seguidos de 1 letra</li>
+                    <li>Ejemplo: 12345678A</li>
+                    <li>La letra debe corresponder al algoritmo de validación</li>
+                </ul>
+            </div>
+            <div>
+                <h4>📞 Teléfono Español:</h4>
+                <ul>
+                    <li>Debe comenzar con 6, 7 o 9</li>
+                    <li>Debe tener exactamente 9 dígitos</li>
+                    <li>Ejemplo: 612345678</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <div style="margin-top: 20px; text-align: center;">
+        <p>
+            <strong>Accesos rápidos:</strong> 
+            <a href="{% url 'hospital:admin_users' %}">Ver Usuarios</a> | 
+            <a href="{% url 'hospital:admin_register_doctor' %}">Registrar Médico</a> |
+            <a href="{% url 'hospital:admin_panel' %}">Panel Principal</a>
+        </p>
+    </div>
+
+    <script>
+        function validateDNI(input) {
+            const value = input.value.toUpperCase();
+            const suggestionDiv = document.getElementById('dni-suggestion');
+            const helpText = document.getElementById('dni-help');
+            
+            // Reset styles
+            input.style.borderColor = '#ccc';
+            suggestionDiv.style.display = 'none';
+            
+            if (value.length === 8 && /^\d{8}$/.test(value)) {
+                // Calculate correct letter
+                const letters = 'TRWAGMYFPDXBNJZSQVHLCKE';
+                const correctLetter = letters[parseInt(value) % 23];
+                const correctDNI = value + correctLetter;
+                
+                suggestionDiv.innerHTML = `💡 DNI correcto sería: <strong>${correctDNI}</strong>`;
+                suggestionDiv.style.display = 'block';
+                suggestionDiv.style.color = '#28a745';
+                
+                // Auto-fill the correct letter
+                input.value = correctDNI;
+                input.style.borderColor = '#28a745';
+                
+            } else if (value.length === 9 && /^\d{8}[A-Z]$/.test(value)) {
+                // Validate complete DNI
+                const numbers = value.substring(0, 8);
+                const letter = value.substring(8);
+                const letters = 'TRWAGMYFPDXBNJZSQVHLCKE';
+                const correctLetter = letters[parseInt(numbers) % 23];
+                
+                if (letter === correctLetter) {
+                    input.style.borderColor = '#28a745';
+                    suggestionDiv.innerHTML = '✅ DNI válido';
+                    suggestionDiv.style.display = 'block';
+                    suggestionDiv.style.color = '#28a745';
+                } else {
+                    input.style.borderColor = '#dc3545';
+                    suggestionDiv.innerHTML = `❌ DNI inválido. La letra correcta para ${numbers} es <strong>${correctLetter}</strong>`;
+                    suggestionDiv.style.display = 'block';
+                    suggestionDiv.style.color = '#dc3545';
+                }
+            } else if (value.length > 0) {
+                input.style.borderColor = '#ffc107';
+                suggestionDiv.innerHTML = 'ℹ️ Introduce 8 números para calcular la letra correcta';
+                suggestionDiv.style.display = 'block';
+                suggestionDiv.style.color = '#ffc107';
+            }
+        }
+
+        // Validate form before submission
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const dniInput = document.getElementById('dni');
+            const value = dniInput.value.toUpperCase();
+            
+            if (!/^\d{8}[A-Z]$/.test(value)) {
+                e.preventDefault();
+                alert('Por favor, introduce un DNI válido (8 números + 1 letra)');
+                dniInput.focus();
+                return false;
+            }
+            
+            // Validate DNI checksum
+            const numbers = value.substring(0, 8);
+            const letter = value.substring(8);
+            const letters = 'TRWAGMYFPDXBNJZSQVHLCKE';
+            const correctLetter = letters[parseInt(numbers) % 23];
+            
+            if (letter !== correctLetter) {
+                e.preventDefault();
+                alert(`DNI inválido. La letra correcta para ${numbers} es ${correctLetter}`);
+                dniInput.focus();
+                return false;
+            }
+        });
+    </script>
+{% endblock %}

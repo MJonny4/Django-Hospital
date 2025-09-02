@@ -1,0 +1,33 @@
+{% extends 'hospital/base.html' %}
+
+{% block title %}Acerca de - Hospital Management System{% endblock %}
+
+{% block page_title %}Acerca del Sistema{% endblock %}
+
+{% block content %}
+    <h2>Sistema de Gestión Hospitalaria</h2>
+    
+    <p>Este es un sistema de prueba desarrollado para gestionar citas médicas y administración hospitalaria.</p>
+    
+    <h3>Tecnologías Utilizadas:</h3>
+    <ul>
+        <li><strong>Backend:</strong> FastAPI (Python)</li>
+        <li><strong>Frontend:</strong> Django (Python) - Solo para pruebas</li>
+        <li><strong>Base de Datos:</strong> MySQL</li>
+        <li><strong>Autenticación:</strong> JWT Tokens</li>
+    </ul>
+    
+    <h3>Funcionalidades:</h3>
+    <ul>
+        <li>Registro y autenticación de usuarios</li>
+        <li>Sistema de roles (Paciente, Médico, Administrador)</li>
+        <li>Gestión de citas médicas</li>
+        <li>Administración de médicos</li>
+        <li>Control de disponibilidad médica</li>
+        <li>Historial de cambios en citas</li>
+    </ul>
+    
+    <h3>Endpoint FastAPI:</h3>
+    <p>Backend corriendo en: <code>http://127.0.0.1:8000</code></p>
+    <p>Documentación API: <a href="http://127.0.0.1:8000/docs" target="_blank">http://127.0.0.1:8000/docs</a></p>
+{% endblock %}

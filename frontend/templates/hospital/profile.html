@@ -1,0 +1,63 @@
+{% extends 'hospital/base.html' %}
+
+{% block title %}Mi Perfil - Hospital Management System{% endblock %}
+
+{% block page_title %}Mi Perfil{% endblock %}
+
+{% block content %}
+    <h2>Información Personal</h2>
+    
+    <table border="1">
+        <tr>
+            <td><strong>ID:</strong></td>
+            <td>{{ request.session.user_data.id }}</td>
+        </tr>
+        <tr>
+            <td><strong>DNI:</strong></td>
+            <td>{{ request.session.user_data.dni }}</td>
+        </tr>
+        <tr>
+            <td><strong>Nombre:</strong></td>
+            <td>{{ request.session.user_data.nombre }}</td>
+        </tr>
+        <tr>
+            <td><strong>Apellidos:</strong></td>
+            <td>{{ request.session.user_data.apellidos }}</td>
+        </tr>
+        <tr>
+            <td><strong>Email:</strong></td>
+            <td>{{ request.session.user_data.email }}</td>
+        </tr>
+        <tr>
+            <td><strong>Teléfono:</strong></td>
+            <td>{{ request.session.user_data.telefono }}</td>
+        </tr>
+        <tr>
+            <td><strong>Roles:</strong></td>
+            <td>{{ request.session.user_data.roles|join:", " }}</td>
+        </tr>
+        <tr>
+            <td><strong>Estado:</strong></td>
+            <td>{% if request.session.user_data.is_active %}Activo{% else %}Inactivo{% endif %}</td>
+        </tr>
+        <tr>
+            <td><strong>Fecha de Creación:</strong></td>
+            <td>{{ request.session.user_data.created_at|default:"No disponible" }}</td>
+        </tr>
+    </table>
+    
+    <h3>Acciones Disponibles:</h3>
+    <ul>
+        <li><a href="{% url 'hospital:appointments' %}">Ver mis citas</a></li>
+        <li><a href="{% url 'hospital:create_appointment' %}">Crear nueva cita</a></li>
+        <li><a href="{% url 'hospital:doctors_list' %}">Ver médicos</a></li>
+        
+        {% if 'admin' in request.session.user_data.roles %}
+            <li><strong><a href="{% url 'hospital:admin_panel' %}">Panel de Administración</a></strong></li>
+        {% endif %}
+        
+        {% if 'doctor' in request.session.user_data.roles %}
+            <li><strong><a href="{% url 'hospital:doctor_panel' %}">Panel de Médico</a></strong></li>
+        {% endif %}
+    </ul>
+{% endblock %}

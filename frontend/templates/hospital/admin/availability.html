@@ -1,0 +1,117 @@
+{% extends 'hospital/base.html' %}
+
+{% block title %}Configurar Disponibilidad - Hospital Management System{% endblock %}
+
+{% block page_title %}Configurar Disponibilidad de Médicos{% endblock %}
+
+{% block content %}
+    <div style="margin-bottom: 20px;">
+        <a href="{% url 'hospital:admin_panel' %}" style="text-decoration: none;">← Volver al Panel</a>
+    </div>
+    
+    <h2>Configurar Horarios de Disponibilidad</h2>
+    
+    <form method="post">
+        {% csrf_token %}
+        
+        <h3>Configurar Nuevo Horario:</h3>
+        
+        <div style="margin-bottom: 15px;">
+            <label for="doctor_profile_id">Médico:</label>
+            <select id="doctor_profile_id" name="doctor_profile_id" required>
+                <option value="">Seleccione un médico</option>
+                {% for doctor in doctors %}
+                    <option value="{{ doctor.profile_id }}">{{ doctor.nombre }} {{ doctor.apellidos }} - {{ doctor.especialidad }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div style="margin-bottom: 15px;">
+            <label for="day_of_week">Día de la Semana:</label>
+            <select id="day_of_week" name="day_of_week" required>
+                <option value="">Seleccione un día</option>
+                <option value="0">Lunes</option>
+                <option value="1">Martes</option>
+                <option value="2">Miércoles</option>
+                <option value="3">Jueves</option>
+                <option value="4">Viernes</option>
+                <option value="5">Sábado</option>
+                <option value="6">Domingo</option>
+            </select>
+        </div>
+        
+        <div style="margin-bottom: 15px;">
+            <label for="start_time">Hora de Inicio:</label>
+            <input type="time" id="start_time" name="start_time" placeholder="09:00" required>
+            <small>Formato: HH:MM (ej: 09:00)</small>
+        </div>
+        
+        <div style="margin-bottom: 15px;">
+            <label for="end_time">Hora de Fin:</label>
+            <input type="time" id="end_time" name="end_time" placeholder="17:00" required>
+            <small>Formato: HH:MM (ej: 17:00)</small>
+        </div>
+        
+        <div style="margin-bottom: 15px;">
+            <label for="slot_duration_minutes">Duración de Cita (minutos):</label>
+            <select id="slot_duration_minutes" name="slot_duration_minutes" required>
+                <option value="15">15 minutos</option>
+                <option value="30" selected>30 minutos</option>
+                <option value="45">45 minutos</option>
+                <option value="60">60 minutos</option>
+            </select>
+        </div>
+        
+        <div style="margin-bottom: 15px;">
+            <label for="buffer_minutes">Tiempo de Transición (minutos):</label>
+            <select id="buffer_minutes" name="buffer_minutes" required>
+                <option value="0">Sin transición</option>
+                <option value="5" selected>5 minutos</option>
+                <option value="10">10 minutos</option>
+                <option value="15">15 minutos</option>
+            </select>
+            <small>Tiempo entre citas para preparación</small>
+        </div>
+        
+        <div>
+            <button type="submit">Configurar Disponibilidad</button>
+        </div>
+    </form>
+    
+    {% if not doctors %}
+        <div style="background-color: #fff3cd; padding: 15px; border-radius: 5px; margin: 20px 0;">
+            <h4>⚠️ No hay médicos disponibles</h4>
+            <p>Debe registrar médicos antes de configurar su disponibilidad.</p>
+            <p><a href="{% url 'hospital:admin_register_doctor' %}">Registrar Nuevo Médico</a></p>
+        </div>
+    {% endif %}
+    
+    <hr>
+    
+    <h3>Información:</h3>
+    <div style="background-color: #f0f0f0; padding: 15px; border-radius: 5px;">
+        <h4>Cómo funciona la disponibilidad:</h4>
+        <ul>
+            <li><strong>Día de la Semana:</strong> 0 = Lunes, 1 = Martes, ..., 6 = Domingo</li>
+            <li><strong>Duración de Cita:</strong> Tiempo asignado para cada cita</li>
+            <li><strong>Tiempo de Transición:</strong> Tiempo extra entre citas para preparación</li>
+            <li><strong>Ejemplo:</strong> Con citas de 30min y transición de 5min, las citas serán cada 35min</li>
+        </ul>
+        
+        <h4>Ejemplo de Horario:</h4>
+        <ul>
+            <li>Doctor: Dr. García</li>
+            <li>Día: Lunes (0)</li>
+            <li>Horario: 09:00 - 17:00</li>
+            <li>Citas de: 30 minutos + 5 minutos transición</li>
+            <li>Slots disponibles: 09:00, 09:35, 10:10, 10:45, etc.</li>
+        </ul>
+    </div>
+    
+    <h3>Acciones:</h3>
+    <ul>
+        <li><a href="{% url 'hospital:admin_doctors' %}">Ver Lista de Médicos</a></li>
+        <li><a href="{% url 'hospital:admin_register_doctor' %}">Registrar Nuevo Médico</a></li>
+        <li><a href="{% url 'hospital:admin_appointments' %}">Ver Todas las Citas</a></li>
+    </ul>
+{% endblock %}

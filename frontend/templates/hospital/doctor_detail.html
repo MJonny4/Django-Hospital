@@ -1,0 +1,206 @@
+{% extends 'hospital/base.html' %}
+
+{% block title %}{{ doctor.nombre }} {{ doctor.apellidos }} - Hospital Management System{% endblock %}
+
+{% block page_title %}Información del Médico{% endblock %}
+
+{% block content %}
+    <div style="margin-bottom: 20px;">
+        <a href="{% url 'hospital:doctors_list' %}" style="text-decoration: none;">← Volver a Lista de Médicos</a>
+    </div>
+
+    {% if doctor %}
+        <div style="display: flex; gap: 30px; flex-wrap: wrap;">
+            <!-- Doctor Photo -->
+            <div style="flex: 0 0 200px;">
+                {% if doctor.foto_url %}
+                    <img src="{{ doctor.foto_url }}" alt="Foto de {{ doctor.nombre }}" style="width: 200px; height: 250px; object-fit: cover; border-radius: 10px; border: 1px solid #ccc;">
+                {% else %}
+                    <div style="width: 200px; height: 250px; background-color: #f0f0f0; border-radius: 10px; display: flex; align-items: center; justify-content: center; border: 1px solid #ccc;">
+                        <span style="color: #666;">Sin foto</span>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Doctor Information -->
+            <div style="flex: 1; min-width: 400px;">
+                <h2>{{ doctor.nombre }} {{ doctor.apellidos }}</h2>
+                
+                <div style="background-color: #f8f9fa; padding: 20px; border-radius: 5px; margin-bottom: 20px;">
+                    <h3>📋 Información Personal</h3>
+                    <table style="width: 100%;">
+                        <tr>
+                            <td style="font-weight: bold; padding: 5px 10px 5px 0;">DNI:</td>
+                            <td style="padding: 5px;">{{ doctor.dni }}</td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: bold; padding: 5px 10px 5px 0;">Email:</td>
+                            <td style="padding: 5px;">{{ doctor.email }}</td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: bold; padding: 5px 10px 5px 0;">Teléfono:</td>
+                            <td style="padding: 5px;">{{ doctor.telefono }}</td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: bold; padding: 5px 10px 5px 0;">Estado:</td>
+                            <td style="padding: 5px;">
+                                {% if doctor.is_active %}
+                                    <span style="color: green;">✅ Activo</span>
+                                {% else %}
+                                    <span style="color: red;">❌ Inactivo</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+
+                <div style="background-color: #e8f4fd; padding: 20px; border-radius: 5px; margin-bottom: 20px;">
+                    <h3>👨‍⚕️ Información Profesional</h3>
+                    <table style="width: 100%;">
+                        <tr>
+                            <td style="font-weight: bold; padding: 5px 10px 5px 0;">Especialidad:</td>
+                            <td style="padding: 5px;"><strong>{{ doctor.especialidad }}</strong></td>
+                        </tr>
+                        {% if doctor.subespecialidad %}
+                        <tr>
+                            <td style="font-weight: bold; padding: 5px 10px 5px 0;">Subespecialidad:</td>
+                            <td style="padding: 5px;">{{ doctor.subespecialidad }}</td>
+                        </tr>
+                        {% endif %}
+                        <tr>
+                            <td style="font-weight: bold; padding: 5px 10px 5px 0;">Número Colegiado:</td>
+                            <td style="padding: 5px;">{{ doctor.numero_colegiado }}</td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: bold; padding: 5px 10px 5px 0;">Colegio Médico:</td>
+                            <td style="padding: 5px;">{{ doctor.colegio_medico }}</td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: bold; padding: 5px 10px 5px 0;">Hospital/Centro:</td>
+                            <td style="padding: 5px;">{{ doctor.hospital_centro }}</td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: bold; padding: 5px 10px 5px 0;">Departamento:</td>
+                            <td style="padding: 5px;">{{ doctor.departamento_servicio }}</td>
+                        </tr>
+                        {% if doctor.consulta_numero %}
+                        <tr>
+                            <td style="font-weight: bold; padding: 5px 10px 5px 0;">Consulta:</td>
+                            <td style="padding: 5px;">{{ doctor.consulta_numero }}</td>
+                        </tr>
+                        {% endif %}
+                        {% if doctor.horario_consulta %}
+                        <tr>
+                            <td style="font-weight: bold; padding: 5px 10px 5px 0;">Horario:</td>
+                            <td style="padding: 5px;">{{ doctor.horario_consulta }}</td>
+                        </tr>
+                        {% endif %}
+                    </table>
+                </div>
+
+                <div style="background-color: #f0f8f0; padding: 20px; border-radius: 5px; margin-bottom: 20px;">
+                    <h3>🎓 Formación Académica</h3>
+                    <table style="width: 100%;">
+                        <tr>
+                            <td style="font-weight: bold; padding: 5px 10px 5px 0;">Universidad:</td>
+                            <td style="padding: 5px;">{{ doctor.universidad }}</td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: bold; padding: 5px 10px 5px 0;">Año de Graduación:</td>
+                            <td style="padding: 5px;">{{ doctor.ano_graduacion }}</td>
+                        </tr>
+                        {% if doctor.titulo_especialista %}
+                        <tr>
+                            <td style="font-weight: bold; padding: 5px 10px 5px 0;">Título de Especialista:</td>
+                            <td style="padding: 5px;">{{ doctor.titulo_especialista }}</td>
+                        </tr>
+                        {% endif %}
+                    </table>
+                </div>
+
+                {% if doctor.idiomas or doctor.biografia %}
+                <div style="background-color: #fff8e1; padding: 20px; border-radius: 5px; margin-bottom: 20px;">
+                    <h3>💬 Información Adicional</h3>
+                    {% if doctor.idiomas %}
+                    <p><strong>Idiomas:</strong> {{ doctor.idiomas }}</p>
+                    {% endif %}
+                    {% if doctor.biografia %}
+                    <p><strong>Biografía:</strong></p>
+                    <p style="text-align: justify; line-height: 1.5;">{{ doctor.biografia }}</p>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                <!-- Actions -->
+                <div style="margin-top: 30px;">
+                    <h3>🗓️ Acciones</h3>
+                    {% if user.is_authenticated %}
+                        <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                            <a href="{% url 'hospital:create_appointment' %}" style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
+                                📅 Agendar Cita
+                            </a>
+                            <a href="#" onclick="checkAvailability({{ doctor.profile_id }})" style="background-color: #28a745; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
+                                🕒 Ver Disponibilidad
+                            </a>
+                        </div>
+                    {% else %}
+                        <p style="color: #666;">
+                            <a href="{% url 'hospital:login' %}">Inicie sesión</a> para agendar una cita con este médico.
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Doctor Statistics (if available) -->
+        <div style="margin-top: 40px; background-color: #f8f9fa; padding: 20px; border-radius: 5px;">
+            <h3>📊 Información del Sistema</h3>
+            <table style="width: 100%;">
+                <tr>
+                    <td style="font-weight: bold; padding: 5px 10px 5px 0;">ID de Usuario:</td>
+                    <td style="padding: 5px;">{{ doctor.id }}</td>
+                </tr>
+                <tr>
+                    <td style="font-weight: bold; padding: 5px 10px 5px 0;">ID de Perfil Médico:</td>
+                    <td style="padding: 5px;">{{ doctor.profile_id }}</td>
+                </tr>
+                {% if doctor.fecha_alta_sistema %}
+                <tr>
+                    <td style="font-weight: bold; padding: 5px 10px 5px 0;">Fecha de Alta:</td>
+                    <td style="padding: 5px;">{{ doctor.fecha_alta_sistema|date:"d/m/Y" }}</td>
+                </tr>
+                {% endif %}
+                <tr>
+                    <td style="font-weight: bold; padding: 5px 10px 5px 0;">Roles:</td>
+                    <td style="padding: 5px;">
+                        {% for role in doctor.roles %}
+                            <span style="background-color: #e0e0e0; padding: 2px 6px; border-radius: 3px; margin: 1px;">
+                                {{ role }}
+                            </span>
+                        {% endfor %}
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+    {% else %}
+        <div style="text-align: center; padding: 40px;">
+            <h3>❌ Médico no encontrado</h3>
+            <p>El médico que está buscando no existe o no está disponible.</p>
+            <a href="{% url 'hospital:doctors_list' %}" style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
+                Volver a Lista de Médicos
+            </a>
+        </div>
+    {% endif %}
+
+    <script>
+        function checkAvailability(doctorProfileId) {
+            // Simple availability check - you can enhance this
+            const today = new Date().toISOString().split('T')[0];
+            alert(`Verificando disponibilidad para el médico (Profile ID: ${doctorProfileId}) para fecha: ${today}\n\nEsta funcionalidad se puede expandir para mostrar un calendario de disponibilidad.`);
+            
+            // You could redirect to a dedicated availability page:
+            // window.location.href = `/doctors/${doctorProfileId}/availability/?date=${today}`;
+        }
+    </script>
+{% endblock %}

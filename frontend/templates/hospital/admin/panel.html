@@ -1,0 +1,89 @@
+{% extends 'hospital/base.html' %}
+
+{% block title %}Panel de Administración - Hospital Management System{% endblock %}
+
+{% block page_title %}Panel de Administración{% endblock %}
+
+{% block content %}
+    <h2>Bienvenido al Panel de Administración</h2>
+    
+    <h3>Estadísticas del Sistema:</h3>
+    <table border="1">
+        <tr>
+            <td><strong>Total Pacientes:</strong></td>
+            <td>{{ stats.total_patients|default:"0" }}</td>
+        </tr>
+        <tr>
+            <td><strong>Total Médicos:</strong></td>
+            <td>{{ stats.total_doctors|default:"0" }}</td>
+        </tr>
+        <tr>
+            <td><strong>Total Administradores:</strong></td>
+            <td>{{ stats.total_admins|default:"0" }}</td>
+        </tr>
+        <tr>
+            <td><strong>Registros Recientes:</strong></td>
+            <td>{{ stats.recent_registrations|default:"0" }}</td>
+        </tr>
+    </table>
+    
+    <h3>Gestión del Sistema:</h3>
+    <div style="display: flex; flex-wrap: wrap; gap: 20px;">
+        
+        <div style="border: 1px solid #ccc; padding: 15px; margin: 10px;">
+            <h4>👥 Gestión de Usuarios</h4>
+            <ul>
+                <li><a href="{% url 'hospital:admin_users' %}">Ver Todos los Usuarios</a></li>
+                <li><a href="{% url 'hospital:admin_create_patient' %}">Crear Nuevo Paciente</a></li>
+            </ul>
+        </div>
+        
+        <div style="border: 1px solid #ccc; padding: 15px; margin: 10px;">
+            <h4>👨‍⚕️ Gestión de Médicos</h4>
+            <ul>
+                <li><a href="{% url 'hospital:admin_doctors' %}">Ver Todos los Médicos</a></li>
+                <li><a href="{% url 'hospital:admin_register_doctor' %}">Registrar Nuevo Médico</a></li>
+            </ul>
+        </div>
+        
+        <div style="border: 1px solid #ccc; padding: 15px; margin: 10px;">
+            <h4>📅 Gestión de Citas</h4>
+            <ul>
+                <li><a href="{% url 'hospital:admin_appointments' %}">Ver Todas las Citas</a></li>
+                <li><a href="{% url 'hospital:create_appointment' %}">Crear Cita (como Admin)</a></li>
+            </ul>
+        </div>
+        
+        <div style="border: 1px solid #ccc; padding: 15px; margin: 10px;">
+            <h4>🕐 Gestión de Disponibilidad</h4>
+            <ul>
+                <li><a href="{% url 'hospital:admin_availability' %}">Configurar Horarios Médicos</a></li>
+            </ul>
+        </div>
+        
+    </div>
+    
+    <h3>Acciones Rápidas:</h3>
+    <ul>
+        <li><strong><a href="http://127.0.0.1:8000/docs" target="_blank">📖 Ver Documentación API (FastAPI)</a></strong></li>
+        <li><a href="{% url 'hospital:doctors_list' %}">Ver Lista Pública de Médicos</a></li>
+        <li><a href="{% url 'hospital:appointments' %}">Ver Mis Citas (como paciente)</a></li>
+    </ul>
+    
+    <h3>Estado del Sistema:</h3>
+    <p><strong>Backend API:</strong> <span id="api-status">Verificando...</span></p>
+    <p><strong>Último Admin:</strong> {{ request.session.user_data.nombre }} {{ request.session.user_data.apellidos }}</p>
+    
+    <script>
+        // Simple API health check
+        fetch('http://127.0.0.1:8000/health')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('api-status').innerHTML = 
+                    data.status === 'healthy' ? '✅ Funcionando' : '❌ Error';
+            })
+            .catch(error => {
+                document.getElementById('api-status').innerHTML = '❌ No disponible';
+            });
+    </script>
+{% endblock %}

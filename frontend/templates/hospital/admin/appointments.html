@@ -1,0 +1,97 @@
+{% extends 'hospital/base.html' %}
+
+{% block title %}Gestión de Citas - Hospital Management System{% endblock %}
+
+{% block page_title %}Gestión de Citas{% endblock %}
+
+{% block content %}
+    <div style="margin-bottom: 20px;">
+        <a href="{% url 'hospital:admin_panel' %}" style="text-decoration: none;">← Volver al Panel</a>
+    </div>
+    
+    <h2>Todas las Citas del Sistema</h2>
+    
+    {% if appointments_data.appointments %}
+        <div style="margin-bottom: 20px;">
+            <p><strong>Total de citas:</strong> {{ appointments_data.total }}</p>
+            <p><strong>Página:</strong> {{ appointments_data.page }} de {{ appointments_data.size }}</p>
+        </div>
+        
+        <table border="1" style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="background-color: #f0f0f0;">
+                    <th>ID</th>
+                    <th>Fecha y Hora</th>
+                    <th>Paciente ID</th>
+                    <th>Médico ID</th>
+                    <th>Tipo</th>
+                    <th>Estado</th>
+                    <th>Prioridad</th>
+                    <th>Duración</th>
+                    <th>Motivo</th>
+                    <th>Creada</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for appointment in appointments_data.appointments %}
+                <tr>
+                    <td>{{ appointment.id }}</td>
+                    <td>{{ appointment.appointment_date|date:"d/m/Y H:i" }}</td>
+                    <td>{{ appointment.patient_id }}</td>
+                    <td>{{ appointment.doctor_profile_id }}</td>
+                    <td>{{ appointment.appointment_type }}</td>
+                    <td>
+                        {% if appointment.status == "scheduled" %}
+                            <span style="color: blue;">📅 Programada</span>
+                        {% elif appointment.status == "confirmed" %}
+                            <span style="color: green;">✅ Confirmada</span>
+                        {% elif appointment.status == "cancelled" %}
+                            <span style="color: red;">❌ Cancelada</span>
+                        {% elif appointment.status == "completed" %}
+                            <span style="color: darkgreen;">✔️ Completada</span>
+                        {% elif appointment.status == "in_progress" %}
+                            <span style="color: orange;">🔄 En Curso</span>
+                        {% elif appointment.status == "no_show" %}
+                            <span style="color: darkred;">👻 No Asistió</span>
+                        {% else %}
+                            <span>{{ appointment.status }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if appointment.priority == "high" %}
+                            <span style="color: red;">🔴 Alta</span>
+                        {% elif appointment.priority == "normal" %}
+                            <span style="color: blue;">🔵 Normal</span>
+                        {% elif appointment.priority == "low" %}
+                            <span style="color: gray;">⚫ Baja</span>
+                        {% else %}
+                            {{ appointment.priority }}
+                        {% endif %}
+                    </td>
+                    <td>{{ appointment.duration_minutes }} min</td>
+                    <td>{{ appointment.reason|default:"N/A"|truncatechars:50 }}</td>
+                    <td>{{ appointment.created_at|date:"d/m/Y"|default:"N/A" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No se encontraron citas.</p>
+        <div style="background-color: #f0f0f0; padding: 15px; border-radius: 5px;">
+            <p><strong>Posibles causas:</strong></p>
+            <ul>
+                <li>Error de conexión con la API</li>
+                <li>No hay citas programadas en el sistema</li>
+                <li>Problema con los permisos de administrador</li>
+            </ul>
+        </div>
+    {% endif %}
+    
+    <h3>Acciones:</h3>
+    <ul>
+        <li><a href="{% url 'hospital:create_appointment' %}">Crear Nueva Cita</a></li>
+        <li><a href="{% url 'hospital:admin_doctors' %}">Ver Médicos</a></li>
+        <li><a href="{% url 'hospital:admin_users' %}">Ver Usuarios</a></li>
+        <li><a href="{% url 'hospital:admin_availability' %}">Configurar Disponibilidad</a></li>
+    </ul>
+{% endblock %}
