@@ -65,7 +65,7 @@
     
     <h3>Acciones Rápidas:</h3>
     <ul>
-        <li><strong><a href="http://127.0.0.1:8000/docs" target="_blank">📖 Ver Documentación API (FastAPI)</a></strong></li>
+        <li><strong><a href="http://127.0.0.1:8001/docs" target="_blank">📖 Ver Documentación API (FastAPI)</a></strong></li>
         <li><a href="{% url 'hospital:doctors_list' %}">Ver Lista Pública de Médicos</a></li>
         <li><a href="{% url 'hospital:appointments' %}">Ver Mis Citas (como paciente)</a></li>
     </ul>
@@ -76,7 +76,7 @@
     
     <script>
         // Simple API health check
-        fetch('http://127.0.0.1:8000/health')
+        fetch('http://127.0.0.1:8001/health')
             .then(response => response.json())
             .then(data => {
                 document.getElementById('api-status').innerHTML = 

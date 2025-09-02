@@ -13,19 +13,53 @@
                 <!-- Logged in navigation -->
                 <li><a href="{% url 'hospital:home' %}">Inicio</a></li>
                 <li><a href="{% url 'hospital:profile' %}">Perfil</a></li>
-                <li><a href="{% url 'hospital:appointments' %}">Mis Citas</a></li>
-                <li><a href="{% url 'hospital:doctors_list' %}">Médicos</a></li>
                 
-                {% if 'admin' in request.session.user_data.roles %}
+                <!-- Role-based navigation -->
+                {% if request.session.active_role == 'patient' %}
+                    <li><a href="{% url 'hospital:appointments' %}">Mis Citas</a></li>
+                    <li><a href="{% url 'hospital:create_appointment' %}">Nueva Cita</a></li>
+                    <li><a href="{% url 'hospital:doctors_list' %}">Médicos</a></li>
+                {% elif request.session.active_role == 'doctor' %}
+                    <li><a href="{% url 'hospital:appointments' %}">Citas de Pacientes</a></li>
+                    <li><a href="{% url 'hospital:doctor_panel' %}">Panel Médico</a></li>
+                {% elif request.session.active_role == 'admin' %}
                     <li><a href="{% url 'hospital:admin_panel' %}">Panel Admin</a></li>
+                    <li><a href="{% url 'hospital:appointments' %}">Todas las Citas</a></li>
                 {% endif %}
                 
-                {% if 'doctor' in request.session.user_data.roles %}
-                    <li><a href="{% url 'hospital:doctor_panel' %}">Panel Médico</a></li>
+                <!-- Role Switcher -->
+                {% if request.session.user_data.roles|length > 1 %}
+                    <li style="border-left: 1px solid #ccc; padding-left: 10px;">
+                        <form method="post" action="{% url 'hospital:switch_role' %}" style="display: inline;">
+                            {% csrf_token %}
+                            <label for="role-select" style="font-size: 12px;">Actuar como:</label>
+                            <select name="role" id="role-select" onchange="this.form.submit()" style="font-size: 12px;">
+                                {% for role in request.session.user_data.roles %}
+                                    <option value="{{ role }}" {% if role == request.session.active_role %}selected{% endif %}>
+                                        {% if role == 'patient' %}👤 Paciente
+                                        {% elif role == 'doctor' %}👨‍⚕️ Médico  
+                                        {% elif role == 'admin' %}⚙️ Admin
+                                        {% else %}{{ role }}{% endif %}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </form>
+                    </li>
                 {% endif %}
                 
                 <li><a href="{% url 'hospital:logout' %}">Cerrar Sesión</a></li>
-                <li>Hola, {{ request.session.user_data.nombre }}</li>
+                <li>
+                    Hola, {{ request.session.user_data.nombre }}
+                    {% if request.session.user_data.roles|length > 1 %}
+                        <br><small style="color: #666;">
+                            Como: 
+                            {% if request.session.active_role == 'patient' %}👤 Paciente
+                            {% elif request.session.active_role == 'doctor' %}👨‍⚕️ Médico
+                            {% elif request.session.active_role == 'admin' %}⚙️ Admin
+                            {% else %}{{ request.session.active_role }}{% endif %}
+                        </small>
+                    {% endif %}
+                </li>
             {% else %}
                 <!-- Not logged in navigation -->
                 <li><a href="{% url 'hospital:home' %}">Inicio</a></li>

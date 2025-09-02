@@ -1,0 +1,156 @@
+{% extends 'hospital/base.html' %}
+
+{% block title %}Detalle de Cita - Hospital Management System{% endblock %}
+
+{% block page_title %}Detalle de la Cita{% endblock %}
+
+{% block content %}
+    {% if appointment %}
+        <div>
+            <p><a href="{% url 'hospital:appointments' %}">← Volver a Mis Citas</a></p>
+            
+            <h2>Cita #{{ appointment.id }}</h2>
+            
+            <table border="1" style="width: 100%; max-width: 800px;">
+                <tr>
+                    <th style="background-color: #f0f0f0; padding: 10px; text-align: left; width: 200px;">Campo</th>
+                    <th style="background-color: #f0f0f0; padding: 10px; text-align: left;">Información</th>
+                </tr>
+                
+                <tr>
+                    <td style="padding: 10px; font-weight: bold;">Estado</td>
+                    <td style="padding: 10px;">
+                        <strong>
+                            {% if appointment.status == 'scheduled' %}📅 Programada
+                            {% elif appointment.status == 'confirmed' %}✅ Confirmada
+                            {% elif appointment.status == 'in_progress' %}🔄 En Curso
+                            {% elif appointment.status == 'completed' %}✅ Completada
+                            {% elif appointment.status == 'cancelled' %}❌ Cancelada
+                            {% elif appointment.status == 'no_show' %}❌ No Asistió
+                            {% elif appointment.status == 'rescheduled' %}📅 Reprogramada
+                            {% else %}{{ appointment.status }}
+                            {% endif %}
+                        </strong>
+                    </td>
+                </tr>
+                
+                <tr>
+                    <td style="padding: 10px; font-weight: bold;">Fecha y Hora</td>
+                    <td style="padding: 10px;">{{ appointment.appointment_date|date:"l, d de F de Y \a \l\a\s H:i" }}</td>
+                </tr>
+                
+                <tr>
+                    <td style="padding: 10px; font-weight: bold;">Duración</td>
+                    <td style="padding: 10px;">{{ appointment.duration_minutes }} minutos</td>
+                </tr>
+                
+                <tr>
+                    <td style="padding: 10px; font-weight: bold;">Tipo de Cita</td>
+                    <td style="padding: 10px;">
+                        {% if appointment.appointment_type == 'consultation' %}Consulta General
+                        {% elif appointment.appointment_type == 'follow_up' %}Seguimiento
+                        {% elif appointment.appointment_type == 'emergency' %}Urgencia
+                        {% elif appointment.appointment_type == 'check_up' %}Revisión
+                        {% elif appointment.appointment_type == 'procedure' %}Procedimiento
+                        {% elif appointment.appointment_type == 'vaccination' %}Vacunación
+                        {% else %}{{ appointment.appointment_type }}
+                        {% endif %}
+                    </td>
+                </tr>
+                
+                <tr>
+                    <td style="padding: 10px; font-weight: bold;">Prioridad</td>
+                    <td style="padding: 10px;">
+                        {% if appointment.priority == 'low' %}🔵 Baja
+                        {% elif appointment.priority == 'normal' %}⚪ Normal
+                        {% elif appointment.priority == 'high' %}🟡 Alta
+                        {% elif appointment.priority == 'urgent' %}🔴 Urgente
+                        {% else %}{{ appointment.priority }}
+                        {% endif %}
+                    </td>
+                </tr>
+                
+                <tr>
+                    <td style="padding: 10px; font-weight: bold;">Médico</td>
+                    <td style="padding: 10px;">
+                        {% if appointment.doctor_name %}
+                            <strong>{{ appointment.doctor_name }}</strong><br>
+                            {% if appointment.doctor_specialidad %}
+                                <em>{{ appointment.doctor_specialidad }}</em><br>
+                            {% endif %}
+                            {% if appointment.doctor_hospital %}
+                                {{ appointment.doctor_hospital }}
+                            {% endif %}
+                        {% else %}
+                            Información del médico no disponible
+                        {% endif %}
+                    </td>
+                </tr>
+                
+                <tr>
+                    <td style="padding: 10px; font-weight: bold;">Paciente</td>
+                    <td style="padding: 10px;">
+                        {% if appointment.patient %}
+                            <strong>{{ appointment.patient.nombre }} {{ appointment.patient.apellidos }}</strong><br>
+                            DNI: {{ appointment.patient.dni }}<br>
+                            Email: {{ appointment.patient.email }}<br>
+                            Teléfono: {{ appointment.patient.telefono }}
+                        {% else %}
+                            Información del paciente no disponible
+                        {% endif %}
+                    </td>
+                </tr>
+                
+                <tr>
+                    <td style="padding: 10px; font-weight: bold;">Motivo</td>
+                    <td style="padding: 10px;">{{ appointment.reason|default:"No especificado" }}</td>
+                </tr>
+                
+                <tr>
+                    <td style="padding: 10px; font-weight: bold;">Notas Adicionales</td>
+                    <td style="padding: 10px;">{{ appointment.notes|default:"Sin notas adicionales" }}</td>
+                </tr>
+                
+                {% if appointment.created_at %}
+                <tr>
+                    <td style="padding: 10px; font-weight: bold;">Creada el</td>
+                    <td style="padding: 10px;">{{ appointment.created_at|date:"d/m/Y H:i" }}</td>
+                </tr>
+                {% endif %}
+                
+                {% if appointment.cancellation_reason %}
+                <tr style="background-color: #ffe6e6;">
+                    <td style="padding: 10px; font-weight: bold;">Motivo de Cancelación</td>
+                    <td style="padding: 10px;">{{ appointment.cancellation_reason }}</td>
+                </tr>
+                {% endif %}
+            </table>
+            
+            <br>
+            
+            <!-- Action buttons -->
+            <div>
+                {% if appointment.status == 'scheduled' or appointment.status == 'confirmed' %}
+                    <form method="post" action="{% url 'hospital:cancel_appointment' appointment.id %}" style="display:inline;">
+                        {% csrf_token %}
+                        <label for="cancellation_reason">Motivo de cancelación (opcional):</label><br>
+                        <textarea id="cancellation_reason" name="cancellation_reason" rows="3" cols="40" placeholder="Escriba el motivo de la cancelación..."></textarea><br><br>
+                        <button type="submit" onclick="return confirm('¿Está seguro de cancelar esta cita?')" style="background-color: #dc3545; color: white; padding: 10px 20px;">
+                            ❌ Cancelar Cita
+                        </button>
+                    </form>
+                {% endif %}
+            </div>
+            
+            <br>
+            <p><a href="{% url 'hospital:appointments' %}">← Volver a Mis Citas</a></p>
+            
+        </div>
+    {% else %}
+        <div>
+            <h2>Cita no encontrada</h2>
+            <p>La cita solicitada no existe o no tienes permisos para verla.</p>
+            <p><a href="{% url 'hospital:appointments' %}">← Volver a Mis Citas</a></p>
+        </div>
+    {% endif %}
+{% endblock %}

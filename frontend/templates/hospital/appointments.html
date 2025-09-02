@@ -1,11 +1,30 @@
 {% extends 'hospital/base.html' %}
 
-{% block title %}Mis Citas - Hospital Management System{% endblock %}
+{% block title %}
+    {% if appointments_data.active_role == 'patient' %}Mis Citas
+    {% elif appointments_data.active_role == 'doctor' %}Citas de Pacientes
+    {% elif appointments_data.active_role == 'admin' %}Todas las Citas
+    {% else %}Citas{% endif %} - Hospital Management System
+{% endblock %}
 
-{% block page_title %}Mis Citas{% endblock %}
+{% block page_title %}
+    {% if appointments_data.active_role == 'patient' %}Mis Citas como Paciente
+    {% elif appointments_data.active_role == 'doctor' %}Citas de Mis Pacientes
+    {% elif appointments_data.active_role == 'admin' %}Todas las Citas del Sistema
+    {% else %}Citas{% endif %}
+{% endblock %}
 
 {% block content %}
-    <p><a href="{% url 'hospital:create_appointment' %}">➕ Crear Nueva Cita</a></p>
+    <!-- Role-specific action buttons -->
+    {% if appointments_data.active_role == 'patient' %}
+        <p><a href="{% url 'hospital:create_appointment' %}">➕ Crear Nueva Cita</a></p>
+        <p><em>Aquí puede ver las citas que ha programado con médicos.</em></p>
+    {% elif appointments_data.active_role == 'doctor' %}
+        <p><em>Aquí puede ver las citas que los pacientes han programado con usted.</em></p>
+    {% elif appointments_data.active_role == 'admin' %}
+        <p><a href="{% url 'hospital:admin_panel' %}">⚙️ Panel de Administración</a></p>
+        <p><em>Vista de todas las citas del sistema.</em></p>
+    {% endif %}
     
     <h2>Lista de Citas ({{ appointments_data.total }} total)</h2>
     
@@ -14,8 +33,15 @@
             <thead>
                 <tr>
                     <th>ID</th>
+                    {% if appointments_data.active_role == 'doctor' %}
+                        <th>Paciente</th>
+                    {% elif appointments_data.active_role == 'patient' %}
+                        <th>Médico</th>
+                    {% else %}
+                        <th>Paciente</th>
+                        <th>Médico</th>
+                    {% endif %}
                     <th>Fecha y Hora</th>
-                    <th>Médico</th>
                     <th>Tipo</th>
                     <th>Estado</th>
                     <th>Motivo</th>
@@ -26,8 +52,53 @@
                 {% for appointment in appointments_data.appointments %}
                 <tr>
                     <td>{{ appointment.id }}</td>
+                    
+                    <!-- Role-specific column display -->
+                    {% if appointments_data.active_role == 'doctor' %}
+                        <!-- Doctor view: show patient info -->
+                        <td>
+                            {% if appointment.patient_name %}
+                                <strong>{{ appointment.patient_name }}</strong><br>
+                                <small>{{ appointment.patient_dni|default:appointment.patient_id }}</small>
+                            {% else %}
+                                Paciente ID: {{ appointment.patient_id }}
+                            {% endif %}
+                        </td>
+                    {% elif appointments_data.active_role == 'patient' %}
+                        <!-- Patient view: show doctor info -->
+                        <td>
+                            {% if appointment.doctor_name %}
+                                <strong>{{ appointment.doctor_name }}</strong>
+                                {% if appointment.doctor_specialidad %}
+                                    <br><small><em>{{ appointment.doctor_specialidad }}</em></small>
+                                {% endif %}
+                            {% else %}
+                                Médico ID: {{ appointment.doctor_profile_id }}
+                            {% endif %}
+                        </td>
+                    {% else %}
+                        <!-- Admin view: show both patient and doctor -->
+                        <td>
+                            {% if appointment.patient_name %}
+                                <strong>{{ appointment.patient_name }}</strong><br>
+                                <small>{{ appointment.patient_dni|default:appointment.patient_id }}</small>
+                            {% else %}
+                                Paciente ID: {{ appointment.patient_id }}
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if appointment.doctor_name %}
+                                <strong>{{ appointment.doctor_name }}</strong>
+                                {% if appointment.doctor_specialidad %}
+                                    <br><small><em>{{ appointment.doctor_specialidad }}</em></small>
+                                {% endif %}
+                            {% else %}
+                                Médico ID: {{ appointment.doctor_profile_id }}
+                            {% endif %}
+                        </td>
+                    {% endif %}
+                    
                     <td>{{ appointment.appointment_date|date:"d/m/Y H:i" }}</td>
-                    <td>Médico ID: {{ appointment.doctor_profile_id }}</td>
                     <td>{{ appointment.appointment_type }}</td>
                     <td>
                         <strong>
@@ -45,13 +116,35 @@
                     <td>{{ appointment.reason|default:"-" }}</td>
                     <td>
                         <a href="{% url 'hospital:appointment_detail' appointment.id %}">Ver</a>
-                        {% if appointment.status == 'scheduled' or appointment.status == 'confirmed' %}
-                            | 
-                            <form method="post" action="{% url 'hospital:cancel_appointment' appointment.id %}" style="display:inline;">
-                                {% csrf_token %}
-                                <input type="text" name="cancellation_reason" placeholder="Motivo (opcional)" size="20">
-                                <button type="submit" onclick="return confirm('¿Está seguro de cancelar esta cita?')">Cancelar</button>
-                            </form>
+                        
+                        <!-- Role-specific actions -->
+                        {% if appointments_data.active_role == 'patient' %}
+                            <!-- Patient actions: can cancel their own appointments -->
+                            {% if appointment.status == 'scheduled' or appointment.status == 'confirmed' %}
+                                | 
+                                <form method="post" action="{% url 'hospital:cancel_appointment' appointment.id %}" style="display:inline;">
+                                    {% csrf_token %}
+                                    <input type="text" name="cancellation_reason" placeholder="Motivo (opcional)" size="15">
+                                    <button type="submit" onclick="return confirm('¿Está seguro de cancelar esta cita?')">Cancelar</button>
+                                </form>
+                            {% endif %}
+                        {% elif appointments_data.active_role == 'doctor' %}
+                            <!-- Doctor actions: can confirm, complete, etc. -->
+                            {% if appointment.status == 'scheduled' %}
+                                | <a href="{% url 'hospital:confirm_appointment' appointment.id %}" onclick="return confirm('¿Confirmar esta cita?')">✅ Confirmar</a>
+                            {% elif appointment.status == 'confirmed' %}
+                                | <a href="{% url 'hospital:complete_appointment' appointment.id %}" onclick="return confirm('¿Marcar como completada?')">✅ Completar</a>
+                            {% endif %}
+                        {% elif appointments_data.active_role == 'admin' %}
+                            <!-- Admin actions: full control -->
+                            {% if appointment.status == 'scheduled' or appointment.status == 'confirmed' %}
+                                | 
+                                <form method="post" action="{% url 'hospital:cancel_appointment' appointment.id %}" style="display:inline;">
+                                    {% csrf_token %}
+                                    <input type="text" name="cancellation_reason" placeholder="Motivo" size="15">
+                                    <button type="submit" onclick="return confirm('¿Cancelar esta cita?')">❌ Cancelar</button>
+                                </form>
+                            {% endif %}
                         {% endif %}
                     </td>
                 </tr>
@@ -62,8 +155,17 @@
         <p><strong>Página:</strong> {{ appointments_data.page }} | <strong>Tamaño:</strong> {{ appointments_data.size }}</p>
         
     {% else %}
-        <p>No tiene citas programadas.</p>
-        <p><a href="{% url 'hospital:create_appointment' %}">Crear su primera cita</a></p>
+        {% if appointments_data.active_role == 'patient' %}
+            <p>No tiene citas programadas como paciente.</p>
+            <p><a href="{% url 'hospital:create_appointment' %}">Crear su primera cita</a></p>
+        {% elif appointments_data.active_role == 'doctor' %}
+            <p>No tiene citas programadas con pacientes.</p>
+            <p><em>Los pacientes pueden programar citas con usted desde la lista de médicos.</em></p>
+        {% elif appointments_data.active_role == 'admin' %}
+            <p>No hay citas en el sistema.</p>
+        {% else %}
+            <p>No hay citas.</p>
+        {% endif %}
     {% endif %}
     
     <h3>Estados de Citas:</h3>

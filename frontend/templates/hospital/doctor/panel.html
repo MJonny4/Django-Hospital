@@ -1,0 +1,98 @@
+{% extends 'hospital/base.html' %}
+
+{% block title %}Panel del Médico - Hospital Management System{% endblock %}
+
+{% block page_title %}Panel del Médico{% endblock %}
+
+{% block content %}
+    <h2>Bienvenido, Dr. {{ request.session.user_data.nombre }} {{ request.session.user_data.apellidos }}</h2>
+    
+    <div style="background-color: #e8f4fd; padding: 15px; margin: 15px 0; border-radius: 5px;">
+        <strong>👨‍⚕️ Información del Médico:</strong><br>
+        <strong>Especialidad:</strong> {{ request.session.user_data.especialidad|default:"No especificada" }}<br>
+        <strong>Hospital:</strong> {{ request.session.user_data.hospital_centro|default:"No especificado" }}<br>
+        <strong>Consulta:</strong> {{ request.session.user_data.consulta_numero|default:"No asignada" }}
+    </div>
+    
+    <h3>Gestión de Consultas:</h3>
+    <div style="display: flex; flex-wrap: wrap; gap: 20px;">
+        
+        <div style="border: 1px solid #ccc; padding: 15px; margin: 10px; flex: 1; min-width: 250px;">
+            <h4>📅 Mis Citas</h4>
+            <ul>
+                <li><a href="{% url 'hospital:appointments' %}">Ver Citas de Mis Pacientes</a></li>
+                <li><a href="{% url 'hospital:doctor_appointments' %}">Panel de Citas del Médico</a></li>
+            </ul>
+            <p style="color: #666; font-size: 0.9em;">
+                Gestione las citas programadas con sus pacientes
+            </p>
+        </div>
+        
+        <div style="border: 1px solid #ccc; padding: 15px; margin: 10px; flex: 1; min-width: 250px;">
+            <h4>👥 Mis Pacientes</h4>
+            <ul>
+                <li><a href="{% url 'hospital:doctors_list' %}">Ver Mi Perfil Público</a></li>
+                <li><a href="{% url 'hospital:profile' %}">Editar Mi Información</a></li>
+            </ul>
+            <p style="color: #666; font-size: 0.9em;">
+                Revise su perfil como lo ven los pacientes
+            </p>
+        </div>
+        
+    </div>
+    
+    <h3>Herramientas del Médico:</h3>
+    <div style="display: flex; flex-wrap: wrap; gap: 20px;">
+        
+        <div style="border: 1px solid #28a745; border-left: 5px solid #28a745; padding: 15px; margin: 10px; flex: 1; min-width: 250px;">
+            <h4>✅ Confirmar Citas</h4>
+            <p>Las citas programadas aparecen como "Programada" hasta que usted las confirme.</p>
+            <a href="{% url 'hospital:appointments' %}" style="background-color: #28a745; color: white; padding: 8px 15px; text-decoration: none; border-radius: 3px;">
+                Ver Citas Pendientes
+            </a>
+        </div>
+        
+        <div style="border: 1px solid #007bff; border-left: 5px solid #007bff; padding: 15px; margin: 10px; flex: 1; min-width: 250px;">
+            <h4>🔄 Gestionar Estados</h4>
+            <p>Marque citas como completadas, en progreso, o cancele según sea necesario.</p>
+            <a href="{% url 'hospital:appointments' %}" style="background-color: #007bff; color: white; padding: 8px 15px; text-decoration: none; border-radius: 3px;">
+                Gestionar Citas
+            </a>
+        </div>
+        
+    </div>
+    
+    <h3>Información Importante:</h3>
+    <ul>
+        <li><strong>Citas Programadas:</strong> Los pacientes pueden agendar citas que aparecerán como "Programada"</li>
+        <li><strong>Confirmación:</strong> Usted debe confirmar las citas para que cambien a estado "Confirmada"</li>
+        <li><strong>Completar:</strong> Marque las citas como "Completada" cuando termine la consulta</li>
+        <li><strong>Cancelaciones:</strong> Puede cancelar citas si es necesario con una razón</li>
+    </ul>
+    
+    <hr>
+    
+    <h3>Cambio de Roles:</h3>
+    <div style="background-color: #fff3cd; padding: 15px; margin: 15px 0; border-radius: 5px;">
+        <strong>💡 Consejo:</strong> Si necesita actuar como paciente (por ejemplo, para agendar citas con otros médicos), 
+        use el selector de roles en la barra de navegación para cambiar a "Paciente".
+    </div>
+    
+    <h3>Estado del Sistema:</h3>
+    <p><strong>Backend API:</strong> <span id="api-status">Verificando...</span></p>
+    <p><strong>Rol Actual:</strong> Médico</p>
+    <p><strong>Última Actividad:</strong> {{ request.session.last_activity|default:"Ahora" }}</p>
+    
+    <script>
+        // Simple API health check
+        fetch('http://127.0.0.1:8001/health')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('api-status').innerHTML = 
+                    data.status === 'healthy' ? '✅ Funcionando' : '❌ Error';
+            })
+            .catch(error => {
+                document.getElementById('api-status').innerHTML = '❌ No disponible';
+            });
+    </script>
+{% endblock %}

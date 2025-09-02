@@ -5,17 +5,24 @@
 {% block page_title %}Crear Nueva Cita{% endblock %}
 
 {% block content %}
-    <form method="post">
+    <form method="post" onsubmit="return validateAppointmentForm()">
         {% csrf_token %}
         
         <h2>Programar Cita Médica</h2>
         
+        {% if not doctors %}
+            <div style="background-color: #fff3cd; border: 1px solid #ffeaa7; padding: 10px; margin: 10px 0;">
+                <strong>⚠️ Aviso:</strong> No hay médicos disponibles para programar citas. 
+                Esto puede deberse a que no puede programar citas consigo mismo.
+            </div>
+        {% endif %}
+        
         <div>
             <label for="doctor_profile_id">Médico:</label>
-            <select id="doctor_profile_id" name="doctor_profile_id" required>
-                <option value="">Seleccione un médico</option>
+            <select id="doctor_profile_id" name="doctor_profile_id" required {% if not doctors %}disabled{% endif %}>
+                <option value="">{% if doctors %}Seleccione un médico{% else %}No hay médicos disponibles{% endif %}</option>
                 {% for doctor in doctors %}
-                <option value="{{ doctor.profile_id }}" {% if selected_doctor_id and doctor.profile_id == selected_doctor_id %}selected{% endif %}>
+                <option value="{{ doctor.profile_id }}" data-doctor-user-id="{{ doctor.id }}" {% if selected_doctor_id and doctor.profile_id == selected_doctor_id %}selected{% endif %}>
                     {{ doctor.nombre }} {{ doctor.apellidos }} - {{ doctor.especialidad }} ({{ doctor.hospital_centro }})
                 </option>
                 {% endfor %}
@@ -72,7 +79,9 @@
         </div>
         
         <div>
-            <button type="submit">Crear Cita</button>
+            <button type="submit" {% if not doctors %}disabled{% endif %}>
+                {% if doctors %}Crear Cita{% else %}No se pueden crear citas{% endif %}
+            </button>
             <a href="{% url 'hospital:appointments' %}">Cancelar</a>
         </div>
     </form>
@@ -120,6 +129,27 @@
         function selectDoctor(doctorId, doctorName) {
             document.getElementById('doctor_profile_id').value = doctorId;
             alert('Médico seleccionado: ' + doctorName);
+        }
+        
+        function validateAppointmentForm() {
+            const doctorSelect = document.getElementById('doctor_profile_id');
+            const selectedOption = doctorSelect.options[doctorSelect.selectedIndex];
+            const currentUserId = {{ request.session.user_data.id|default:0 }};
+            
+            if (selectedOption && selectedOption.dataset.doctorUserId) {
+                const selectedDoctorUserId = parseInt(selectedOption.dataset.doctorUserId);
+                if (selectedDoctorUserId === currentUserId) {
+                    alert('⚠️ Error: No puede programar una cita consigo mismo.');
+                    return false;
+                }
+            }
+            
+            if (!doctorSelect.value) {
+                alert('⚠️ Debe seleccionar un médico para continuar.');
+                return false;
+            }
+            
+            return true;
         }
         
         // Set minimum date to 2 hours from now

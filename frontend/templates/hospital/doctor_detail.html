@@ -10,6 +10,17 @@
     </div>
 
     {% if doctor %}
+        
+        {% if is_self_viewing %}
+            <div style="background-color: #ffeaa7; border: 1px solid #fdcb6e; padding: 15px; margin: 15px 0; border-radius: 5px;">
+                <strong>⚠️ Nota:</strong> Está viendo su propio perfil como paciente. 
+                No puede programar citas consigo mismo. 
+                <a href="{% url 'hospital:switch_role' %}" onclick="document.querySelector('select[name=role]').value='doctor'; this.parentElement.parentElement.querySelector('form').submit(); return false;">
+                    Cambiar a rol de Médico
+                </a>
+            </div>
+        {% endif %}
+        
         <div style="display: flex; gap: 30px; flex-wrap: wrap;">
             <!-- Doctor Photo -->
             <div style="flex: 0 0 200px;">

@@ -268,9 +268,9 @@ class Appointment(Base):
     duration_minutes = Column(Integer, default=30, nullable=False)
     
     # Appointment metadata
-    appointment_type = Column(Enum(AppointmentType), default=AppointmentType.CONSULTATION)
-    priority = Column(Enum(AppointmentPriority), default=AppointmentPriority.NORMAL)
-    status = Column(Enum(AppointmentStatus), default=AppointmentStatus.SCHEDULED)
+    appointment_type = Column(Enum(AppointmentType, values_callable=lambda x: [e.value for e in x]), default=AppointmentType.CONSULTATION)
+    priority = Column(Enum(AppointmentPriority, values_callable=lambda x: [e.value for e in x]), default=AppointmentPriority.NORMAL)
+    status = Column(Enum(AppointmentStatus, values_callable=lambda x: [e.value for e in x]), default=AppointmentStatus.SCHEDULED)
     
     # Details
     reason = Column(Text, nullable=True)  # Motivo de la cita
