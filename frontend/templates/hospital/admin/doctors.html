@@ -1,0 +1,71 @@
+{% extends 'hospital/base.html' %}
+
+{% block title %}Gestión de Médicos - Hospital Management System{% endblock %}
+
+{% block page_title %}Gestión de Médicos{% endblock %}
+
+{% block content %}
+    <div style="margin-bottom: 20px;">
+        <a href="{% url 'hospital:admin_panel' %}" style="text-decoration: none;">← Volver al Panel</a>
+    </div>
+    
+    <h2>Lista de Médicos</h2>
+    
+    {% if doctors %}
+        <table border="1" style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="background-color: #f0f0f0;">
+                    <th>ID</th>
+                    <th>DNI</th>
+                    <th>Nombre</th>
+                    <th>Email</th>
+                    <th>Especialidad</th>
+                    <th>Hospital/Centro</th>
+                    <th>Número Colegiado</th>
+                    <th>Estado</th>
+                    <th>Fecha Alta</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for doctor in doctors %}
+                <tr>
+                    <td>{{ doctor.id }}</td>
+                    <td>{{ doctor.dni }}</td>
+                    <td>{{ doctor.nombre }} {{ doctor.apellidos }}</td>
+                    <td>{{ doctor.email }}</td>
+                    <td>{{ doctor.especialidad }}</td>
+                    <td>{{ doctor.hospital_centro }}</td>
+                    <td>{{ doctor.numero_colegiado }}</td>
+                    <td>
+                        {% if doctor.is_active %}
+                            <span style="color: green;">✅ Activo</span>
+                        {% else %}
+                            <span style="color: red;">❌ Inactivo</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ doctor.fecha_alta_sistema|date:"d/m/Y"|default:"N/A" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        
+        <p><strong>Total de médicos:</strong> {{ doctors|length }}</p>
+    {% else %}
+        <p>No se encontraron médicos registrados.</p>
+        <div style="background-color: #f0f0f0; padding: 15px; border-radius: 5px;">
+            <p><strong>Posibles causas:</strong></p>
+            <ul>
+                <li>Error de conexión con la API</li>
+                <li>No hay médicos registrados en el sistema</li>
+                <li>Problema con los permisos de administrador</li>
+            </ul>
+        </div>
+    {% endif %}
+    
+    <h3>Acciones:</h3>
+    <ul>
+        <li><a href="{% url 'hospital:admin_register_doctor' %}">Registrar Nuevo Médico</a></li>
+        <li><a href="{% url 'hospital:admin_availability' %}">Configurar Horarios de Médicos</a></li>
+        <li><a href="{% url 'hospital:admin_users' %}">Ver Todos los Usuarios</a></li>
+    </ul>
+{% endblock %}

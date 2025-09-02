@@ -1,0 +1,72 @@
+{% extends 'hospital/base.html' %}
+
+{% block title %}Lista de Médicos - Hospital Management System{% endblock %}
+
+{% block page_title %}Lista de Médicos{% endblock %}
+
+{% block content %}
+    <h2>Médicos Disponibles</h2>
+    
+    {% if doctors %}
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Especialidad</th>
+                    <th>Hospital/Centro</th>
+                    <th>Departamento</th>
+                    <th>Consulta</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for doctor in doctors %}
+                <tr>
+                    <td>{{ doctor.id }}</td>
+                    <td>
+                        <strong>{{ doctor.nombre }} {{ doctor.apellidos }}</strong><br>
+                        <small>{{ doctor.email }}</small>
+                    </td>
+                    <td>
+                        <strong>{{ doctor.especialidad }}</strong>
+                        {% if doctor.subespecialidad %}
+                            <br><small>{{ doctor.subespecialidad }}</small>
+                        {% endif %}
+                    </td>
+                    <td>{{ doctor.hospital_centro }}</td>
+                    <td>{{ doctor.departamento_servicio }}</td>
+                    <td>{{ doctor.consulta_numero|default:"-" }}</td>
+                    <td>
+                        <a href="{% url 'hospital:doctor_detail' doctor.id %}">Ver Perfil</a>
+                        {% if request.session.access_token and 'patient' in request.session.user_data.roles %}
+                            <br><a href="{% url 'hospital:create_appointment' %}?doctor={{ doctor.id }}">Agendar Cita</a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No hay médicos registrados en el sistema.</p>
+    {% endif %}
+    
+    <h3>Especialidades Disponibles:</h3>
+    <ul>
+        {% for doctor in doctors %}
+            {% if doctor.especialidad not in specialties_shown %}
+                <li><strong>{{ doctor.especialidad }}:</strong> 
+                    {% for d in doctors %}
+                        {% if d.especialidad == doctor.especialidad %}
+                            {{ d.nombre }} {{ d.apellidos }}{% if not forloop.last %}, {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                </li>
+            {% endif %}
+        {% endfor %}
+    </ul>
+    
+    {% if request.session.access_token and 'patient' in request.session.user_data.roles %}
+        <p><strong><a href="{% url 'hospital:create_appointment' %}">➕ Crear Nueva Cita</a></strong></p>
+    {% endif %}
+{% endblock %}

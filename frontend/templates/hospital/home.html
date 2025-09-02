@@ -1,0 +1,47 @@
+{% extends 'hospital/base.html' %}
+
+{% block title %}Inicio - Hospital Management System{% endblock %}
+
+{% block page_title %}Bienvenido al Sistema de Gestión Hospitalaria{% endblock %}
+
+{% block content %}
+    <p>Este es el sistema de gestión hospitalaria desarrollado con FastAPI como backend y Django como frontend de prueba.</p>
+    
+    {% if request.session.access_token %}
+        <h2>Panel de Usuario</h2>
+        <p>Bienvenido, {{ request.session.user_data.nombre }} {{ request.session.user_data.apellidos }}</p>
+        <p>Email: {{ request.session.user_data.email }}</p>
+        <p>Roles: {{ request.session.user_data.roles|join:", " }}</p>
+        
+        <h3>Acciones Disponibles:</h3>
+        <ul>
+            <li><a href="{% url 'hospital:appointments' %}">Ver mis citas</a></li>
+            <li><a href="{% url 'hospital:create_appointment' %}">Crear nueva cita</a></li>
+            <li><a href="{% url 'hospital:doctors_list' %}">Ver lista de médicos</a></li>
+            <li><a href="{% url 'hospital:profile' %}">Mi perfil</a></li>
+            
+            {% if 'admin' in request.session.user_data.roles %}
+                <li><strong><a href="{% url 'hospital:admin_panel' %}">Panel de Administración</a></strong></li>
+            {% endif %}
+            
+            {% if 'doctor' in request.session.user_data.roles %}
+                <li><strong><a href="{% url 'hospital:doctor_panel' %}">Panel de Médico</a></strong></li>
+            {% endif %}
+        </ul>
+    {% else %}
+        <h2>Acceso Público</h2>
+        <p>Para acceder a todas las funcionalidades del sistema, debe iniciar sesión.</p>
+        
+        <h3>Acciones Disponibles:</h3>
+        <ul>
+            <li><a href="{% url 'hospital:login' %}">Iniciar Sesión</a></li>
+            <li><a href="{% url 'hospital:register' %}">Registrarse como Paciente</a></li>
+            <li><a href="{% url 'hospital:doctors_list' %}">Ver lista pública de médicos</a></li>
+        </ul>
+        
+        <h3>Cuentas de Prueba:</h3>
+        <p><strong>Admin:</strong> admin@hospital.com / password123</p>
+        <p><strong>Doctor:</strong> maria.gonzalez@hospital.com / password123</p>
+        <p><strong>Paciente:</strong> maria.garcia@email.com / password123</p>
+    {% endif %}
+{% endblock %}

@@ -2,14 +2,24 @@ from fastapi import FastAPI, HTTPException, Depends, status
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from sqlalchemy import func
-from ..core.database import test_database_connection, get_db, engine
-from ..models.models import Base, User, Doctor, DoctorProfile, UserRole
-from ..schemas.schemas import (
-    UserRegister, UserLogin, UserResponse, Token, HomePageResponse,
-    DoctorRegister, DoctorResponse, DoctorProfileResponse, AdminCreateUser, BackofficeStats
+from app.core.database import test_database_connection, get_db, engine
+from app.models.models import (
+    Base, User, Doctor, DoctorProfile, UserRole,
+    Appointment, DoctorAvailability, AppointmentHistory,
+    AppointmentStatus, AppointmentType, AppointmentPriority
 )
-from ..core.auth import get_password_hash, verify_password, create_access_token, require_admin
+from app.schemas.schemas import (
+    UserRegister, UserLogin, UserResponse, Token, HomePageResponse,
+    DoctorRegister, DoctorResponse, DoctorProfileResponse, AdminCreateUser, BackofficeStats,
+    # Appointment schemas
+    DoctorAvailabilityCreate, DoctorAvailabilityResponse,
+    AppointmentCreate, AppointmentUpdate, AppointmentResponse,
+    AppointmentDetailedResponse, AppointmentListResponse,
+    AppointmentAvailabilityRequest, AppointmentTimeSlot, AppointmentAvailabilityResponse
+)
+from app.core.auth import get_password_hash, verify_password, create_access_token, require_admin, get_current_user
 from datetime import timedelta, datetime
+from typing import List
 
 app = FastAPI(
     title="Hospital Appointment System",
@@ -252,6 +262,7 @@ async def admin_register_doctor(
     doctor_response_data = {
         # User data
         "id": db_user.id,
+        "profile_id": db_doctor_profile.id,  # Add doctor profile ID
         "dni": db_user.dni,
         "nombre": db_user.nombre,
         "apellidos": db_user.apellidos,
@@ -321,6 +332,7 @@ async def get_all_doctors(
         doctor_data = {
             # User data
             "id": user.id,
+            "profile_id": profile.id,  # Add doctor profile ID for forms that need it
             "dni": user.dni,
             "nombre": user.nombre,
             "apellidos": user.apellidos,
@@ -393,6 +405,7 @@ async def get_doctors_public(
         doctor_data = {
             # User data
             "id": user.id,
+            "profile_id": profile.id,  # Add doctor profile ID
             "dni": user.dni,
             "nombre": user.nombre,
             "apellidos": user.apellidos,
@@ -446,6 +459,7 @@ async def get_doctor_by_id(doctor_id: int, db: Session = Depends(get_db)):
     doctor_data = {
         # User data
         "id": user.id,
+        "profile_id": profile.id,  # Add doctor profile ID
         "dni": user.dni,
         "nombre": user.nombre,
         "apellidos": user.apellidos,
@@ -472,6 +486,878 @@ async def get_doctor_by_id(doctor_id: int, db: Session = Depends(get_db)):
     }
     
     return DoctorResponse(**doctor_data)
+
+# APPOINTMENT MANAGEMENT ENDPOINTS
+
+def get_current_user_object(current_user_email: str = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Helper function to get full user object from email"""
+    user = db.query(User).filter(User.email == current_user_email).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+    return user
+
+# DOCTOR AVAILABILITY MANAGEMENT
+@app.post("/admin/doctor-availability", response_model=DoctorAvailabilityResponse)
+async def create_doctor_availability(
+    availability_data: DoctorAvailabilityCreate,
+    db: Session = Depends(get_db),
+    admin_user = Depends(require_admin)
+):
+    """Create doctor availability schedule (admin only)"""
+    # Verify doctor profile exists
+    doctor_profile = db.query(DoctorProfile).filter(
+        DoctorProfile.id == availability_data.doctor_profile_id,
+        DoctorProfile.is_active == True
+    ).first()
+    
+    if not doctor_profile:
+        raise HTTPException(status_code=404, detail="Perfil de médico no encontrado")
+    
+    # Check for existing availability on same day
+    existing = db.query(DoctorAvailability).filter(
+        DoctorAvailability.doctor_profile_id == availability_data.doctor_profile_id,
+        DoctorAvailability.day_of_week == availability_data.day_of_week,
+        DoctorAvailability.is_active == True
+    ).first()
+    
+    if existing:
+        raise HTTPException(
+            status_code=400, 
+            detail="Ya existe disponibilidad para este médico en este día de la semana"
+        )
+    
+    availability = DoctorAvailability(**availability_data.model_dump())
+    db.add(availability)
+    db.commit()
+    db.refresh(availability)
+    
+    return DoctorAvailabilityResponse.model_validate(availability)
+
+@app.get("/doctor-availability/{doctor_profile_id}", response_model=List[DoctorAvailabilityResponse])
+async def get_doctor_availability(
+    doctor_profile_id: int,
+    db: Session = Depends(get_db)
+):
+    """Get doctor availability schedule"""
+    availabilities = db.query(DoctorAvailability).filter(
+        DoctorAvailability.doctor_profile_id == doctor_profile_id,
+        DoctorAvailability.is_active == True
+    ).all()
+    
+    return [DoctorAvailabilityResponse.model_validate(avail) for avail in availabilities]
+
+# APPOINTMENT BOOKING
+@app.post("/appointments", response_model=AppointmentResponse)
+async def create_appointment(
+    appointment_data: AppointmentCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user_object)
+):
+    """Create new appointment (patient only)"""
+    # Verify user has patient role
+    if not current_user.has_role("patient"):
+        raise HTTPException(
+            status_code=403,
+            detail="Solo los pacientes pueden crear citas"
+        )
+    
+    # Verify doctor profile exists and is active
+    doctor_profile = db.query(DoctorProfile).filter(
+        DoctorProfile.id == appointment_data.doctor_profile_id,
+        DoctorProfile.is_active == True
+    ).first()
+    
+    if not doctor_profile:
+        raise HTTPException(status_code=404, detail="Médico no encontrado")
+    
+    # Prevent self-appointment (doctor booking appointment with themselves)
+    if current_user.id == doctor_profile.user_id:
+        raise HTTPException(
+            status_code=400,
+            detail="Los médicos no pueden programar citas consigo mismos"
+        )
+    
+    # Check for appointment conflicts
+    appointment_end = appointment_data.appointment_date + timedelta(minutes=appointment_data.duration_minutes)
+    
+    # Get all appointments for this doctor and check conflicts in Python
+    existing_appointments = db.query(Appointment).filter(
+        Appointment.doctor_profile_id == appointment_data.doctor_profile_id,
+        Appointment.status.in_([AppointmentStatus.SCHEDULED, AppointmentStatus.CONFIRMED, AppointmentStatus.IN_PROGRESS]),
+        Appointment.appointment_date >= appointment_data.appointment_date - timedelta(hours=6),  # Look 6 hours before
+        Appointment.appointment_date <= appointment_end + timedelta(hours=6)  # Look 6 hours after
+    ).all()
+    
+    # Check for time conflicts in Python
+    conflicting_appointments = None
+    for existing in existing_appointments:
+        existing_end = existing.appointment_date + timedelta(minutes=existing.duration_minutes)
+        if (existing.appointment_date < appointment_end and 
+            existing_end > appointment_data.appointment_date):
+            conflicting_appointments = existing
+            break
+    
+    if conflicting_appointments:
+        raise HTTPException(
+            status_code=400,
+            detail="El médico ya tiene una cita programada en ese horario"
+        )
+    
+    # Create appointment
+    appointment = Appointment(
+        patient_id=current_user.id,
+        doctor_profile_id=appointment_data.doctor_profile_id,
+        appointment_date=appointment_data.appointment_date,
+        duration_minutes=appointment_data.duration_minutes,
+        appointment_type=appointment_data.appointment_type,
+        priority=appointment_data.priority,
+        reason=appointment_data.reason,
+        notes=appointment_data.notes,
+        created_by_user_id=current_user.id
+    )
+    
+    db.add(appointment)
+    db.flush()  # This assigns the ID without committing
+    appointment_id = appointment.id  # Get ID before commit
+    db.commit()
+    
+    # Return appointment data without refreshing from DB to avoid enum mismatch
+    return AppointmentResponse(
+        id=appointment_id,
+        patient_id=current_user.id,
+        doctor_profile_id=appointment_data.doctor_profile_id,
+        appointment_date=appointment_data.appointment_date,
+        duration_minutes=appointment_data.duration_minutes,
+        appointment_type=appointment_data.appointment_type,
+        priority=appointment_data.priority,
+        status=AppointmentStatus.SCHEDULED,
+        reason=appointment_data.reason,
+        notes=appointment_data.notes,
+        created_at=None  # We don't have this without reading from DB
+    )
+
+@app.get("/appointments", response_model=AppointmentListResponse)
+async def get_user_appointments(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user_object),
+    status_filter: AppointmentStatus = None,
+    skip: int = 0,
+    limit: int = 20
+):
+    """Get appointments for current user"""
+    query = db.query(Appointment)
+    
+    if current_user.has_role("doctor"):
+        # Get appointments where user is the doctor
+        doctor_profile = db.query(DoctorProfile).filter(
+            DoctorProfile.user_id == current_user.id,
+            DoctorProfile.is_active == True
+        ).first()
+        
+        if doctor_profile:
+            query = query.filter(Appointment.doctor_profile_id == doctor_profile.id)
+        else:
+            # No doctor profile found, return empty
+            return AppointmentListResponse(appointments=[], total=0, page=skip//limit + 1, size=limit)
+    else:
+        # Get appointments where user is the patient
+        query = query.filter(Appointment.patient_id == current_user.id)
+    
+    if status_filter:
+        query = query.filter(Appointment.status == status_filter)
+    
+    total = query.count()
+    appointments = query.order_by(Appointment.appointment_date.desc()).offset(skip).limit(limit).all()
+    
+    return AppointmentListResponse(
+        appointments=[AppointmentResponse.model_validate(apt) for apt in appointments],
+        total=total,
+        page=skip//limit + 1,
+        size=limit
+    )
+
+@app.get("/appointments/{appointment_id}", response_model=AppointmentDetailedResponse)
+async def get_appointment(
+    appointment_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user_object)
+):
+    """Get appointment details"""
+    appointment = db.query(Appointment).filter(Appointment.id == appointment_id).first()
+    
+    if not appointment:
+        raise HTTPException(status_code=404, detail="Cita no encontrada")
+    
+    # Check if user has permission to view this appointment
+    can_view = False
+    if current_user.has_role("admin"):
+        can_view = True
+    elif current_user.has_role("doctor"):
+        doctor_profile = db.query(DoctorProfile).filter(
+            DoctorProfile.user_id == current_user.id,
+            DoctorProfile.is_active == True
+        ).first()
+        if doctor_profile and appointment.doctor_profile_id == doctor_profile.id:
+            can_view = True
+    elif appointment.patient_id == current_user.id:
+        can_view = True
+    
+    if not can_view:
+        raise HTTPException(status_code=403, detail="No tiene permisos para ver esta cita")
+    
+    # Get patient info
+    patient = db.query(User).filter(User.id == appointment.patient_id).first()
+    doctor_profile = db.query(DoctorProfile).filter(DoctorProfile.id == appointment.doctor_profile_id).first()
+    
+    response_data = {
+        "id": appointment.id,
+        "appointment_date": appointment.appointment_date,
+        "duration_minutes": appointment.duration_minutes,
+        "appointment_type": appointment.appointment_type,
+        "priority": appointment.priority,
+        "status": appointment.status,
+        "reason": appointment.reason,
+        "notes": appointment.notes,
+        "created_at": appointment.created_at,
+        "patient": UserResponse.model_validate(patient),
+        "doctor_name": f"{doctor_profile.user.nombre} {doctor_profile.user.apellidos}" if doctor_profile else None,
+        "doctor_specialidad": doctor_profile.especialidad if doctor_profile else None,
+        "doctor_hospital": doctor_profile.hospital_centro if doctor_profile else None,
+        "cancellation_reason": appointment.cancellation_reason
+    }
+    
+    return AppointmentDetailedResponse(**response_data)
+
+@app.put("/appointments/{appointment_id}", response_model=AppointmentResponse)
+async def update_appointment(
+    appointment_id: int,
+    update_data: AppointmentUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user_object)
+):
+    """Update appointment"""
+    appointment = db.query(Appointment).filter(Appointment.id == appointment_id).first()
+    
+    if not appointment:
+        raise HTTPException(status_code=404, detail="Cita no encontrada")
+    
+    # Check permissions
+    can_update = False
+    if current_user.has_role("admin"):
+        can_update = True
+    elif current_user.has_role("doctor"):
+        doctor_profile = db.query(DoctorProfile).filter(
+            DoctorProfile.user_id == current_user.id,
+            DoctorProfile.is_active == True
+        ).first()
+        if doctor_profile and appointment.doctor_profile_id == doctor_profile.id:
+            can_update = True
+    elif appointment.patient_id == current_user.id:
+        # Patients can only update certain fields and only if appointment can be cancelled
+        if not appointment.can_be_cancelled():
+            raise HTTPException(
+                status_code=400,
+                detail="No se puede modificar la cita (debe ser al menos 24h antes)"
+            )
+        can_update = True
+    
+    if not can_update:
+        raise HTTPException(status_code=403, detail="No tiene permisos para modificar esta cita")
+    
+    # Update fields
+    update_dict = update_data.model_dump(exclude_unset=True)
+    
+    for field, value in update_dict.items():
+        if hasattr(appointment, field):
+            setattr(appointment, field, value)
+    
+    # Handle status changes
+    if update_data.status == AppointmentStatus.CANCELLED:
+        appointment.cancelled_at = datetime.now()
+        appointment.cancelled_by_user_id = current_user.id
+        if update_data.cancellation_reason:
+            appointment.cancellation_reason = update_data.cancellation_reason
+    
+    db.commit()
+    db.refresh(appointment)
+    
+    return AppointmentResponse.model_validate(appointment)
+
+@app.delete("/appointments/{appointment_id}")
+async def cancel_appointment(
+    appointment_id: int,
+    cancellation_reason: str = None,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user_object)
+):
+    """Cancel appointment"""
+    appointment = db.query(Appointment).filter(Appointment.id == appointment_id).first()
+    
+    if not appointment:
+        raise HTTPException(status_code=404, detail="Cita no encontrada")
+    
+    # Check permissions
+    can_cancel = False
+    if current_user.has_role("admin"):
+        can_cancel = True
+    elif appointment.patient_id == current_user.id:
+        if not appointment.can_be_cancelled():
+            raise HTTPException(
+                status_code=400,
+                detail="No se puede cancelar la cita (debe ser al menos 24h antes)"
+            )
+        can_cancel = True
+    elif current_user.has_role("doctor"):
+        doctor_profile = db.query(DoctorProfile).filter(
+            DoctorProfile.user_id == current_user.id,
+            DoctorProfile.is_active == True
+        ).first()
+        if doctor_profile and appointment.doctor_profile_id == doctor_profile.id:
+            can_cancel = True
+    
+    if not can_cancel:
+        raise HTTPException(status_code=403, detail="No tiene permisos para cancelar esta cita")
+    
+    # Update appointment status
+    appointment.status = AppointmentStatus.CANCELLED
+    appointment.cancelled_at = datetime.now()
+    appointment.cancelled_by_user_id = current_user.id
+    if cancellation_reason:
+        appointment.cancellation_reason = cancellation_reason
+    
+    db.commit()
+    
+    return {"message": "Cita cancelada exitosamente"}
+
+# ADMIN APPOINTMENT MANAGEMENT
+@app.get("/admin/appointments", response_model=AppointmentListResponse)
+async def get_all_appointments(
+    db: Session = Depends(get_db),
+    admin_user = Depends(require_admin),
+    status_filter: AppointmentStatus = None,
+    doctor_id: int = None,
+    skip: int = 0,
+    limit: int = 50
+):
+    """Get all appointments (admin only)"""
+    query = db.query(Appointment)
+    
+    if status_filter:
+        query = query.filter(Appointment.status == status_filter)
+    
+    if doctor_id:
+        doctor_profile = db.query(DoctorProfile).filter(
+            DoctorProfile.user_id == doctor_id,
+            DoctorProfile.is_active == True
+        ).first()
+        if doctor_profile:
+            query = query.filter(Appointment.doctor_profile_id == doctor_profile.id)
+    
+    total = query.count()
+    appointments = query.order_by(Appointment.appointment_date.desc()).offset(skip).limit(limit).all()
+    
+    return AppointmentListResponse(
+        appointments=[AppointmentResponse.model_validate(apt) for apt in appointments],
+        total=total,
+        page=skip//limit + 1,
+        size=limit
+    )
+
+# APPOINTMENT SCHEDULING AND AVAILABILITY
+@app.post("/appointments/availability", response_model=AppointmentAvailabilityResponse)
+async def get_appointment_availability(
+    availability_request: AppointmentAvailabilityRequest,
+    db: Session = Depends(get_db)
+):
+    """Get available appointment slots for a doctor on a specific date"""
+    from datetime import datetime, timedelta
+    
+    # Verify doctor profile exists
+    doctor_profile = db.query(DoctorProfile).filter(
+        DoctorProfile.id == availability_request.doctor_profile_id,
+        DoctorProfile.is_active == True
+    ).first()
+    
+    if not doctor_profile:
+        raise HTTPException(status_code=404, detail="Médico no encontrado")
+    
+    # Parse the requested date
+    try:
+        requested_date = datetime.strptime(availability_request.date, '%Y-%m-%d').date()
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Formato de fecha inválido")
+    
+    # Don't allow appointments in the past
+    if requested_date <= datetime.now().date():
+        return AppointmentAvailabilityResponse(
+            doctor_profile_id=availability_request.doctor_profile_id,
+            date=availability_request.date,
+            available_slots=[]
+        )
+    
+    # Get day of week (0=Monday, 6=Sunday)
+    day_of_week = requested_date.weekday()
+    
+    # Get doctor's availability for this day of week
+    availability = db.query(DoctorAvailability).filter(
+        DoctorAvailability.doctor_profile_id == availability_request.doctor_profile_id,
+        DoctorAvailability.day_of_week == day_of_week,
+        DoctorAvailability.is_active == True
+    ).first()
+    
+    if not availability:
+        return AppointmentAvailabilityResponse(
+            doctor_profile_id=availability_request.doctor_profile_id,
+            date=availability_request.date,
+            available_slots=[]
+        )
+    
+    # Generate time slots based on availability
+    start_hour, start_min = map(int, availability.start_time.split(':'))
+    end_hour, end_min = map(int, availability.end_time.split(':'))
+    
+    start_time = datetime.combine(requested_date, datetime.min.time().replace(
+        hour=start_hour, minute=start_min
+    ))
+    end_time = datetime.combine(requested_date, datetime.min.time().replace(
+        hour=end_hour, minute=end_min
+    ))
+    
+    # Get existing appointments for this doctor on this date
+    existing_appointments = db.query(Appointment).filter(
+        Appointment.doctor_profile_id == availability_request.doctor_profile_id,
+        Appointment.status.in_([
+            AppointmentStatus.SCHEDULED, 
+            AppointmentStatus.CONFIRMED, 
+            AppointmentStatus.IN_PROGRESS
+        ]),
+        func.date(Appointment.appointment_date) == requested_date
+    ).all()
+    
+    # Generate all possible time slots
+    available_slots = []
+    current_time = start_time
+    slot_duration = timedelta(minutes=availability.slot_duration_minutes)
+    buffer_time = timedelta(minutes=availability.buffer_minutes)
+    
+    while current_time + slot_duration <= end_time:
+        slot_end = current_time + slot_duration
+        is_available = True
+        reason = None
+        
+        # Check if this slot conflicts with existing appointments
+        for appointment in existing_appointments:
+            apt_start = appointment.appointment_date
+            apt_end = apt_start + timedelta(minutes=appointment.duration_minutes)
+            
+            # Check for overlap (with buffer time)
+            if (current_time < apt_end + buffer_time and 
+                slot_end + buffer_time > apt_start):
+                is_available = False
+                reason = "Cita ya programada"
+                break
+        
+        # Don't allow appointments too close to current time (2 hours minimum)
+        min_advance_time = datetime.now() + timedelta(hours=2)
+        if current_time < min_advance_time:
+            is_available = False
+            reason = "Debe programar con al menos 2 horas de anticipación"
+        
+        available_slots.append(AppointmentTimeSlot(
+            time=current_time.strftime('%H:%M'),
+            available=is_available,
+            reason=reason
+        ))
+        
+        current_time += slot_duration + buffer_time
+    
+    return AppointmentAvailabilityResponse(
+        doctor_profile_id=availability_request.doctor_profile_id,
+        date=availability_request.date,
+        available_slots=available_slots
+    )
+
+@app.get("/appointments/conflicts/{doctor_profile_id}")
+async def check_appointment_conflicts(
+    doctor_profile_id: int,
+    appointment_date: str,  # ISO format: 2024-01-15T10:30:00
+    duration_minutes: int = 30,
+    exclude_appointment_id: int = None,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user_object)
+):
+    """Check for appointment conflicts before booking"""
+    try:
+        appointment_datetime = datetime.fromisoformat(appointment_date.replace('Z', '+00:00'))
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Formato de fecha inválido. Use ISO format.")
+    
+    # Verify doctor profile exists
+    doctor_profile = db.query(DoctorProfile).filter(
+        DoctorProfile.id == doctor_profile_id,
+        DoctorProfile.is_active == True
+    ).first()
+    
+    if not doctor_profile:
+        raise HTTPException(status_code=404, detail="Médico no encontrado")
+    
+    # Check for conflicts
+    appointment_end = appointment_datetime + timedelta(minutes=duration_minutes)
+    
+    query = db.query(Appointment).filter(
+        Appointment.doctor_profile_id == doctor_profile_id,
+        Appointment.status.in_([
+            AppointmentStatus.SCHEDULED, 
+            AppointmentStatus.CONFIRMED, 
+            AppointmentStatus.IN_PROGRESS
+        ]),
+        Appointment.appointment_date < appointment_end,
+        func.date_add(
+            Appointment.appointment_date, 
+            func.interval(Appointment.duration_minutes, "MINUTE")
+        ) > appointment_datetime
+    )
+    
+    if exclude_appointment_id:
+        query = query.filter(Appointment.id != exclude_appointment_id)
+    
+    conflicts = query.all()
+    
+    has_conflicts = len(conflicts) > 0
+    conflict_details = []
+    
+    for conflict in conflicts:
+        conflict_end = conflict.appointment_date + timedelta(minutes=conflict.duration_minutes)
+        patient = db.query(User).filter(User.id == conflict.patient_id).first()
+        
+        conflict_details.append({
+            "appointment_id": conflict.id,
+            "patient_name": f"{patient.nombre} {patient.apellidos}" if patient else "Desconocido",
+            "start_time": conflict.appointment_date.isoformat(),
+            "end_time": conflict_end.isoformat(),
+            "duration": conflict.duration_minutes,
+            "status": conflict.status.value,
+            "type": conflict.appointment_type.value
+        })
+    
+    return {
+        "has_conflicts": has_conflicts,
+        "conflicts": conflict_details,
+        "requested_appointment": {
+            "start_time": appointment_datetime.isoformat(),
+            "end_time": appointment_end.isoformat(),
+            "duration": duration_minutes
+        },
+        "recommendation": "Conflicto detectado. Seleccione otro horario." if has_conflicts else "Sin conflictos. Puede proceder con la cita."
+    }
+
+# APPOINTMENT STATUS MANAGEMENT
+@app.patch("/appointments/{appointment_id}/status")
+async def update_appointment_status(
+    appointment_id: int,
+    new_status: AppointmentStatus,
+    reason: str = None,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user_object)
+):
+    """Update appointment status with proper validations"""
+    appointment = db.query(Appointment).filter(Appointment.id == appointment_id).first()
+    
+    if not appointment:
+        raise HTTPException(status_code=404, detail="Cita no encontrada")
+    
+    # Check permissions and validate status transitions
+    old_status = appointment.status
+    can_update = False
+    
+    if current_user.has_role("admin"):
+        can_update = True
+    elif current_user.has_role("doctor"):
+        doctor_profile = db.query(DoctorProfile).filter(
+            DoctorProfile.user_id == current_user.id,
+            DoctorProfile.is_active == True
+        ).first()
+        if doctor_profile and appointment.doctor_profile_id == doctor_profile.id:
+            can_update = True
+    elif appointment.patient_id == current_user.id:
+        # Patients can only cancel appointments
+        if new_status == AppointmentStatus.CANCELLED:
+            if not appointment.can_be_cancelled():
+                raise HTTPException(
+                    status_code=400,
+                    detail="No se puede cancelar la cita (debe ser al menos 24h antes)"
+                )
+            can_update = True
+    
+    if not can_update:
+        raise HTTPException(status_code=403, detail="No tiene permisos para cambiar el estado de esta cita")
+    
+    # Validate status transitions
+    valid_transitions = {
+        AppointmentStatus.SCHEDULED: [
+            AppointmentStatus.CONFIRMED, 
+            AppointmentStatus.CANCELLED, 
+            AppointmentStatus.RESCHEDULED
+        ],
+        AppointmentStatus.CONFIRMED: [
+            AppointmentStatus.IN_PROGRESS, 
+            AppointmentStatus.CANCELLED, 
+            AppointmentStatus.NO_SHOW,
+            AppointmentStatus.RESCHEDULED
+        ],
+        AppointmentStatus.IN_PROGRESS: [
+            AppointmentStatus.COMPLETED, 
+            AppointmentStatus.CANCELLED
+        ],
+        AppointmentStatus.COMPLETED: [],  # Final status
+        AppointmentStatus.CANCELLED: [],  # Final status
+        AppointmentStatus.NO_SHOW: [],    # Final status
+        AppointmentStatus.RESCHEDULED: [] # Final status
+    }
+    
+    if old_status in valid_transitions and new_status not in valid_transitions[old_status]:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Transición de estado inválida: {old_status.value} -> {new_status.value}"
+        )
+    
+    # Update appointment status
+    appointment.status = new_status
+    
+    # Handle special status changes
+    if new_status == AppointmentStatus.CANCELLED:
+        appointment.cancelled_at = datetime.now()
+        appointment.cancelled_by_user_id = current_user.id
+        if reason:
+            appointment.cancellation_reason = reason
+    
+    # Create history record
+    history = AppointmentHistory(
+        appointment_id=appointment_id,
+        changed_by_user_id=current_user.id,
+        field_name="status",
+        old_value=old_status.value,
+        new_value=new_status.value,
+        change_reason=reason
+    )
+    
+    db.add(history)
+    db.commit()
+    db.refresh(appointment)
+    
+    return {
+        "message": f"Estado de cita actualizado a {new_status.value}",
+        "appointment_id": appointment_id,
+        "old_status": old_status.value,
+        "new_status": new_status.value,
+        "updated_at": datetime.now().isoformat()
+    }
+
+@app.post("/appointments/{appointment_id}/confirm")
+async def confirm_appointment(
+    appointment_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user_object)
+):
+    """Confirm a scheduled appointment (doctor or admin only)"""
+    appointment = db.query(Appointment).filter(Appointment.id == appointment_id).first()
+    
+    if not appointment:
+        raise HTTPException(status_code=404, detail="Cita no encontrada")
+    
+    if appointment.status != AppointmentStatus.SCHEDULED:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Solo se pueden confirmar citas programadas. Estado actual: {appointment.status.value}"
+        )
+    
+    # Check permissions
+    can_confirm = False
+    if current_user.has_role("admin"):
+        can_confirm = True
+    elif current_user.has_role("doctor"):
+        doctor_profile = db.query(DoctorProfile).filter(
+            DoctorProfile.user_id == current_user.id,
+            DoctorProfile.is_active == True
+        ).first()
+        if doctor_profile and appointment.doctor_profile_id == doctor_profile.id:
+            can_confirm = True
+    
+    if not can_confirm:
+        raise HTTPException(status_code=403, detail="Solo el médico o administrador pueden confirmar citas")
+    
+    appointment.status = AppointmentStatus.CONFIRMED
+    
+    # Create history record
+    history = AppointmentHistory(
+        appointment_id=appointment_id,
+        changed_by_user_id=current_user.id,
+        field_name="status",
+        old_value=AppointmentStatus.SCHEDULED.value,
+        new_value=AppointmentStatus.CONFIRMED.value,
+        change_reason="Cita confirmada por el médico"
+    )
+    
+    db.add(history)
+    db.commit()
+    
+    return {"message": "Cita confirmada exitosamente", "status": "confirmed"}
+
+@app.post("/appointments/{appointment_id}/complete")
+async def complete_appointment(
+    appointment_id: int,
+    notes: str = None,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user_object)
+):
+    """Mark appointment as completed (doctor or admin only)"""
+    appointment = db.query(Appointment).filter(Appointment.id == appointment_id).first()
+    
+    if not appointment:
+        raise HTTPException(status_code=404, detail="Cita no encontrada")
+    
+    if appointment.status not in [AppointmentStatus.CONFIRMED, AppointmentStatus.IN_PROGRESS]:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Solo se pueden completar citas confirmadas o en curso. Estado actual: {appointment.status.value}"
+        )
+    
+    # Check permissions
+    can_complete = False
+    if current_user.has_role("admin"):
+        can_complete = True
+    elif current_user.has_role("doctor"):
+        doctor_profile = db.query(DoctorProfile).filter(
+            DoctorProfile.user_id == current_user.id,
+            DoctorProfile.is_active == True
+        ).first()
+        if doctor_profile and appointment.doctor_profile_id == doctor_profile.id:
+            can_complete = True
+    
+    if not can_complete:
+        raise HTTPException(status_code=403, detail="Solo el médico o administrador pueden completar citas")
+    
+    old_status = appointment.status
+    appointment.status = AppointmentStatus.COMPLETED
+    
+    if notes:
+        appointment.notes = notes
+    
+    # Create history record
+    history = AppointmentHistory(
+        appointment_id=appointment_id,
+        changed_by_user_id=current_user.id,
+        field_name="status",
+        old_value=old_status.value,
+        new_value=AppointmentStatus.COMPLETED.value,
+        change_reason=f"Cita completada. {notes if notes else ''}"
+    )
+    
+    db.add(history)
+    db.commit()
+    
+    return {"message": "Cita completada exitosamente", "status": "completed"}
+
+@app.post("/appointments/{appointment_id}/no-show")
+async def mark_no_show(
+    appointment_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user_object)
+):
+    """Mark appointment as no-show (doctor or admin only)"""
+    appointment = db.query(Appointment).filter(Appointment.id == appointment_id).first()
+    
+    if not appointment:
+        raise HTTPException(status_code=404, detail="Cita no encontrada")
+    
+    if appointment.status != AppointmentStatus.CONFIRMED:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Solo se pueden marcar como 'no show' las citas confirmadas. Estado actual: {appointment.status.value}"
+        )
+    
+    # Check permissions
+    can_mark = False
+    if current_user.has_role("admin"):
+        can_mark = True
+    elif current_user.has_role("doctor"):
+        doctor_profile = db.query(DoctorProfile).filter(
+            DoctorProfile.user_id == current_user.id,
+            DoctorProfile.is_active == True
+        ).first()
+        if doctor_profile and appointment.doctor_profile_id == doctor_profile.id:
+            can_mark = True
+    
+    if not can_mark:
+        raise HTTPException(status_code=403, detail="Solo el médico o administrador pueden marcar como 'no show'")
+    
+    appointment.status = AppointmentStatus.NO_SHOW
+    
+    # Create history record
+    history = AppointmentHistory(
+        appointment_id=appointment_id,
+        changed_by_user_id=current_user.id,
+        field_name="status",
+        old_value=AppointmentStatus.CONFIRMED.value,
+        new_value=AppointmentStatus.NO_SHOW.value,
+        change_reason="Paciente no se presentó a la cita"
+    )
+    
+    db.add(history)
+    db.commit()
+    
+    return {"message": "Cita marcada como 'no show' exitosamente", "status": "no_show"}
+
+@app.get("/appointments/{appointment_id}/history")
+async def get_appointment_history(
+    appointment_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user_object)
+):
+    """Get appointment change history"""
+    appointment = db.query(Appointment).filter(Appointment.id == appointment_id).first()
+    
+    if not appointment:
+        raise HTTPException(status_code=404, detail="Cita no encontrada")
+    
+    # Check permissions
+    can_view = False
+    if current_user.has_role("admin"):
+        can_view = True
+    elif current_user.has_role("doctor"):
+        doctor_profile = db.query(DoctorProfile).filter(
+            DoctorProfile.user_id == current_user.id,
+            DoctorProfile.is_active == True
+        ).first()
+        if doctor_profile and appointment.doctor_profile_id == doctor_profile.id:
+            can_view = True
+    elif appointment.patient_id == current_user.id:
+        can_view = True
+    
+    if not can_view:
+        raise HTTPException(status_code=403, detail="No tiene permisos para ver el historial de esta cita")
+    
+    history = db.query(AppointmentHistory).filter(
+        AppointmentHistory.appointment_id == appointment_id
+    ).order_by(AppointmentHistory.changed_at.desc()).all()
+    
+    history_records = []
+    for record in history:
+        changed_by = db.query(User).filter(User.id == record.changed_by_user_id).first()
+        history_records.append({
+            "id": record.id,
+            "changed_at": record.changed_at,
+            "changed_by": f"{changed_by.nombre} {changed_by.apellidos}" if changed_by else "Desconocido",
+            "field_name": record.field_name,
+            "old_value": record.old_value,
+            "new_value": record.new_value,
+            "change_reason": record.change_reason
+        })
+    
+    return {
+        "appointment_id": appointment_id,
+        "history": history_records
+    }
 
 if __name__ == "__main__":
     import uvicorn

@@ -1,4 +1,10 @@
-from .models import User, DoctorProfile, Doctor, UserRole, EspecialidadMedica, validate_spanish_dni, validate_numero_colegiado
+from .models import (
+    User, DoctorProfile, Doctor, UserRole, EspecialidadMedica,
+    validate_spanish_dni, validate_numero_colegiado,
+    # Appointment models
+    Appointment, DoctorAvailability, AppointmentHistory,
+    AppointmentStatus, AppointmentType, AppointmentPriority
+)
 
 __all__ = [
     "User",
@@ -7,5 +13,12 @@ __all__ = [
     "UserRole",
     "EspecialidadMedica",
     "validate_spanish_dni",
-    "validate_numero_colegiado"
+    "validate_numero_colegiado",
+    # Appointment models
+    "Appointment",
+    "DoctorAvailability", 
+    "AppointmentHistory",
+    "AppointmentStatus",
+    "AppointmentType",
+    "AppointmentPriority"
 ]

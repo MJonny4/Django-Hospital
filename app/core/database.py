@@ -4,7 +4,7 @@ from sqlalchemy.orm import sessionmaker
 import pymysql
 
 # Database configuration
-DATABASE_URL = "mysql+pymysql://mjonny4:mjonny4@localhost:3306/hospital"
+DATABASE_URL = "mysql+pymysql://mjonny4:mjonny4@localhost:3306/hospital?charset=utf8mb4"
 
 # Create SQLAlchemy engine
 engine = create_engine(
@@ -12,6 +12,7 @@ engine = create_engine(
     echo=True,  # This will log all SQL queries - useful for debugging
     pool_pre_ping=True,  # Verify connections before use
     pool_recycle=300,  # Refresh connections every 5 minutes
+    connect_args={"charset": "utf8mb4"}  # Ensure UTF-8 encoding for special characters
 )
 
 # Create SessionLocal class

@@ -1,0 +1,71 @@
+{% extends 'hospital/base.html' %}
+
+{% block title %}Registro - Hospital Management System{% endblock %}
+
+{% block page_title %}Registro de Usuario{% endblock %}
+
+{% block content %}
+    <form method="post">
+        {% csrf_token %}
+        
+        <h2>Crear Cuenta de Paciente</h2>
+        
+        <div>
+            <label for="dni">DNI:</label>
+            <input type="text" id="dni" name="dni" placeholder="12345678A" pattern="[0-9]{8}[A-Za-z]" required>
+            <small>Formato: 8 números + 1 letra (ej: 12345678A)</small>
+        </div>
+        
+        <div>
+            <label for="nombre">Nombre:</label>
+            <input type="text" id="nombre" name="nombre" required>
+        </div>
+        
+        <div>
+            <label for="apellidos">Apellidos:</label>
+            <input type="text" id="apellidos" name="apellidos" required>
+        </div>
+        
+        <div>
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" required>
+        </div>
+        
+        <div>
+            <label for="telefono">Teléfono:</label>
+            <input type="tel" id="telefono" name="telefono" placeholder="612345678" pattern="[679][0-9]{8}" required>
+            <small>Formato: números españoles (ej: 612345678)</small>
+        </div>
+        
+        <div>
+            <label for="direccion">Dirección:</label>
+            <input type="text" id="direccion" name="direccion" required>
+        </div>
+        
+        <div>
+            <label for="fecha_nacimiento">Fecha de Nacimiento:</label>
+            <input type="date" id="fecha_nacimiento" name="fecha_nacimiento" required>
+        </div>
+        
+        <div>
+            <label for="password">Contraseña:</label>
+            <input type="password" id="password" name="password" minlength="8" required>
+            <small>Mínimo 8 caracteres</small>
+        </div>
+        
+        <div>
+            <button type="submit">Registrarse</button>
+        </div>
+    </form>
+    
+    <hr>
+    
+    <h3>Información:</h3>
+    <ul>
+        <li>Esta página solo permite registro de <strong>pacientes</strong></li>
+        <li>Los médicos son registrados por administradores</li>
+        <li>Después del registro, serás redirigido automáticamente</li>
+    </ul>
+    
+    <p><a href="{% url 'hospital:login' %}">¿Ya tienes cuenta? Inicia sesión aquí</a></p>
+{% endblock %}

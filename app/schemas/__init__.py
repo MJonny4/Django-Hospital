@@ -1,7 +1,12 @@
 from .schemas import (
     UserRegister, UserLogin, UserResponse, Token, HomePageResponse,
     DoctorRegister, DoctorResponse, DoctorProfileResponse, 
-    AdminCreateUser, BackofficeStats
+    AdminCreateUser, BackofficeStats,
+    # Appointment schemas
+    DoctorAvailabilityCreate, DoctorAvailabilityResponse,
+    AppointmentCreate, AppointmentUpdate, AppointmentResponse,
+    AppointmentDetailedResponse, AppointmentListResponse,
+    AppointmentAvailabilityRequest, AppointmentTimeSlot, AppointmentAvailabilityResponse
 )
 
 __all__ = [
@@ -14,5 +19,16 @@ __all__ = [
     "DoctorResponse",
     "DoctorProfileResponse",
     "AdminCreateUser",
-    "BackofficeStats"
+    "BackofficeStats",
+    # Appointment schemas
+    "DoctorAvailabilityCreate",
+    "DoctorAvailabilityResponse",
+    "AppointmentCreate",
+    "AppointmentUpdate", 
+    "AppointmentResponse",
+    "AppointmentDetailedResponse",
+    "AppointmentListResponse",
+    "AppointmentAvailabilityRequest",
+    "AppointmentTimeSlot",
+    "AppointmentAvailabilityResponse"
 ]

@@ -1,0 +1,73 @@
+{% extends 'hospital/base.html' %}
+
+{% block title %}Iniciar Sesión - Hospital Management System{% endblock %}
+
+{% block page_title %}Iniciar Sesión{% endblock %}
+
+{% block content %}
+    <form method="post">
+        {% csrf_token %}
+        
+        <h2>Acceder al Sistema</h2>
+        
+        <div>
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" required>
+        </div>
+        
+        <div>
+            <label for="password">Contraseña:</label>
+            <input type="password" id="password" name="password" required>
+        </div>
+        
+        <div>
+            <button type="submit">Iniciar Sesión</button>
+        </div>
+    </form>
+    
+    <hr>
+    
+    <h3>Cuentas de Prueba:</h3>
+    <table border="1">
+        <tr>
+            <th>Rol</th>
+            <th>Email</th>
+            <th>Contraseña</th>
+            <th>Descripción</th>
+        </tr>
+        <tr>
+            <td>Admin</td>
+            <td>admin@hospital.com</td>
+            <td>password123</td>
+            <td>Acceso completo al sistema</td>
+        </tr>
+        <tr>
+            <td>Doctor</td>
+            <td>maria.gonzalez@hospital.com</td>
+            <td>password123</td>
+            <td>Cardióloga - Puede ver/confirmar citas</td>
+        </tr>
+        <tr>
+            <td>Doctor</td>
+            <td>antonio.ruiz@hospital.com</td>
+            <td>password123</td>
+            <td>Traumatólogo</td>
+        </tr>
+        <tr>
+            <td>Paciente</td>
+            <td>maria.garcia@email.com</td>
+            <td>password123</td>
+            <td>Paciente regular</td>
+        </tr>
+        <tr>
+            <td>Paciente</td>
+            <td>jose.martin@email.com</td>
+            <td>password123</td>
+            <td>Paciente regular</td>
+        </tr>
+    </table>
+    
+    <p><strong>Nota:</strong> Los médicos también tienen rol de paciente, por lo que pueden agendar citas con otros médicos.</p>
+    
+    <p><a href="{% url 'hospital:register' %}">¿No tienes cuenta? Regístrate aquí</a></p>
+{% endblock %}

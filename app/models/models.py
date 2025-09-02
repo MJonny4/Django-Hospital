@@ -1,10 +1,11 @@
 from sqlalchemy import Column, Integer, String, DateTime, Boolean, Text, ForeignKey, Enum
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
-from ..core.database import Base
+from app.core.database import Base
 import re
 import enum
 import json
+from datetime import datetime, timedelta
 
 # User role enum
 class UserRole(enum.Enum):
@@ -81,28 +82,54 @@ def validate_spanish_dni(dni: str) -> bool:
     
     return letter == expected_letter
 
-# Spanish Medical Specialties
+# Spanish Medical Specialties - Match database enum values exactly
 class EspecialidadMedica(enum.Enum):
     MEDICINA_GENERAL = "Medicina General"
-    CARDIOLOGIA = "Cardiología"
-    PEDIATRIA = "Pediatría"
-    GINECOLOGIA = "Ginecología y Obstetricia"
-    TRAUMATOLOGIA = "Traumatología y Cirugía Ortopédica"
-    NEUROLOGIA = "Neurología"
-    DERMATOLOGIA = "Dermatología"
-    OFTALMOLOGIA = "Oftalmología"
-    OTORRINOLARINGOLOGIA = "Otorrinolaringología"
-    UROLOGIA = "Urología"
-    PSIQUIATRIA = "Psiquiatría"
-    RADIOLOGIA = "Radiodiagnóstico"
-    ANESTESIOLOGIA = "Anestesiología y Reanimación"
+    CARDIOLOGIA = "Cardiologia"
+    PEDIATRIA = "Pediatria"
+    GINECOLOGIA = "Ginecologia y Obstetricia"
+    TRAUMATOLOGIA = "Traumatologia y Cirugia Ortopedica"
+    NEUROLOGIA = "Neurologia"
+    DERMATOLOGIA = "Dermatologia"
+    OFTALMOLOGIA = "Oftalmologia"
+    OTORRINOLARINGOLOGIA = "Otorrinolaringologia"
+    UROLOGIA = "Urologia"
+    PSIQUIATRIA = "Psiquiatria"
+    RADIOLOGIA = "Radiodiagnostico"
+    ANESTESIOLOGIA = "Anestesiologia y Reanimacion"
     MEDICINA_INTERNA = "Medicina Interna"
-    CIRUGIA_GENERAL = "Cirugía General y del Aparato Digestivo"
-    ENDOCRINOLOGIA = "Endocrinología y Nutrición"
-    NEUMOLOGIA = "Neumología"
+    CIRUGIA_GENERAL = "Cirugia General y del Aparato Digestivo"
+    ENDOCRINOLOGIA = "Endocrinologia y Nutricion"
+    NEUMOLOGIA = "Neumologia"
     GASTROENTEROLOGIA = "Aparato Digestivo"
-    HEMATOLOGIA = "Hematología y Hemoterapia"
-    ONCOLOGIA = "Oncología Médica"
+    HEMATOLOGIA = "Hematologia y Hemoterapia"
+    ONCOLOGIA = "Oncologia Medica"
+
+# Appointment Status
+class AppointmentStatus(enum.Enum):
+    SCHEDULED = "scheduled"      # Cita programada
+    CONFIRMED = "confirmed"      # Cita confirmada
+    IN_PROGRESS = "in_progress"  # En curso
+    COMPLETED = "completed"      # Completada
+    CANCELLED = "cancelled"      # Cancelada
+    NO_SHOW = "no_show"         # No se presentó
+    RESCHEDULED = "rescheduled"  # Reprogramada
+
+# Appointment Type
+class AppointmentType(enum.Enum):
+    CONSULTATION = "consultation"      # Consulta general
+    FOLLOW_UP = "follow_up"           # Seguimiento
+    EMERGENCY = "emergency"           # Urgencia
+    CHECK_UP = "check_up"             # Revisión
+    PROCEDURE = "procedure"           # Procedimiento
+    VACCINATION = "vaccination"       # Vacunación
+
+# Appointment Priority
+class AppointmentPriority(enum.Enum):
+    LOW = "low"        # Baja
+    NORMAL = "normal"  # Normal
+    HIGH = "high"      # Alta
+    URGENT = "urgent"  # Urgente
 
 class DoctorProfile(Base):
     __tablename__ = "doctor_profiles"
@@ -113,7 +140,7 @@ class DoctorProfile(Base):
     # Professional Information
     numero_colegiado = Column(String(20), unique=True, index=True, nullable=False)  # Medical license number
     colegio_medico = Column(String(200), nullable=False)  # e.g., "Colegio de Médicos de Madrid"
-    especialidad = Column(Enum(EspecialidadMedica), nullable=False)
+    especialidad = Column(Enum(EspecialidadMedica, values_callable=lambda x: [e.value for e in x]), nullable=False)
     subespecialidad = Column(String(200), nullable=True)  # Optional subspecialty
     
     # Education
@@ -158,7 +185,7 @@ class Doctor(Base):
     # Professional Information
     numero_colegiado = Column(String(20), unique=True, index=True, nullable=False)
     colegio_medico = Column(String(200), nullable=False)
-    especialidad = Column(Enum(EspecialidadMedica), nullable=False)
+    especialidad = Column(Enum(EspecialidadMedica, values_callable=lambda x: [e.value for e in x]), nullable=False)
     subespecialidad = Column(String(200), nullable=True)
     
     # Education
@@ -201,3 +228,142 @@ def validate_numero_colegiado(numero: str, provincia: str = None) -> bool:
         return False
     
     return True
+
+# Appointment Management Models
+
+class DoctorAvailability(Base):
+    __tablename__ = "doctor_availability"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    doctor_profile_id = Column(Integer, ForeignKey('doctor_profiles.id'), nullable=False)
+    
+    # Availability details
+    day_of_week = Column(Integer, nullable=False)  # 0=Monday, 6=Sunday
+    start_time = Column(String(5), nullable=False)  # Format: "09:00"
+    end_time = Column(String(5), nullable=False)    # Format: "17:00"
+    
+    # Slot configuration
+    slot_duration_minutes = Column(Integer, default=30, nullable=False)  # 30 min slots
+    buffer_minutes = Column(Integer, default=5, nullable=False)         # 5 min buffer
+    
+    # Status
+    is_active = Column(Boolean, default=True)
+    effective_from = Column(DateTime(timezone=True), server_default=func.now())
+    effective_until = Column(DateTime(timezone=True), nullable=True)
+    
+    # Relationships
+    doctor_profile = relationship("DoctorProfile", foreign_keys=[doctor_profile_id])
+
+class Appointment(Base):
+    __tablename__ = "appointments"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    
+    # Core appointment info
+    patient_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    doctor_profile_id = Column(Integer, ForeignKey('doctor_profiles.id'), nullable=False)
+    
+    # Scheduling details
+    appointment_date = Column(DateTime(timezone=True), nullable=False)
+    duration_minutes = Column(Integer, default=30, nullable=False)
+    
+    # Appointment metadata
+    appointment_type = Column(Enum(AppointmentType), default=AppointmentType.CONSULTATION)
+    priority = Column(Enum(AppointmentPriority), default=AppointmentPriority.NORMAL)
+    status = Column(Enum(AppointmentStatus), default=AppointmentStatus.SCHEDULED)
+    
+    # Details
+    reason = Column(Text, nullable=True)  # Motivo de la cita
+    notes = Column(Text, nullable=True)   # Notas adicionales
+    
+    # System fields
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    created_by_user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    
+    # Cancellation info
+    cancelled_at = Column(DateTime(timezone=True), nullable=True)
+    cancelled_by_user_id = Column(Integer, ForeignKey('users.id'), nullable=True)
+    cancellation_reason = Column(Text, nullable=True)
+    
+    # Relationships
+    patient = relationship("User", foreign_keys=[patient_id])
+    doctor_profile = relationship("DoctorProfile", foreign_keys=[doctor_profile_id])
+    created_by = relationship("User", foreign_keys=[created_by_user_id])
+    cancelled_by = relationship("User", foreign_keys=[cancelled_by_user_id])
+    
+    # Helper methods
+    def get_end_time(self):
+        """Calculate appointment end time"""
+        return self.appointment_date + timedelta(minutes=self.duration_minutes)
+    
+    def is_past_due(self):
+        """Check if appointment is past due"""
+        return self.appointment_date < datetime.now()
+    
+    def can_be_cancelled(self, hours_before=24):
+        """Check if appointment can be cancelled (24h before by default)"""
+        if self.status in [AppointmentStatus.COMPLETED, AppointmentStatus.CANCELLED]:
+            return False
+        
+        cancellation_deadline = self.appointment_date - timedelta(hours=hours_before)
+        return datetime.now() < cancellation_deadline
+    
+    def get_duration_display(self):
+        """Get human readable duration"""
+        hours = self.duration_minutes // 60
+        minutes = self.duration_minutes % 60
+        
+        if hours > 0:
+            return f"{hours}h {minutes}min" if minutes > 0 else f"{hours}h"
+        return f"{minutes}min"
+    
+    def validate_self_appointment(self):
+        """Prevent doctors from booking appointments with themselves"""
+        # Get the doctor's user ID
+        doctor_user_id = self.doctor_profile.user_id
+        
+        # Check if patient is the same as the doctor
+        if self.patient_id == doctor_user_id:
+            return False, "Los doctores no pueden programar citas consigo mismos"
+        
+        return True, None
+    
+    @staticmethod
+    def can_patient_book_with_doctor(patient_user_id, doctor_profile_id, db_session):
+        """Check if a patient can book an appointment with a specific doctor"""
+        from sqlalchemy.orm import Session
+        
+        # Get doctor's user ID
+        doctor_profile = db_session.query(DoctorProfile).filter(
+            DoctorProfile.id == doctor_profile_id
+        ).first()
+        
+        if not doctor_profile:
+            return False, "Médico no encontrado"
+        
+        # Check if patient is the same as doctor
+        if patient_user_id == doctor_profile.user_id:
+            return False, "Los doctores no pueden programar citas consigo mismos"
+        
+        return True, None
+
+class AppointmentHistory(Base):
+    __tablename__ = "appointment_history"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    appointment_id = Column(Integer, ForeignKey('appointments.id'), nullable=False)
+    
+    # Change tracking
+    changed_at = Column(DateTime(timezone=True), server_default=func.now())
+    changed_by_user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    
+    # What changed
+    field_name = Column(String(50), nullable=False)  # 'status', 'appointment_date', etc.
+    old_value = Column(Text, nullable=True)
+    new_value = Column(Text, nullable=True)
+    change_reason = Column(Text, nullable=True)
+    
+    # Relationships
+    appointment = relationship("Appointment", foreign_keys=[appointment_id])
+    changed_by = relationship("User", foreign_keys=[changed_by_user_id])

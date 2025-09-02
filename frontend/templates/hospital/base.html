@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Hospital Management System{% endblock %}</title>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav>
+        <ul>
+            {% if request.session.access_token %}
+                <!-- Logged in navigation -->
+                <li><a href="{% url 'hospital:home' %}">Inicio</a></li>
+                <li><a href="{% url 'hospital:profile' %}">Perfil</a></li>
+                <li><a href="{% url 'hospital:appointments' %}">Mis Citas</a></li>
+                <li><a href="{% url 'hospital:doctors_list' %}">Médicos</a></li>
+                
+                {% if 'admin' in request.session.user_data.roles %}
+                    <li><a href="{% url 'hospital:admin_panel' %}">Panel Admin</a></li>
+                {% endif %}
+                
+                {% if 'doctor' in request.session.user_data.roles %}
+                    <li><a href="{% url 'hospital:doctor_panel' %}">Panel Médico</a></li>
+                {% endif %}
+                
+                <li><a href="{% url 'hospital:logout' %}">Cerrar Sesión</a></li>
+                <li>Hola, {{ request.session.user_data.nombre }}</li>
+            {% else %}
+                <!-- Not logged in navigation -->
+                <li><a href="{% url 'hospital:home' %}">Inicio</a></li>
+                <li><a href="{% url 'hospital:about' %}">Acerca de</a></li>
+                <li><a href="{% url 'hospital:login' %}">Iniciar Sesión</a></li>
+                <li><a href="{% url 'hospital:register' %}">Registrarse</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+
+    <!-- Messages -->
+    {% if messages %}
+        <div id="messages">
+            {% for message in messages %}
+                <div class="message {{ message.tags }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Main Content -->
+    <main>
+        <h1>{% block page_title %}Hospital Management System{% endblock %}</h1>
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2024 Hospital Management System - FastAPI + Django Frontend Test</p>
+    </footer>
+</body>
+</html>

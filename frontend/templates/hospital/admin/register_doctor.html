@@ -1,0 +1,159 @@
+{% extends 'hospital/base.html' %}
+
+{% block title %}Registrar Médico - Panel Admin{% endblock %}
+
+{% block page_title %}Registrar Nuevo Médico{% endblock %}
+
+{% block content %}
+    <p><a href="{% url 'hospital:admin_panel' %}">← Volver al Panel Admin</a></p>
+    
+    <form method="post">
+        {% csrf_token %}
+        
+        <h2>Información Personal</h2>
+        
+        <div>
+            <label for="dni">DNI:</label>
+            <input type="text" id="dni" name="dni" placeholder="12345678A" pattern="[0-9]{8}[A-Za-z]" required>
+        </div>
+        
+        <div>
+            <label for="nombre">Nombre:</label>
+            <input type="text" id="nombre" name="nombre" required>
+        </div>
+        
+        <div>
+            <label for="apellidos">Apellidos:</label>
+            <input type="text" id="apellidos" name="apellidos" required>
+        </div>
+        
+        <div>
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" required>
+        </div>
+        
+        <div>
+            <label for="telefono">Teléfono:</label>
+            <input type="tel" id="telefono" name="telefono" placeholder="612345678" pattern="[679][0-9]{8}" required>
+        </div>
+        
+        <div>
+            <label for="fecha_nacimiento">Fecha de Nacimiento:</label>
+            <input type="date" id="fecha_nacimiento" name="fecha_nacimiento" required>
+        </div>
+        
+        <h2>Información Profesional</h2>
+        
+        <div>
+            <label for="numero_colegiado">Número de Colegiado:</label>
+            <input type="text" id="numero_colegiado" name="numero_colegiado" placeholder="280812345" required>
+        </div>
+        
+        <div>
+            <label for="colegio_medico">Colegio Médico:</label>
+            <input type="text" id="colegio_medico" name="colegio_medico" 
+                   value="Colegio Oficial de Médicos de Madrid" required>
+        </div>
+        
+        <div>
+            <label for="especialidad">Especialidad:</label>
+            <select id="especialidad" name="especialidad" required>
+                <option value="">Seleccione una especialidad</option>
+                <option value="MEDICINA_GENERAL">Medicina General</option>
+                <option value="CARDIOLOGIA">Cardiología</option>
+                <option value="PEDIATRIA">Pediatría</option>
+                <option value="GINECOLOGIA">Ginecología y Obstetricia</option>
+                <option value="TRAUMATOLOGIA">Traumatología y Cirugía Ortopédica</option>
+                <option value="NEUROLOGIA">Neurología</option>
+                <option value="DERMATOLOGIA">Dermatología</option>
+                <option value="OFTALMOLOGIA">Oftalmología</option>
+                <option value="OTORRINOLARINGOLOGIA">Otorrinolaringología</option>
+                <option value="UROLOGIA">Urología</option>
+                <option value="PSIQUIATRIA">Psiquiatría</option>
+                <option value="RADIOLOGIA">Radiodiagnóstico</option>
+                <option value="ANESTESIOLOGIA">Anestesiología y Reanimación</option>
+                <option value="MEDICINA_INTERNA">Medicina Interna</option>
+                <option value="CIRUGIA_GENERAL">Cirugía General y del Aparato Digestivo</option>
+                <option value="ENDOCRINOLOGIA">Endocrinología y Nutrición</option>
+                <option value="NEUMOLOGIA">Neumología</option>
+                <option value="GASTROENTEROLOGIA">Aparato Digestivo</option>
+                <option value="HEMATOLOGIA">Hematología y Hemoterapia</option>
+                <option value="ONCOLOGIA">Oncología Médica</option>
+            </select>
+        </div>
+        
+        <div>
+            <label for="subespecialidad">Subespecialidad (opcional):</label>
+            <input type="text" id="subespecialidad" name="subespecialidad" placeholder="Ej: Cardiología Intervencionista">
+        </div>
+        
+        <h2>Formación Académica</h2>
+        
+        <div>
+            <label for="universidad">Universidad:</label>
+            <input type="text" id="universidad" name="universidad" placeholder="Universidad Complutense de Madrid" required>
+        </div>
+        
+        <div>
+            <label for="ano_graduacion">Año de Graduación:</label>
+            <input type="number" id="ano_graduacion" name="ano_graduacion" min="1950" max="2024" required>
+        </div>
+        
+        <div>
+            <label for="titulo_especialista">Título de Especialista (opcional):</label>
+            <input type="text" id="titulo_especialista" name="titulo_especialista" 
+                   placeholder="Especialista en Cardiología">
+        </div>
+        
+        <h2>Información Laboral</h2>
+        
+        <div>
+            <label for="hospital_centro">Hospital/Centro:</label>
+            <input type="text" id="hospital_centro" name="hospital_centro" 
+                   placeholder="Hospital Universitario La Paz" required>
+        </div>
+        
+        <div>
+            <label for="departamento_servicio">Departamento/Servicio:</label>
+            <input type="text" id="departamento_servicio" name="departamento_servicio" 
+                   placeholder="Servicio de Cardiología" required>
+        </div>
+        
+        <div>
+            <label for="consulta_numero">Número de Consulta (opcional):</label>
+            <input type="text" id="consulta_numero" name="consulta_numero" placeholder="201">
+        </div>
+        
+        <div>
+            <label for="horario_consulta">Horario de Consulta (opcional):</label>
+            <textarea id="horario_consulta" name="horario_consulta" rows="2" 
+                      placeholder="Lunes a Viernes: 9:00-14:00"></textarea>
+        </div>
+        
+        <h2>Información Adicional</h2>
+        
+        <div>
+            <label for="idiomas">Idiomas (opcional):</label>
+            <input type="text" id="idiomas" name="idiomas" placeholder="Español, Inglés, Francés">
+        </div>
+        
+        <div>
+            <label for="biografia">Biografía Profesional (opcional):</label>
+            <textarea id="biografia" name="biografia" rows="3" 
+                      placeholder="Breve descripción de experiencia y especialización..."></textarea>
+        </div>
+        
+        <div>
+            <button type="submit">Registrar Médico</button>
+            <a href="{% url 'hospital:admin_panel' %}">Cancelar</a>
+        </div>
+    </form>
+    
+    <h3>Importante:</h3>
+    <ul>
+        <li>El médico registrado tendrá roles de <strong>paciente</strong> y <strong>doctor</strong></li>
+        <li>Se creará automáticamente una cuenta de usuario vinculada</li>
+        <li>La contraseña inicial será "password123" (debe cambiarla al primer acceso)</li>
+        <li>El médico podrá agendar citas con otros médicos pero no consigo mismo</li>
+    </ul>
+{% endblock %}

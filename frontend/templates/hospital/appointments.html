@@ -1,0 +1,78 @@
+{% extends 'hospital/base.html' %}
+
+{% block title %}Mis Citas - Hospital Management System{% endblock %}
+
+{% block page_title %}Mis Citas{% endblock %}
+
+{% block content %}
+    <p><a href="{% url 'hospital:create_appointment' %}">➕ Crear Nueva Cita</a></p>
+    
+    <h2>Lista de Citas ({{ appointments_data.total }} total)</h2>
+    
+    {% if appointments_data.appointments %}
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Fecha y Hora</th>
+                    <th>Médico</th>
+                    <th>Tipo</th>
+                    <th>Estado</th>
+                    <th>Motivo</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for appointment in appointments_data.appointments %}
+                <tr>
+                    <td>{{ appointment.id }}</td>
+                    <td>{{ appointment.appointment_date|date:"d/m/Y H:i" }}</td>
+                    <td>Médico ID: {{ appointment.doctor_profile_id }}</td>
+                    <td>{{ appointment.appointment_type }}</td>
+                    <td>
+                        <strong>
+                            {% if appointment.status == 'scheduled' %}📅 Programada
+                            {% elif appointment.status == 'confirmed' %}✅ Confirmada
+                            {% elif appointment.status == 'in_progress' %}🔄 En Curso
+                            {% elif appointment.status == 'completed' %}✅ Completada
+                            {% elif appointment.status == 'cancelled' %}❌ Cancelada
+                            {% elif appointment.status == 'no_show' %}❌ No Asistió
+                            {% elif appointment.status == 'rescheduled' %}📅 Reprogramada
+                            {% else %}{{ appointment.status }}
+                            {% endif %}
+                        </strong>
+                    </td>
+                    <td>{{ appointment.reason|default:"-" }}</td>
+                    <td>
+                        <a href="{% url 'hospital:appointment_detail' appointment.id %}">Ver</a>
+                        {% if appointment.status == 'scheduled' or appointment.status == 'confirmed' %}
+                            | 
+                            <form method="post" action="{% url 'hospital:cancel_appointment' appointment.id %}" style="display:inline;">
+                                {% csrf_token %}
+                                <input type="text" name="cancellation_reason" placeholder="Motivo (opcional)" size="20">
+                                <button type="submit" onclick="return confirm('¿Está seguro de cancelar esta cita?')">Cancelar</button>
+                            </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        
+        <p><strong>Página:</strong> {{ appointments_data.page }} | <strong>Tamaño:</strong> {{ appointments_data.size }}</p>
+        
+    {% else %}
+        <p>No tiene citas programadas.</p>
+        <p><a href="{% url 'hospital:create_appointment' %}">Crear su primera cita</a></p>
+    {% endif %}
+    
+    <h3>Estados de Citas:</h3>
+    <ul>
+        <li><strong>📅 Programada:</strong> Cita creada, esperando confirmación</li>
+        <li><strong>✅ Confirmada:</strong> Cita confirmada por el médico</li>
+        <li><strong>🔄 En Curso:</strong> Cita actualmente en desarrollo</li>
+        <li><strong>✅ Completada:</strong> Cita finalizada exitosamente</li>
+        <li><strong>❌ Cancelada:</strong> Cita cancelada</li>
+        <li><strong>❌ No Asistió:</strong> Paciente no se presentó</li>
+    </ul>
+{% endblock %}
