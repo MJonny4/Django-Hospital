@@ -4,93 +4,252 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Hospital Management System{% endblock %}</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    
+    <!-- Custom Hospital Theme -->
+    {% load static %}
+    <link href="{% static 'css/hospital-theme.css' %}" rel="stylesheet">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iOCIgZmlsbD0iIzQxNjlFMSIvPgo8cGF0aCBkPSJNMTYgOFYyNE0yNCAxNkg4IDE2IiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjMiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8L3N2Zz4K">
 </head>
 <body>
-    <!-- Navigation Bar -->
-    <nav>
-        <ul>
-            {% if request.session.access_token %}
-                <!-- Logged in navigation -->
-                <li><a href="{% url 'hospital:home' %}">Inicio</a></li>
-                <li><a href="{% url 'hospital:profile' %}">Perfil</a></li>
-                
-                <!-- Role-based navigation -->
-                {% if request.session.active_role == 'patient' %}
-                    <li><a href="{% url 'hospital:appointments' %}">Mis Citas</a></li>
-                    <li><a href="{% url 'hospital:create_appointment' %}">Nueva Cita</a></li>
-                    <li><a href="{% url 'hospital:doctors_list' %}">Médicos</a></li>
-                {% elif request.session.active_role == 'doctor' %}
-                    <li><a href="{% url 'hospital:appointments' %}">Citas de Pacientes</a></li>
-                    <li><a href="{% url 'hospital:doctor_panel' %}">Panel Médico</a></li>
-                {% elif request.session.active_role == 'admin' %}
-                    <li><a href="{% url 'hospital:admin_panel' %}">Panel Admin</a></li>
-                    <li><a href="{% url 'hospital:appointments' %}">Todas las Citas</a></li>
-                {% endif %}
-                
-                <!-- Role Switcher -->
-                {% if request.session.user_data.roles|length > 1 %}
-                    <li style="border-left: 1px solid #ccc; padding-left: 10px;">
-                        <form method="post" action="{% url 'hospital:switch_role' %}" style="display: inline;">
-                            {% csrf_token %}
-                            <label for="role-select" style="font-size: 12px;">Actuar como:</label>
-                            <select name="role" id="role-select" onchange="this.form.submit()" style="font-size: 12px;">
-                                {% for role in request.session.user_data.roles %}
-                                    <option value="{{ role }}" {% if role == request.session.active_role %}selected{% endif %}>
-                                        {% if role == 'patient' %}👤 Paciente
-                                        {% elif role == 'doctor' %}👨‍⚕️ Médico  
-                                        {% elif role == 'admin' %}⚙️ Admin
-                                        {% else %}{{ role }}{% endif %}
-                                    </option>
-                                {% endfor %}
-                            </select>
-                        </form>
-                    </li>
-                {% endif %}
-                
-                <li><a href="{% url 'hospital:logout' %}">Cerrar Sesión</a></li>
-                <li>
-                    Hola, {{ request.session.user_data.nombre }}
-                    {% if request.session.user_data.roles|length > 1 %}
-                        <br><small style="color: #666;">
-                            Como: 
-                            {% if request.session.active_role == 'patient' %}👤 Paciente
-                            {% elif request.session.active_role == 'doctor' %}👨‍⚕️ Médico
-                            {% elif request.session.active_role == 'admin' %}⚙️ Admin
-                            {% else %}{{ request.session.active_role }}{% endif %}
-                        </small>
+    <!-- Animated Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-hospital fixed-top">
+        <div class="container-fluid">
+            <!-- Brand -->
+            <a class="navbar-brand d-flex align-items-center" href="{% url 'hospital:home' %}">
+                <i class="bi bi-hospital me-2"></i>
+                <span>Hospital System</span>
+            </a>
+
+            <!-- Mobile menu toggle -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" 
+                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation" style="border: none;">
+                <span class="navbar-toggler-icon" style="background-image: url('data:image/svg+xml;charset=utf8,<svg viewBox=%220 0 30 30%22 xmlns=%22http://www.w3.org/2000/svg%22><path stroke=%22rgba%28255, 255, 255, 0.9%29%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-miterlimit=%2210%22 d=%22M4 7h22M4 15h22M4 23h22%22/></svg>');"></span>
+            </button>
+
+            <!-- Navigation Items -->
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    {% if request.session.access_token %}
+                        <!-- Logged in navigation -->
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'hospital:home' %}">
+                                <i class="bi bi-house-door me-1"></i>Inicio
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'hospital:profile' %}">
+                                <i class="bi bi-person me-1"></i>Perfil
+                            </a>
+                        </li>
+                        
+                        <!-- Role-based navigation -->
+                        {% if request.session.active_role == 'patient' %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'hospital:appointments' %}">
+                                    <i class="bi bi-calendar-check me-1"></i>Mis Citas
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'hospital:create_appointment' %}">
+                                    <i class="bi bi-calendar-plus me-1"></i>Nueva Cita
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'hospital:doctors_list' %}">
+                                    <i class="bi bi-person-badge me-1"></i>Médicos
+                                </a>
+                            </li>
+                        {% elif request.session.active_role == 'doctor' %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'hospital:appointments' %}">
+                                    <i class="bi bi-calendar-check me-1"></i>Citas de Pacientes
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'hospital:doctor_panel' %}">
+                                    <i class="bi bi-clipboard-data me-1"></i>Panel Médico
+                                </a>
+                            </li>
+                        {% elif request.session.active_role == 'admin' %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'hospital:admin_panel' %}">
+                                    <i class="bi bi-gear me-1"></i>Panel Admin
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'hospital:appointments' %}">
+                                    <i class="bi bi-calendar3 me-1"></i>Todas las Citas
+                                </a>
+                            </li>
+                        {% endif %}
+                        
+                        <!-- Role Switcher -->
+                        {% if request.session.user_data.roles|length > 1 %}
+                            <li class="nav-item">
+                                <div class="role-switcher me-3">
+                                    <form method="post" action="{% url 'hospital:switch_role' %}" class="d-flex align-items-center">
+                                        {% csrf_token %}
+                                        <label for="role-select" class="me-2 mb-0" style="font-size: 0.85rem; color: rgba(255,255,255,0.8);">Actuar como:</label>
+                                        <select name="role" id="role-select" onchange="this.form.submit()" class="form-select form-select-sm" style="background-color: transparent; border: 1px solid rgba(255,255,255,0.3); color: white; width: auto;">
+                                            {% for role in request.session.user_data.roles %}
+                                                <option value="{{ role }}" {% if role == request.session.active_role %}selected{% endif %} style="background-color: var(--royal-blue-dark); color: white;">
+                                                    {% if role == 'patient' %}👤 Paciente
+                                                    {% elif role == 'doctor' %}👨‍⚕️ Médico  
+                                                    {% elif role == 'admin' %}⚙️ Admin
+                                                    {% else %}{{ role }}{% endif %}
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+                                    </form>
+                                </div>
+                            </li>
+                        {% endif %}
+                        
+                        <!-- User Info -->
+                        <li class="nav-item">
+                            <div class="user-info text-center me-3">
+                                <div class="fw-semibold">{{ request.session.user_data.nombre }}</div>
+                                {% if request.session.user_data.roles|length > 1 %}
+                                    <small class="opacity-75">
+                                        {% if request.session.active_role == 'patient' %}👤 Paciente
+                                        {% elif request.session.active_role == 'doctor' %}👨‍⚕️ Médico
+                                        {% elif request.session.active_role == 'admin' %}⚙️ Admin
+                                        {% else %}{{ request.session.active_role }}{% endif %}
+                                    </small>
+                                {% endif %}
+                            </div>
+                        </li>
+                        
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'hospital:logout' %}">
+                                <i class="bi bi-box-arrow-right me-1"></i>Cerrar Sesión
+                            </a>
+                        </li>
+                    {% else %}
+                        <!-- Not logged in navigation -->
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'hospital:home' %}">
+                                <i class="bi bi-house-door me-1"></i>Inicio
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'hospital:about' %}">
+                                <i class="bi bi-info-circle me-1"></i>Acerca de
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'hospital:login' %}">
+                                <i class="bi bi-box-arrow-in-right me-1"></i>Iniciar Sesión
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link btn btn-outline-light btn-sm ms-2" href="{% url 'hospital:register' %}">
+                                <i class="bi bi-person-plus me-1"></i>Registrarse
+                            </a>
+                        </li>
                     {% endif %}
-                </li>
-            {% else %}
-                <!-- Not logged in navigation -->
-                <li><a href="{% url 'hospital:home' %}">Inicio</a></li>
-                <li><a href="{% url 'hospital:about' %}">Acerca de</a></li>
-                <li><a href="{% url 'hospital:login' %}">Iniciar Sesión</a></li>
-                <li><a href="{% url 'hospital:register' %}">Registrarse</a></li>
-            {% endif %}
-        </ul>
+                </ul>
+            </div>
+        </div>
     </nav>
 
-    <!-- Messages -->
-    {% if messages %}
-        <div id="messages">
-            {% for message in messages %}
-                <div class="message {{ message.tags }}">
-                    {{ message }}
+    <!-- Main Content Container -->
+    <div class="main-content" style="margin-top: 80px;">
+        <div class="container-fluid">
+            <!-- Messages -->
+            {% if messages %}
+                <div class="row">
+                    <div class="col-12">
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                <div class="d-flex align-items-center">
+                                    {% if message.tags == 'success' %}
+                                        <i class="bi bi-check-circle-fill me-2"></i>
+                                    {% elif message.tags == 'error' or message.tags == 'danger' %}
+                                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                    {% elif message.tags == 'warning' %}
+                                        <i class="bi bi-exclamation-circle-fill me-2"></i>
+                                    {% else %}
+                                        <i class="bi bi-info-circle-fill me-2"></i>
+                                    {% endif %}
+                                    <div>{{ message }}</div>
+                                </div>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    </div>
                 </div>
-            {% endfor %}
-        </div>
-    {% endif %}
+            {% endif %}
 
-    <!-- Main Content -->
-    <main>
-        <h1>{% block page_title %}Hospital Management System{% endblock %}</h1>
-        {% block content %}
-        {% endblock %}
-    </main>
+            <!-- Page Title -->
+            <div class="row">
+                <div class="col-12">
+                    <h1 class="page-title fade-in-up">{% block page_title %}Hospital Management System{% endblock %}</h1>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="fade-in-up">
+                        {% block content %}
+                        {% endblock %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Footer -->
-    <footer>
-        <p>&copy; 2024 Hospital Management System - FastAPI + Django Frontend Test</p>
+    <footer class="footer text-center">
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    <p class="mb-0">
+                        <i class="bi bi-heart-pulse me-2"></i>
+                        &copy; 2024 Hospital Management System - Sistema Avanzado de Gestión Hospitalaria
+                    </p>
+                    <small class="opacity-75">FastAPI Backend + Django Frontend</small>
+                </div>
+            </div>
+        </div>
     </footer>
+
+    <!-- Bootstrap 5 JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+    
+    <!-- Custom JavaScript -->
+    <script>
+        // Navbar scroll effect
+        window.addEventListener('scroll', function() {
+            const navbar = document.querySelector('.navbar-hospital');
+            if (window.scrollY > 50) {
+                navbar.style.backgroundColor = 'rgba(30, 58, 138, 0.95)';
+                navbar.style.backdropFilter = 'blur(15px)';
+            } else {
+                navbar.style.backgroundColor = '';
+                navbar.style.backdropFilter = 'blur(10px)';
+            }
+        });
+
+        // Add fade-in animation to cards
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('.card');
+            cards.forEach((card, index) => {
+                card.style.animationDelay = `${index * 0.1}s`;
+                card.classList.add('fade-in-up');
+            });
+        });
+    </script>
+
+    {% block extra_js %}{% endblock %}
 </body>
 </html>

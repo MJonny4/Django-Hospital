@@ -2,160 +2,327 @@
 
 {% block title %}Crear Cita - Hospital Management System{% endblock %}
 
-{% block page_title %}Crear Nueva Cita{% endblock %}
+{% block page_title %}
+    <i class="bi bi-calendar-plus me-3"></i>Crear Nueva Cita Médica
+{% endblock %}
 
 {% block content %}
-    <form method="post" onsubmit="return validateAppointmentForm()">
-        {% csrf_token %}
-        
-        <h2>Programar Cita Médica</h2>
-        
-        {% if not doctors %}
-            <div style="background-color: #fff3cd; border: 1px solid #ffeaa7; padding: 10px; margin: 10px 0;">
-                <strong>⚠️ Aviso:</strong> No hay médicos disponibles para programar citas. 
-                Esto puede deberse a que no puede programar citas consigo mismo.
+<div class="row">
+    <!-- Main Form Column -->
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h4 class="mb-0">
+                    <i class="bi bi-clipboard-pulse me-2"></i>Programar Cita Médica
+                </h4>
             </div>
-        {% endif %}
-        
-        <div>
-            <label for="doctor_profile_id">Médico:</label>
-            <select id="doctor_profile_id" name="doctor_profile_id" required {% if not doctors %}disabled{% endif %}>
-                <option value="">{% if doctors %}Seleccione un médico{% else %}No hay médicos disponibles{% endif %}</option>
-                {% for doctor in doctors %}
-                <option value="{{ doctor.profile_id }}" data-doctor-user-id="{{ doctor.id }}" {% if selected_doctor_id and doctor.profile_id == selected_doctor_id %}selected{% endif %}>
-                    {{ doctor.nombre }} {{ doctor.apellidos }} - {{ doctor.especialidad }} ({{ doctor.hospital_centro }})
-                </option>
-                {% endfor %}
-            </select>
-        </div>
-        
-        <div>
-            <label for="appointment_date">Fecha y Hora:</label>
-            <input type="datetime-local" id="appointment_date" name="appointment_date" required>
-            <small>Formato: YYYY-MM-DD HH:MM</small>
-        </div>
-        
-        <div>
-            <label for="duration_minutes">Duración (minutos):</label>
-            <select id="duration_minutes" name="duration_minutes">
-                <option value="15">15 minutos</option>
-                <option value="20">20 minutos</option>
-                <option value="30" selected>30 minutos</option>
-                <option value="45">45 minutos</option>
-                <option value="60">60 minutos</option>
-            </select>
-        </div>
-        
-        <div>
-            <label for="appointment_type">Tipo de Cita:</label>
-            <select id="appointment_type" name="appointment_type">
-                <option value="consultation" selected>Consulta</option>
-                <option value="follow_up">Seguimiento</option>
-                <option value="emergency">Urgencia</option>
-                <option value="check_up">Revisión</option>
-                <option value="procedure">Procedimiento</option>
-                <option value="vaccination">Vacunación</option>
-            </select>
-        </div>
-        
-        <div>
-            <label for="priority">Prioridad:</label>
-            <select id="priority" name="priority">
-                <option value="low">Baja</option>
-                <option value="normal" selected>Normal</option>
-                <option value="high">Alta</option>
-                <option value="urgent">Urgente</option>
-            </select>
-        </div>
-        
-        <div>
-            <label for="reason">Motivo de la Cita:</label>
-            <textarea id="reason" name="reason" rows="3" placeholder="Describa el motivo de la consulta..."></textarea>
-        </div>
-        
-        <div>
-            <label for="notes">Notas Adicionales:</label>
-            <textarea id="notes" name="notes" rows="2" placeholder="Información adicional relevante..."></textarea>
-        </div>
-        
-        <div>
-            <button type="submit" {% if not doctors %}disabled{% endif %}>
-                {% if doctors %}Crear Cita{% else %}No se pueden crear citas{% endif %}
-            </button>
-            <a href="{% url 'hospital:appointments' %}">Cancelar</a>
-        </div>
-    </form>
-    
-    <hr>
-    
-    <h3>Médicos Disponibles:</h3>
-    {% if doctors %}
-        <table border="1">
-            <thead>
-                <tr>
-                    <th>Nombre</th>
-                    <th>Especialidad</th>
-                    <th>Hospital</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for doctor in doctors %}
-                <tr>
-                    <td>{{ doctor.nombre }} {{ doctor.apellidos }}</td>
-                    <td>{{ doctor.especialidad }}</td>
-                    <td>{{ doctor.hospital_centro }}</td>
-                    <td>
-                        <a href="{% url 'hospital:doctor_detail' doctor.id %}" target="_blank">Ver Perfil</a>
-                        | <a href="#" onclick="selectDoctor({{ doctor.profile_id }}, '{{ doctor.nombre }} {{ doctor.apellidos }}')">Seleccionar</a>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    {% else %}
-        <p>No hay médicos disponibles en este momento.</p>
-    {% endif %}
-    
-    <h3>Importante:</h3>
-    <ul>
-        <li>Las citas deben programarse con al menos 2 horas de anticipación</li>
-        <li>No se pueden programar citas en el pasado</li>
-        <li>Verifique la disponibilidad del médico antes de enviar</li>
-        <li>Las citas quedan en estado "Programada" hasta confirmación del médico</li>
-    </ul>
+            <div class="card-body">
+                {% if not doctors %}
+                    <div class="alert alert-warning d-flex align-items-center" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        <div>
+                            <strong>Aviso:</strong> No hay médicos disponibles para programar citas. 
+                            Esto puede deberse a que no puede programar citas consigo mismo.
+                        </div>
+                    </div>
+                {% endif %}
 
-    <script>
-        function selectDoctor(doctorId, doctorName) {
-            document.getElementById('doctor_profile_id').value = doctorId;
-            alert('Médico seleccionado: ' + doctorName);
-        }
+                <form method="post" onsubmit="return validateAppointmentForm()" class="needs-validation" novalidate>
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <!-- Doctor Selection -->
+                        <div class="col-md-12 mb-3">
+                            <label for="doctor_profile_id" class="form-label">
+                                <i class="bi bi-person-badge me-1"></i>Seleccionar Médico
+                            </label>
+                            <select class="form-select" id="doctor_profile_id" name="doctor_profile_id" required {% if not doctors %}disabled{% endif %}>
+                                <option value="">{% if doctors %}Seleccione un médico...{% else %}No hay médicos disponibles{% endif %}</option>
+                                {% for doctor in doctors %}
+                                <option value="{{ doctor.profile_id }}" data-doctor-user-id="{{ doctor.id }}" 
+                                        {% if selected_doctor_id and doctor.profile_id == selected_doctor_id %}selected{% endif %}
+                                        data-specialty="{{ doctor.especialidad }}" data-hospital="{{ doctor.hospital_centro }}">
+                                    Dr. {{ doctor.nombre }} {{ doctor.apellidos }} - {{ doctor.especialidad }} ({{ doctor.hospital_centro }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <div class="invalid-feedback">
+                                Por favor seleccione un médico.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <!-- Date and Time -->
+                        <div class="col-md-6 mb-3">
+                            <label for="appointment_date" class="form-label">
+                                <i class="bi bi-calendar3 me-1"></i>Fecha y Hora
+                            </label>
+                            <input type="datetime-local" class="form-control" id="appointment_date" name="appointment_date" required>
+                            <div class="form-text">Mínimo 2 horas de anticipación</div>
+                            <div class="invalid-feedback">
+                                Por favor seleccione fecha y hora.
+                            </div>
+                        </div>
+
+                        <!-- Duration -->
+                        <div class="col-md-6 mb-3">
+                            <label for="duration_minutes" class="form-label">
+                                <i class="bi bi-clock me-1"></i>Duración
+                            </label>
+                            <select class="form-select" id="duration_minutes" name="duration_minutes">
+                                <option value="15">15 minutos</option>
+                                <option value="20">20 minutos</option>
+                                <option value="30" selected>30 minutos</option>
+                                <option value="45">45 minutos</option>
+                                <option value="60">60 minutos</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <!-- Appointment Type -->
+                        <div class="col-md-6 mb-3">
+                            <label for="appointment_type" class="form-label">
+                                <i class="bi bi-tag me-1"></i>Tipo de Cita
+                            </label>
+                            <select class="form-select" id="appointment_type" name="appointment_type">
+                                <option value="consultation" selected>🩺 Consulta General</option>
+                                <option value="follow_up">🔄 Seguimiento</option>
+                                <option value="emergency">🚨 Urgencia</option>
+                                <option value="check_up">✅ Revisión</option>
+                                <option value="procedure">⚕️ Procedimiento</option>
+                                <option value="vaccination">💉 Vacunación</option>
+                            </select>
+                        </div>
+
+                        <!-- Priority -->
+                        <div class="col-md-6 mb-3">
+                            <label for="priority" class="form-label">
+                                <i class="bi bi-flag me-1"></i>Prioridad
+                            </label>
+                            <select class="form-select" id="priority" name="priority">
+                                <option value="low">🟢 Baja</option>
+                                <option value="normal" selected>🟡 Normal</option>
+                                <option value="high">🟠 Alta</option>
+                                <option value="urgent">🔴 Urgente</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Reason -->
+                    <div class="mb-3">
+                        <label for="reason" class="form-label">
+                            <i class="bi bi-chat-text me-1"></i>Motivo de la Cita
+                        </label>
+                        <textarea class="form-control" id="reason" name="reason" rows="3" 
+                                  placeholder="Describa el motivo de la consulta..."></textarea>
+                        <div class="form-text">Proporcione detalles sobre el motivo de su visita</div>
+                    </div>
+
+                    <!-- Notes -->
+                    <div class="mb-4">
+                        <label for="notes" class="form-label">
+                            <i class="bi bi-journal-text me-1"></i>Notas Adicionales
+                        </label>
+                        <textarea class="form-control" id="notes" name="notes" rows="2" 
+                                  placeholder="Información adicional relevante..."></textarea>
+                        <div class="form-text">Cualquier información adicional que considere importante</div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{% url 'hospital:appointments' %}" class="btn btn-outline-secondary me-md-2">
+                            <i class="bi bi-arrow-left me-1"></i>Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary" {% if not doctors %}disabled{% endif %}>
+                            <i class="bi bi-check-circle me-1"></i>
+                            {% if doctors %}Crear Cita{% else %}No se pueden crear citas{% endif %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Doctors List Sidebar -->
+    <div class="col-lg-4">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-people me-2"></i>Médicos Disponibles
+                </h5>
+            </div>
+            <div class="card-body" style="max-height: 600px; overflow-y: auto;">
+                {% if doctors %}
+                    {% for doctor in doctors %}
+                    <div class="card mb-2 border-0 bg-light">
+                        <div class="card-body p-3">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="flex-grow-1">
+                                    <h6 class="card-title mb-1">
+                                        Dr. {{ doctor.nombre }} {{ doctor.apellidos }}
+                                    </h6>
+                                    <p class="card-text text-muted mb-1">
+                                        <i class="bi bi-activity me-1"></i>{{ doctor.especialidad }}
+                                    </p>
+                                    <p class="card-text text-muted mb-2">
+                                        <i class="bi bi-geo-alt me-1"></i>{{ doctor.hospital_centro }}
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="btn-group w-100" role="group">
+                                <a href="{% url 'hospital:doctor_detail' doctor.id %}" target="_blank" 
+                                   class="btn btn-outline-primary btn-sm">
+                                    <i class="bi bi-eye me-1"></i>Ver Perfil
+                                </a>
+                                <button type="button" class="btn btn-primary btn-sm" 
+                                        onclick="selectDoctor({{ doctor.profile_id }}, '{{ doctor.nombre }} {{ doctor.apellidos }}')">
+                                    <i class="bi bi-check me-1"></i>Seleccionar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center text-muted">
+                        <i class="bi bi-person-x display-4"></i>
+                        <p class="mt-2">No hay médicos disponibles en este momento.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Important Information -->
+        <div class="card shadow-sm mt-4">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="bi bi-info-circle me-2"></i>Información Importante
+                </h6>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2">
+                        <i class="bi bi-clock-history text-primary me-2"></i>
+                        Las citas deben programarse con al menos 2 horas de anticipación
+                    </li>
+                    <li class="mb-2">
+                        <i class="bi bi-calendar-x text-warning me-2"></i>
+                        No se pueden programar citas en el pasado
+                    </li>
+                    <li class="mb-2">
+                        <i class="bi bi-calendar-check text-success me-2"></i>
+                        Verifique la disponibilidad del médico antes de enviar
+                    </li>
+                    <li>
+                        <i class="bi bi-hourglass-split text-info me-2"></i>
+                        Las citas quedan en estado "Programada" hasta confirmación del médico
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Form validation
+    (function() {
+        'use strict';
+        window.addEventListener('load', function() {
+            var forms = document.getElementsByClassName('needs-validation');
+            var validation = Array.prototype.filter.call(forms, function(form) {
+                form.addEventListener('submit', function(event) {
+                    if (form.checkValidity() === false) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                }, false);
+            });
+        }, false);
+    })();
+
+    function selectDoctor(doctorId, doctorName) {
+        const doctorSelect = document.getElementById('doctor_profile_id');
+        doctorSelect.value = doctorId;
+        doctorSelect.dispatchEvent(new Event('change'));
         
-        function validateAppointmentForm() {
-            const doctorSelect = document.getElementById('doctor_profile_id');
-            const selectedOption = doctorSelect.options[doctorSelect.selectedIndex];
-            const currentUserId = {{ request.session.user_data.id|default:0 }};
-            
-            if (selectedOption && selectedOption.dataset.doctorUserId) {
-                const selectedDoctorUserId = parseInt(selectedOption.dataset.doctorUserId);
-                if (selectedDoctorUserId === currentUserId) {
-                    alert('⚠️ Error: No puede programar una cita consigo mismo.');
-                    return false;
-                }
-            }
-            
-            if (!doctorSelect.value) {
-                alert('⚠️ Debe seleccionar un médico para continuar.');
+        // Show success toast
+        const toast = document.createElement('div');
+        toast.className = 'toast position-fixed top-0 end-0 m-3';
+        toast.setAttribute('role', 'alert');
+        toast.innerHTML = `
+            <div class="toast-header">
+                <i class="bi bi-check-circle-fill text-success me-2"></i>
+                <strong class="me-auto">Médico Seleccionado</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+            </div>
+            <div class="toast-body">
+                ${doctorName} ha sido seleccionado
+            </div>
+        `;
+        document.body.appendChild(toast);
+        const bsToast = new bootstrap.Toast(toast);
+        bsToast.show();
+        
+        // Remove toast after it's hidden
+        toast.addEventListener('hidden.bs.toast', function() {
+            document.body.removeChild(toast);
+        });
+    }
+    
+    function validateAppointmentForm() {
+        const doctorSelect = document.getElementById('doctor_profile_id');
+        const selectedOption = doctorSelect.options[doctorSelect.selectedIndex];
+        const currentUserId = {{ request.session.user_data.id|default:0 }};
+        
+        if (selectedOption && selectedOption.dataset.doctorUserId) {
+            const selectedDoctorUserId = parseInt(selectedOption.dataset.doctorUserId);
+            if (selectedDoctorUserId === currentUserId) {
+                const modal = new bootstrap.Modal(document.createElement('div'));
+                modal._element.innerHTML = `
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">
+                                    <i class="bi bi-exclamation-triangle text-warning me-2"></i>Error de Validación
+                                </h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                No puede programar una cita consigo mismo.
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Entendido</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(modal._element);
+                modal.show();
+                modal._element.addEventListener('hidden.bs.modal', function() {
+                    document.body.removeChild(modal._element);
+                });
                 return false;
             }
-            
-            return true;
         }
         
-        // Set minimum date to 2 hours from now
+        if (!doctorSelect.value) {
+            doctorSelect.focus();
+            return false;
+        }
+        
+        return true;
+    }
+    
+    // Set minimum date to 2 hours from now
+    document.addEventListener('DOMContentLoaded', function() {
         const now = new Date();
         now.setHours(now.getHours() + 2);
         const minDateTime = now.toISOString().slice(0, 16);
         document.getElementById('appointment_date').min = minDateTime;
-    </script>
+    });
+</script>
 {% endblock %}

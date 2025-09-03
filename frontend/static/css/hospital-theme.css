@@ -1,0 +1,304 @@
+/* Hospital Royal Blue Theme */
+:root {
+  --royal-blue: #4169E1;
+  --royal-blue-dark: #1E3A8A;
+  --royal-blue-light: #6495ED;
+  --light-gray: #F8F9FA;
+  --white: #FFFFFF;
+  --text-dark: #2D3748;
+  --border-color: #E2E8F0;
+  --success: #10B981;
+  --warning: #F59E0B;
+  --danger: #EF4444;
+}
+
+/* Override Bootstrap primary color with royal blue */
+.btn-primary {
+  background-color: var(--royal-blue);
+  border-color: var(--royal-blue);
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+  background-color: var(--royal-blue-dark);
+  border-color: var(--royal-blue-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(65, 105, 225, 0.3);
+}
+
+.btn-outline-primary {
+  color: var(--royal-blue);
+  border-color: var(--royal-blue);
+}
+
+.btn-outline-primary:hover {
+  background-color: var(--royal-blue);
+  border-color: var(--royal-blue);
+}
+
+/* Body and background */
+body {
+  background-color: var(--light-gray);
+  color: var(--text-dark);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Animated Navbar */
+.navbar-hospital {
+  background: linear-gradient(135deg, var(--royal-blue) 0%, var(--royal-blue-dark) 100%);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 20px rgba(65, 105, 225, 0.1);
+}
+
+.navbar-hospital .navbar-brand {
+  color: var(--white) !important;
+  font-weight: 600;
+  font-size: 1.5rem;
+  transition: transform 0.3s ease;
+}
+
+.navbar-hospital .navbar-brand:hover {
+  transform: scale(1.05);
+}
+
+.navbar-hospital .navbar-nav .nav-link {
+  color: rgba(255, 255, 255, 0.9) !important;
+  margin: 0 8px;
+  padding: 8px 16px !important;
+  border-radius: 20px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.navbar-hospital .navbar-nav .nav-link:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+  color: var(--white) !important;
+  transform: translateY(-2px);
+}
+
+.navbar-hospital .navbar-nav .nav-link::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.navbar-hospital .navbar-nav .nav-link:hover::before {
+  left: 100%;
+}
+
+/* Role switcher styling */
+.role-switcher {
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 15px;
+  padding: 8px 12px;
+}
+
+.role-switcher select {
+  background-color: transparent;
+  border: none;
+  color: var(--white);
+  font-size: 0.9rem;
+}
+
+.role-switcher select:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3);
+}
+
+/* User info styling */
+.user-info {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.9rem;
+  padding: 8px 12px;
+}
+
+/* Cards and content */
+.card {
+  border: none;
+  border-radius: 15px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  background-color: var(--white);
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+}
+
+.card-header {
+  background: linear-gradient(135deg, var(--royal-blue-light) 0%, var(--royal-blue) 100%);
+  color: var(--white);
+  border-radius: 15px 15px 0 0 !important;
+  border-bottom: none;
+  padding: 1.25rem;
+}
+
+/* Forms */
+.form-control {
+  border: 2px solid var(--border-color);
+  border-radius: 10px;
+  padding: 12px 16px;
+  transition: all 0.3s ease;
+  background-color: var(--white);
+}
+
+.form-control:focus {
+  border-color: var(--royal-blue);
+  box-shadow: 0 0 0 0.2rem rgba(65, 105, 225, 0.25);
+  background-color: var(--white);
+}
+
+.form-label {
+  font-weight: 600;
+  color: var(--text-dark);
+  margin-bottom: 8px;
+}
+
+/* Tables */
+.table {
+  background-color: var(--white);
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.table thead th {
+  background: linear-gradient(135deg, var(--royal-blue-light) 0%, var(--royal-blue) 100%);
+  color: var(--white);
+  border: none;
+  font-weight: 600;
+  padding: 1rem;
+}
+
+.table tbody tr {
+  transition: background-color 0.3s ease;
+}
+
+.table tbody tr:hover {
+  background-color: rgba(65, 105, 225, 0.05);
+}
+
+/* Messages/Alerts */
+.alert {
+  border: none;
+  border-radius: 12px;
+  padding: 1rem 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.alert-success {
+  background: linear-gradient(135deg, var(--success), #059669);
+  color: var(--white);
+}
+
+.alert-warning {
+  background: linear-gradient(135deg, var(--warning), #D97706);
+  color: var(--white);
+}
+
+.alert-danger {
+  background: linear-gradient(135deg, var(--danger), #DC2626);
+  color: var(--white);
+}
+
+/* Footer */
+.footer {
+  background: linear-gradient(135deg, var(--royal-blue-dark) 0%, #1E40AF 100%);
+  color: var(--white);
+  padding: 2rem 0;
+  margin-top: 3rem;
+}
+
+/* Main content container */
+.main-content {
+  min-height: calc(100vh - 200px);
+  padding: 2rem 0;
+}
+
+/* Page titles */
+.page-title {
+  color: var(--royal-blue-dark);
+  font-weight: 700;
+  margin-bottom: 2rem;
+  text-align: center;
+  position: relative;
+}
+
+.page-title::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 3px;
+  background: linear-gradient(90deg, var(--royal-blue), var(--royal-blue-light));
+  border-radius: 2px;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in-up {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+/* Medical icons and badges */
+.role-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 15px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-left: 8px;
+}
+
+.role-badge.patient {
+  background-color: rgba(16, 185, 129, 0.2);
+  color: var(--success);
+}
+
+.role-badge.doctor {
+  background-color: rgba(65, 105, 225, 0.2);
+  color: var(--royal-blue);
+}
+
+.role-badge.admin {
+  background-color: rgba(239, 68, 68, 0.2);
+  color: var(--danger);
+}
+
+/* Responsive improvements */
+@media (max-width: 768px) {
+  .navbar-hospital .navbar-nav .nav-link {
+    margin: 2px 0;
+    text-align: center;
+  }
+  
+  .card {
+    margin-bottom: 1rem;
+  }
+  
+  .page-title {
+    font-size: 1.5rem;
+  }
+}
