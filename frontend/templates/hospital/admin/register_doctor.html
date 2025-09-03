@@ -2,158 +2,321 @@
 
 {% block title %}Registrar Médico - Panel Admin{% endblock %}
 
-{% block page_title %}Registrar Nuevo Médico{% endblock %}
+{% block page_title %}
+    <i class="bi bi-person-plus me-3"></i>Registrar Nuevo Médico
+{% endblock %}
 
 {% block content %}
-    <p><a href="{% url 'hospital:admin_panel' %}">← Volver al Panel Admin</a></p>
-    
-    <form method="post">
-        {% csrf_token %}
-        
-        <h2>Información Personal</h2>
-        
-        <div>
-            <label for="dni">DNI:</label>
-            <input type="text" id="dni" name="dni" placeholder="12345678A" pattern="[0-9]{8}[A-Za-z]" required>
+<div class="row mb-3">
+    <div class="col-12">
+        <a href="{% url 'hospital:admin_panel' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Volver al Panel Admin
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <form method="post" class="needs-validation" novalidate>
+            {% csrf_token %}
+            
+            <!-- Personal Information -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-person me-2"></i>Información Personal
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="dni" class="form-label">
+                                <i class="bi bi-card-text me-1"></i>DNI
+                            </label>
+                            <input type="text" class="form-control" id="dni" name="dni" 
+                                   placeholder="12345678A" pattern="[0-9]{8}[A-Za-z]" required>
+                            <div class="invalid-feedback">Por favor ingrese un DNI válido.</div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="nombre" class="form-label">
+                                <i class="bi bi-person-fill me-1"></i>Nombre
+                            </label>
+                            <input type="text" class="form-control" id="nombre" name="nombre" required>
+                            <div class="invalid-feedback">Por favor ingrese el nombre.</div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="apellidos" class="form-label">
+                                <i class="bi bi-person-fill me-1"></i>Apellidos
+                            </label>
+                            <input type="text" class="form-control" id="apellidos" name="apellidos" required>
+                            <div class="invalid-feedback">Por favor ingrese los apellidos.</div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="email" class="form-label">
+                                <i class="bi bi-envelope me-1"></i>Email
+                            </label>
+                            <input type="email" class="form-control" id="email" name="email" required>
+                            <div class="invalid-feedback">Por favor ingrese un email válido.</div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="telefono" class="form-label">
+                                <i class="bi bi-phone me-1"></i>Teléfono
+                            </label>
+                            <input type="tel" class="form-control" id="telefono" name="telefono" 
+                                   placeholder="612345678" pattern="[679][0-9]{8}" required>
+                            <div class="invalid-feedback">Por favor ingrese un teléfono válido.</div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-0">
+                            <label for="fecha_nacimiento" class="form-label">
+                                <i class="bi bi-calendar me-1"></i>Fecha de Nacimiento
+                            </label>
+                            <input type="date" class="form-control" id="fecha_nacimiento" name="fecha_nacimiento" required>
+                            <div class="invalid-feedback">Por favor seleccione la fecha de nacimiento.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Professional Information -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-award me-2"></i>Información Profesional
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="numero_colegiado" class="form-label">
+                                <i class="bi bi-patch-check me-1"></i>Número de Colegiado
+                            </label>
+                            <input type="text" class="form-control" id="numero_colegiado" name="numero_colegiado" 
+                                   placeholder="280812345" required>
+                            <div class="invalid-feedback">Por favor ingrese el número de colegiado.</div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="colegio_medico" class="form-label">
+                                <i class="bi bi-building me-1"></i>Colegio Médico
+                            </label>
+                            <input type="text" class="form-control" id="colegio_medico" name="colegio_medico" 
+                                   value="Colegio Oficial de Médicos de Madrid" required>
+                            <div class="invalid-feedback">Por favor ingrese el colegio médico.</div>
+                        </div>
+                        
+                        <div class="col-md-8 mb-3">
+                            <label for="especialidad" class="form-label">
+                                <i class="bi bi-heart-pulse me-1"></i>Especialidad
+                            </label>
+                            <select class="form-select" id="especialidad" name="especialidad" required>
+                                <option value="">Seleccione una especialidad</option>
+                                <option value="MEDICINA_GENERAL">Medicina General</option>
+                                <option value="CARDIOLOGIA">Cardiología</option>
+                                <option value="PEDIATRIA">Pediatría</option>
+                                <option value="GINECOLOGIA">Ginecología y Obstetricia</option>
+                                <option value="TRAUMATOLOGIA">Traumatología y Cirugía Ortopédica</option>
+                                <option value="NEUROLOGIA">Neurología</option>
+                                <option value="DERMATOLOGIA">Dermatología</option>
+                                <option value="OFTALMOLOGIA">Oftalmología</option>
+                                <option value="OTORRINOLARINGOLOGIA">Otorrinolaringología</option>
+                                <option value="UROLOGIA">Urología</option>
+                                <option value="PSIQUIATRIA">Psiquiatría</option>
+                                <option value="RADIOLOGIA">Radiodiagnóstico</option>
+                                <option value="ANESTESIOLOGIA">Anestesiología y Reanimación</option>
+                                <option value="MEDICINA_INTERNA">Medicina Interna</option>
+                                <option value="CIRUGIA_GENERAL">Cirugía General y del Aparato Digestivo</option>
+                                <option value="ENDOCRINOLOGIA">Endocrinología y Nutrición</option>
+                                <option value="NEUMOLOGIA">Neumología</option>
+                                <option value="GASTROENTEROLOGIA">Aparato Digestivo</option>
+                                <option value="HEMATOLOGIA">Hematología y Hemoterapia</option>
+                                <option value="ONCOLOGIA">Oncología Médica</option>
+                            </select>
+                            <div class="invalid-feedback">Por favor seleccione una especialidad.</div>
+                        </div>
+                        
+                        <div class="col-md-4 mb-0">
+                            <label for="subespecialidad" class="form-label">
+                                <i class="bi bi-chevron-right me-1"></i>Subespecialidad
+                            </label>
+                            <input type="text" class="form-control" id="subespecialidad" name="subespecialidad" 
+                                   placeholder="Ej: Cardiología Intervencionista">
+                            <div class="form-text">Opcional</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Academic Information -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-mortarboard me-2"></i>Formación Académica
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8 mb-3">
+                            <label for="universidad" class="form-label">
+                                <i class="bi bi-bank me-1"></i>Universidad
+                            </label>
+                            <input type="text" class="form-control" id="universidad" name="universidad" 
+                                   placeholder="Universidad Complutense de Madrid" required>
+                            <div class="invalid-feedback">Por favor ingrese la universidad.</div>
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <label for="ano_graduacion" class="form-label">
+                                <i class="bi bi-calendar-event me-1"></i>Año de Graduación
+                            </label>
+                            <input type="number" class="form-control" id="ano_graduacion" name="ano_graduacion" 
+                                   min="1950" max="2024" required>
+                            <div class="invalid-feedback">Por favor ingrese el año de graduación.</div>
+                        </div>
+                        
+                        <div class="col-12 mb-0">
+                            <label for="titulo_especialista" class="form-label">
+                                <i class="bi bi-award me-1"></i>Título de Especialista
+                            </label>
+                            <input type="text" class="form-control" id="titulo_especialista" name="titulo_especialista" 
+                                   placeholder="Especialista en Cardiología">
+                            <div class="form-text">Opcional</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Work Information -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-building me-2"></i>Información Laboral
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="hospital_centro" class="form-label">
+                                <i class="bi bi-hospital me-1"></i>Hospital/Centro
+                            </label>
+                            <input type="text" class="form-control" id="hospital_centro" name="hospital_centro" 
+                                   placeholder="Hospital Universitario La Paz" required>
+                            <div class="invalid-feedback">Por favor ingrese el hospital o centro.</div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="departamento_servicio" class="form-label">
+                                <i class="bi bi-diagram-3 me-1"></i>Departamento/Servicio
+                            </label>
+                            <input type="text" class="form-control" id="departamento_servicio" name="departamento_servicio" 
+                                   placeholder="Servicio de Cardiología" required>
+                            <div class="invalid-feedback">Por favor ingrese el departamento.</div>
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <label for="consulta_numero" class="form-label">
+                                <i class="bi bi-door-open me-1"></i>Número de Consulta
+                            </label>
+                            <input type="text" class="form-control" id="consulta_numero" name="consulta_numero" placeholder="201">
+                            <div class="form-text">Opcional</div>
+                        </div>
+                        
+                        <div class="col-md-8 mb-0">
+                            <label for="horario_consulta" class="form-label">
+                                <i class="bi bi-clock me-1"></i>Horario de Consulta
+                            </label>
+                            <textarea class="form-control" id="horario_consulta" name="horario_consulta" rows="2" 
+                                      placeholder="Lunes a Viernes: 9:00-14:00"></textarea>
+                            <div class="form-text">Opcional</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Additional Information -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-plus-circle me-2"></i>Información Adicional
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <label for="idiomas" class="form-label">
+                                <i class="bi bi-translate me-1"></i>Idiomas
+                            </label>
+                            <input type="text" class="form-control" id="idiomas" name="idiomas" 
+                                   placeholder="Español, Inglés, Francés">
+                            <div class="form-text">Opcional</div>
+                        </div>
+                        
+                        <div class="col-12 mb-0">
+                            <label for="biografia" class="form-label">
+                                <i class="bi bi-journal-text me-1"></i>Biografía Profesional
+                            </label>
+                            <textarea class="form-control" id="biografia" name="biografia" rows="3" 
+                                      placeholder="Breve descripción de experiencia y especialización..."></textarea>
+                            <div class="form-text">Opcional</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{% url 'hospital:admin_panel' %}" class="btn btn-outline-secondary me-md-2">
+                            <i class="bi bi-x-circle me-1"></i>Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-person-plus me-1"></i>Registrar Médico
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Important Information -->
+<div class="row mt-4">
+    <div class="col-lg-8 mx-auto">
+        <div class="alert alert-info">
+            <h6><i class="bi bi-info-circle me-2"></i>Información Importante</h6>
+            <ul class="mb-0">
+                <li>El médico registrado tendrá roles de <strong>paciente</strong> y <strong>doctor</strong></li>
+                <li>Se creará automáticamente una cuenta de usuario vinculada</li>
+                <li>La contraseña inicial será "password123" (debe cambiarla al primer acceso)</li>
+                <li>El médico podrá agendar citas con otros médicos pero no consigo mismo</li>
+            </ul>
         </div>
-        
-        <div>
-            <label for="nombre">Nombre:</label>
-            <input type="text" id="nombre" name="nombre" required>
-        </div>
-        
-        <div>
-            <label for="apellidos">Apellidos:</label>
-            <input type="text" id="apellidos" name="apellidos" required>
-        </div>
-        
-        <div>
-            <label for="email">Email:</label>
-            <input type="email" id="email" name="email" required>
-        </div>
-        
-        <div>
-            <label for="telefono">Teléfono:</label>
-            <input type="tel" id="telefono" name="telefono" placeholder="612345678" pattern="[679][0-9]{8}" required>
-        </div>
-        
-        <div>
-            <label for="fecha_nacimiento">Fecha de Nacimiento:</label>
-            <input type="date" id="fecha_nacimiento" name="fecha_nacimiento" required>
-        </div>
-        
-        <h2>Información Profesional</h2>
-        
-        <div>
-            <label for="numero_colegiado">Número de Colegiado:</label>
-            <input type="text" id="numero_colegiado" name="numero_colegiado" placeholder="280812345" required>
-        </div>
-        
-        <div>
-            <label for="colegio_medico">Colegio Médico:</label>
-            <input type="text" id="colegio_medico" name="colegio_medico" 
-                   value="Colegio Oficial de Médicos de Madrid" required>
-        </div>
-        
-        <div>
-            <label for="especialidad">Especialidad:</label>
-            <select id="especialidad" name="especialidad" required>
-                <option value="">Seleccione una especialidad</option>
-                <option value="MEDICINA_GENERAL">Medicina General</option>
-                <option value="CARDIOLOGIA">Cardiología</option>
-                <option value="PEDIATRIA">Pediatría</option>
-                <option value="GINECOLOGIA">Ginecología y Obstetricia</option>
-                <option value="TRAUMATOLOGIA">Traumatología y Cirugía Ortopédica</option>
-                <option value="NEUROLOGIA">Neurología</option>
-                <option value="DERMATOLOGIA">Dermatología</option>
-                <option value="OFTALMOLOGIA">Oftalmología</option>
-                <option value="OTORRINOLARINGOLOGIA">Otorrinolaringología</option>
-                <option value="UROLOGIA">Urología</option>
-                <option value="PSIQUIATRIA">Psiquiatría</option>
-                <option value="RADIOLOGIA">Radiodiagnóstico</option>
-                <option value="ANESTESIOLOGIA">Anestesiología y Reanimación</option>
-                <option value="MEDICINA_INTERNA">Medicina Interna</option>
-                <option value="CIRUGIA_GENERAL">Cirugía General y del Aparato Digestivo</option>
-                <option value="ENDOCRINOLOGIA">Endocrinología y Nutrición</option>
-                <option value="NEUMOLOGIA">Neumología</option>
-                <option value="GASTROENTEROLOGIA">Aparato Digestivo</option>
-                <option value="HEMATOLOGIA">Hematología y Hemoterapia</option>
-                <option value="ONCOLOGIA">Oncología Médica</option>
-            </select>
-        </div>
-        
-        <div>
-            <label for="subespecialidad">Subespecialidad (opcional):</label>
-            <input type="text" id="subespecialidad" name="subespecialidad" placeholder="Ej: Cardiología Intervencionista">
-        </div>
-        
-        <h2>Formación Académica</h2>
-        
-        <div>
-            <label for="universidad">Universidad:</label>
-            <input type="text" id="universidad" name="universidad" placeholder="Universidad Complutense de Madrid" required>
-        </div>
-        
-        <div>
-            <label for="ano_graduacion">Año de Graduación:</label>
-            <input type="number" id="ano_graduacion" name="ano_graduacion" min="1950" max="2024" required>
-        </div>
-        
-        <div>
-            <label for="titulo_especialista">Título de Especialista (opcional):</label>
-            <input type="text" id="titulo_especialista" name="titulo_especialista" 
-                   placeholder="Especialista en Cardiología">
-        </div>
-        
-        <h2>Información Laboral</h2>
-        
-        <div>
-            <label for="hospital_centro">Hospital/Centro:</label>
-            <input type="text" id="hospital_centro" name="hospital_centro" 
-                   placeholder="Hospital Universitario La Paz" required>
-        </div>
-        
-        <div>
-            <label for="departamento_servicio">Departamento/Servicio:</label>
-            <input type="text" id="departamento_servicio" name="departamento_servicio" 
-                   placeholder="Servicio de Cardiología" required>
-        </div>
-        
-        <div>
-            <label for="consulta_numero">Número de Consulta (opcional):</label>
-            <input type="text" id="consulta_numero" name="consulta_numero" placeholder="201">
-        </div>
-        
-        <div>
-            <label for="horario_consulta">Horario de Consulta (opcional):</label>
-            <textarea id="horario_consulta" name="horario_consulta" rows="2" 
-                      placeholder="Lunes a Viernes: 9:00-14:00"></textarea>
-        </div>
-        
-        <h2>Información Adicional</h2>
-        
-        <div>
-            <label for="idiomas">Idiomas (opcional):</label>
-            <input type="text" id="idiomas" name="idiomas" placeholder="Español, Inglés, Francés">
-        </div>
-        
-        <div>
-            <label for="biografia">Biografía Profesional (opcional):</label>
-            <textarea id="biografia" name="biografia" rows="3" 
-                      placeholder="Breve descripción de experiencia y especialización..."></textarea>
-        </div>
-        
-        <div>
-            <button type="submit">Registrar Médico</button>
-            <a href="{% url 'hospital:admin_panel' %}">Cancelar</a>
-        </div>
-    </form>
-    
-    <h3>Importante:</h3>
-    <ul>
-        <li>El médico registrado tendrá roles de <strong>paciente</strong> y <strong>doctor</strong></li>
-        <li>Se creará automáticamente una cuenta de usuario vinculada</li>
-        <li>La contraseña inicial será "password123" (debe cambiarla al primer acceso)</li>
-        <li>El médico podrá agendar citas con otros médicos pero no consigo mismo</li>
-    </ul>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Form validation
+(function() {
+    'use strict';
+    window.addEventListener('load', function() {
+        var forms = document.getElementsByClassName('needs-validation');
+        var validation = Array.prototype.filter.call(forms, function(form) {
+            form.addEventListener('submit', function(event) {
+                if (form.checkValidity() === false) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    }, false);
+})();
+</script>
 {% endblock %}

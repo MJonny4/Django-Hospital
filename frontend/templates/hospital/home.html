@@ -2,46 +2,241 @@
 
 {% block title %}Inicio - Hospital Management System{% endblock %}
 
-{% block page_title %}Bienvenido al Sistema de Gestión Hospitalaria{% endblock %}
+{% block page_title %}
+    <i class="bi bi-hospital me-3"></i>Bienvenido al Sistema de Gestión Hospitalaria
+{% endblock %}
 
 {% block content %}
-    <p>Este es el sistema de gestión hospitalaria desarrollado con FastAPI como backend y Django como frontend de prueba.</p>
-    
-    {% if request.session.access_token %}
-        <h2>Panel de Usuario</h2>
-        <p>Bienvenido, {{ request.session.user_data.nombre }} {{ request.session.user_data.apellidos }}</p>
-        <p>Email: {{ request.session.user_data.email }}</p>
-        <p>Roles: {{ request.session.user_data.roles|join:", " }}</p>
-        
-        <h3>Acciones Disponibles:</h3>
-        <ul>
-            <li><a href="{% url 'hospital:appointments' %}">Ver mis citas</a></li>
-            <li><a href="{% url 'hospital:create_appointment' %}">Crear nueva cita</a></li>
-            <li><a href="{% url 'hospital:doctors_list' %}">Ver lista de médicos</a></li>
-            <li><a href="{% url 'hospital:profile' %}">Mi perfil</a></li>
-            
-            {% if 'admin' in request.session.user_data.roles %}
-                <li><strong><a href="{% url 'hospital:admin_panel' %}">Panel de Administración</a></strong></li>
-            {% endif %}
-            
-            {% if 'doctor' in request.session.user_data.roles %}
-                <li><strong><a href="{% url 'hospital:doctor_panel' %}">Panel de Médico</a></strong></li>
-            {% endif %}
-        </ul>
-    {% else %}
-        <h2>Acceso Público</h2>
-        <p>Para acceder a todas las funcionalidades del sistema, debe iniciar sesión.</p>
-        
-        <h3>Acciones Disponibles:</h3>
-        <ul>
-            <li><a href="{% url 'hospital:login' %}">Iniciar Sesión</a></li>
-            <li><a href="{% url 'hospital:register' %}">Registrarse como Paciente</a></li>
-            <li><a href="{% url 'hospital:doctors_list' %}">Ver lista pública de médicos</a></li>
-        </ul>
-        
-        <h3>Cuentas de Prueba:</h3>
-        <p><strong>Admin:</strong> admin@hospital.com / password123</p>
-        <p><strong>Doctor:</strong> maria.gonzalez@hospital.com / password123</p>
-        <p><strong>Paciente:</strong> maria.garcia@email.com / password123</p>
-    {% endif %}
+{% if request.session.access_token %}
+    <!-- Logged in User Dashboard -->
+    <div class="row">
+        <div class="col-lg-4 mb-4">
+            <!-- User Welcome Card -->
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-person-circle me-2"></i>Panel de Usuario
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <h6 class="card-title">¡Hola, {{ request.session.user_data.nombre }}!</h6>
+                    <div class="mb-3">
+                        <p class="card-text mb-1">
+                            <i class="bi bi-person me-2 text-primary"></i>
+                            <strong>{{ request.session.user_data.nombre }} {{ request.session.user_data.apellidos }}</strong>
+                        </p>
+                        <p class="card-text mb-1">
+                            <i class="bi bi-envelope me-2 text-primary"></i>{{ request.session.user_data.email }}
+                        </p>
+                        <p class="card-text mb-0">
+                            <i class="bi bi-shield-check me-2 text-primary"></i>
+                            {% for role in request.session.user_data.roles %}
+                                <span class="role-badge {{ role }}">
+                                    {% if role == 'patient' %}👤 Paciente
+                                    {% elif role == 'doctor' %}👨‍⚕️ Médico
+                                    {% elif role == 'admin' %}⚙️ Admin
+                                    {% else %}{{ role }}{% endif %}
+                                </span>
+                            {% endfor %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <!-- Quick Actions Grid -->
+            <div class="row">
+                <!-- Common Actions -->
+                <div class="col-md-6 mb-3">
+                    <div class="card text-center h-100 border-primary">
+                        <div class="card-body">
+                            <i class="bi bi-calendar-check display-4 text-primary mb-3"></i>
+                            <h5 class="card-title">Mis Citas</h5>
+                            <p class="card-text">Ver y gestionar tus citas médicas</p>
+                            <a href="{% url 'hospital:appointments' %}" class="btn btn-primary">
+                                <i class="bi bi-calendar-check me-1"></i>Ver Citas
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <div class="card text-center h-100 border-success">
+                        <div class="card-body">
+                            <i class="bi bi-calendar-plus display-4 text-success mb-3"></i>
+                            <h5 class="card-title">Nueva Cita</h5>
+                            <p class="card-text">Programar una nueva cita médica</p>
+                            <a href="{% url 'hospital:create_appointment' %}" class="btn btn-success">
+                                <i class="bi bi-calendar-plus me-1"></i>Crear Cita
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <div class="card text-center h-100 border-info">
+                        <div class="card-body">
+                            <i class="bi bi-people display-4 text-info mb-3"></i>
+                            <h5 class="card-title">Médicos</h5>
+                            <p class="card-text">Explorar lista de médicos disponibles</p>
+                            <a href="{% url 'hospital:doctors_list' %}" class="btn btn-info">
+                                <i class="bi bi-people me-1"></i>Ver Médicos
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <div class="card text-center h-100 border-secondary">
+                        <div class="card-body">
+                            <i class="bi bi-person-gear display-4 text-secondary mb-3"></i>
+                            <h5 class="card-title">Mi Perfil</h5>
+                            <p class="card-text">Ver y editar información personal</p>
+                            <a href="{% url 'hospital:profile' %}" class="btn btn-secondary">
+                                <i class="bi bi-person-gear me-1"></i>Ver Perfil
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Role-Specific Panels -->
+    <div class="row mt-4">
+        {% if 'admin' in request.session.user_data.roles %}
+            <div class="col-lg-6 mb-4">
+                <div class="card border-danger">
+                    <div class="card-header bg-danger text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-gear-fill me-2"></i>Panel de Administración
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">Acceso completo al sistema de gestión hospitalaria</p>
+                        <ul class="list-unstyled">
+                            <li><i class="bi bi-check-circle text-success me-2"></i>Gestionar usuarios y médicos</li>
+                            <li><i class="bi bi-check-circle text-success me-2"></i>Ver todas las citas</li>
+                            <li><i class="bi bi-check-circle text-success me-2"></i>Administrar sistema</li>
+                        </ul>
+                        <a href="{% url 'hospital:admin_panel' %}" class="btn btn-danger">
+                            <i class="bi bi-gear-fill me-1"></i>Ir al Panel Admin
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+        {% if 'doctor' in request.session.user_data.roles %}
+            <div class="col-lg-6 mb-4">
+                <div class="card border-warning">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="mb-0">
+                            <i class="bi bi-clipboard-data-fill me-2"></i>Panel de Médico
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">Gestión de consultas y pacientes</p>
+                        <ul class="list-unstyled">
+                            <li><i class="bi bi-check-circle text-success me-2"></i>Ver citas de pacientes</li>
+                            <li><i class="bi bi-check-circle text-success me-2"></i>Confirmar y completar citas</li>
+                            <li><i class="bi bi-check-circle text-success me-2"></i>Gestionar consultas</li>
+                        </ul>
+                        <a href="{% url 'hospital:doctor_panel' %}" class="btn btn-warning">
+                            <i class="bi bi-clipboard-data-fill me-1"></i>Ir al Panel Médico
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+{% else %}
+    <!-- Public Access -->
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card shadow">
+                <div class="card-header text-center">
+                    <h4 class="mb-0">
+                        <i class="bi bi-door-open me-2"></i>Acceso al Sistema
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <p class="text-center mb-4">Para acceder a todas las funcionalidades del sistema, debe iniciar sesión.</p>
+                    
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <div class="card text-center border-primary">
+                                <div class="card-body">
+                                    <i class="bi bi-box-arrow-in-right display-5 text-primary mb-2"></i>
+                                    <h6 class="card-title">Iniciar Sesión</h6>
+                                    <a href="{% url 'hospital:login' %}" class="btn btn-primary btn-sm">
+                                        <i class="bi bi-box-arrow-in-right me-1"></i>Entrar
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <div class="card text-center border-success">
+                                <div class="card-body">
+                                    <i class="bi bi-person-plus display-5 text-success mb-2"></i>
+                                    <h6 class="card-title">Registrarse</h6>
+                                    <a href="{% url 'hospital:register' %}" class="btn btn-success btn-sm">
+                                        <i class="bi bi-person-plus me-1"></i>Crear Cuenta
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <div class="card text-center border-info">
+                                <div class="card-body">
+                                    <i class="bi bi-people display-5 text-info mb-2"></i>
+                                    <h6 class="card-title">Ver Médicos</h6>
+                                    <a href="{% url 'hospital:doctors_list' %}" class="btn btn-info btn-sm">
+                                        <i class="bi bi-people me-1"></i>Explorar
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Healthcare Services Info -->
+    <div class="row mt-4">
+        <div class="col-lg-10 mx-auto">
+            <div class="card border-0 bg-light">
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-3 mb-3">
+                            <i class="bi bi-heart-pulse display-4 text-danger mb-3"></i>
+                            <h6>Atención 24/7</h6>
+                            <p class="text-muted small">Servicios de emergencia disponibles las 24 horas del día</p>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <i class="bi bi-people display-4 text-primary mb-3"></i>
+                            <h6>Especialistas</h6>
+                            <p class="text-muted small">Amplio equipo de médicos especializados en diversas áreas</p>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <i class="bi bi-calendar-check display-4 text-success mb-3"></i>
+                            <h6>Citas Online</h6>
+                            <p class="text-muted small">Programa y gestiona tus citas médicas desde cualquier lugar</p>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <i class="bi bi-shield-check display-4 text-info mb-3"></i>
+                            <h6>Datos Seguros</h6>
+                            <p class="text-muted small">Tu información médica protegida con los más altos estándares</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
 {% endblock %}

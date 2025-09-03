@@ -2,14 +2,26 @@
 
 {% block title %}Configurar Disponibilidad - Hospital Management System{% endblock %}
 
-{% block page_title %}Configurar Disponibilidad de Médicos{% endblock %}
+{% block page_title %}
+    <i class="bi bi-calendar-range me-3"></i>Configurar Disponibilidad de Médicos
+{% endblock %}
 
 {% block content %}
-    <div style="margin-bottom: 20px;">
-        <a href="{% url 'hospital:admin_panel' %}" style="text-decoration: none;">← Volver al Panel</a>
+<div class="row mb-3">
+    <div class="col-12">
+        <a href="{% url 'hospital:admin_panel' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Volver al Panel
+        </a>
     </div>
-    
-    <h2>Configurar Horarios de Disponibilidad</h2>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i class="bi bi-calendar-range me-2"></i>Configurar Horarios de Disponibilidad
+        </h5>
+    </div>
+    <div class="card-body">
     
     <form method="post">
         {% csrf_token %}

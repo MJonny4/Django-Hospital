@@ -2,71 +2,202 @@
 
 {% block title %}Lista de Médicos - Hospital Management System{% endblock %}
 
-{% block page_title %}Lista de Médicos{% endblock %}
+{% block page_title %}
+    <i class="bi bi-people me-3"></i>Lista de Médicos Disponibles
+{% endblock %}
 
 {% block content %}
-    <h2>Médicos Disponibles</h2>
-    
-    {% if doctors %}
-        <table border="1">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Nombre</th>
-                    <th>Especialidad</th>
-                    <th>Hospital/Centro</th>
-                    <th>Departamento</th>
-                    <th>Consulta</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for doctor in doctors %}
-                <tr>
-                    <td>{{ doctor.id }}</td>
-                    <td>
-                        <strong>{{ doctor.nombre }} {{ doctor.apellidos }}</strong><br>
-                        <small>{{ doctor.email }}</small>
-                    </td>
-                    <td>
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h5 class="mb-0">
+                            <i class="bi bi-hospital me-2 text-primary"></i>
+                            Médicos Especialistas 
+                            <span class="badge bg-primary">{{ doctors|length }} disponibles</span>
+                        </h5>
+                        <p class="text-muted mb-0 mt-1">Encuentre el especialista que necesita para su atención médica</p>
+                    </div>
+                    {% if request.session.access_token and 'patient' in request.session.user_data.roles %}
+                    <div class="col-md-4 text-end">
+                        <a href="{% url 'hospital:create_appointment' %}" class="btn btn-success">
+                            <i class="bi bi-calendar-plus me-1"></i>Nueva Cita
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if doctors %}
+<div class="row">
+    {% for doctor in doctors %}
+    <div class="col-lg-6 col-xl-4 mb-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-header">
+                <div class="d-flex align-items-center">
+                    <div class="me-3">
+                        {% if doctor.foto_url %}
+                            <img src="{{ doctor.foto_url }}" alt="Dr. {{ doctor.nombre }}" 
+                                 class="rounded-circle" style="width: 50px; height: 50px; object-fit: cover;">
+                        {% else %}
+                            <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center text-white" 
+                                 style="width: 50px; height: 50px;">
+                                <i class="bi bi-person-fill"></i>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="flex-grow-1">
+                        <h6 class="mb-0">Dr. {{ doctor.nombre }} {{ doctor.apellidos }}</h6>
+                        <small class="text-muted">ID: {{ doctor.id }}</small>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="bi bi-activity text-primary me-2"></i>
                         <strong>{{ doctor.especialidad }}</strong>
-                        {% if doctor.subespecialidad %}
-                            <br><small>{{ doctor.subespecialidad }}</small>
-                        {% endif %}
-                    </td>
-                    <td>{{ doctor.hospital_centro }}</td>
-                    <td>{{ doctor.departamento_servicio }}</td>
-                    <td>{{ doctor.consulta_numero|default:"-" }}</td>
-                    <td>
-                        <a href="{% url 'hospital:doctor_detail' doctor.id %}">Ver Perfil</a>
-                        {% if request.session.access_token and 'patient' in request.session.user_data.roles %}
-                            <br><a href="{% url 'hospital:create_appointment' %}?doctor={{ doctor.id }}">Agendar Cita</a>
-                        {% endif %}
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    {% else %}
-        <p>No hay médicos registrados en el sistema.</p>
-    {% endif %}
-    
-    <h3>Especialidades Disponibles:</h3>
-    <ul>
-        {% for doctor in doctors %}
-            {% if doctor.especialidad not in specialties_shown %}
-                <li><strong>{{ doctor.especialidad }}:</strong> 
-                    {% for d in doctors %}
-                        {% if d.especialidad == doctor.especialidad %}
-                            {{ d.nombre }} {{ d.apellidos }}{% if not forloop.last %}, {% endif %}
-                        {% endif %}
+                    </div>
+                    {% if doctor.subespecialidad %}
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="bi bi-chevron-right text-muted me-2"></i>
+                        <small class="text-muted">{{ doctor.subespecialidad }}</small>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-2">
+                    <div class="d-flex align-items-center mb-1">
+                        <i class="bi bi-building text-info me-2"></i>
+                        <small><strong>{{ doctor.hospital_centro }}</strong></small>
+                    </div>
+                    <div class="d-flex align-items-center mb-1">
+                        <i class="bi bi-diagram-3 text-secondary me-2"></i>
+                        <small>{{ doctor.departamento_servicio }}</small>
+                    </div>
+                    {% if doctor.consulta_numero %}
+                    <div class="d-flex align-items-center mb-1">
+                        <i class="bi bi-door-open text-warning me-2"></i>
+                        <small>Consulta {{ doctor.consulta_numero }}</small>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-envelope text-muted me-2"></i>
+                        <small class="text-muted">{{ doctor.email }}</small>
+                    </div>
+                </div>
+
+                <!-- Status badge -->
+                <div class="mb-3">
+                    {% if doctor.is_active %}
+                        <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Activo</span>
+                    {% else %}
+                        <span class="badge bg-danger"><i class="bi bi-x-circle me-1"></i>Inactivo</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card-footer bg-transparent">
+                <div class="d-grid gap-2 d-md-flex">
+                    <a href="{% url 'hospital:doctor_detail' doctor.id %}" class="btn btn-outline-primary btn-sm flex-grow-1">
+                        <i class="bi bi-eye me-1"></i>Ver Perfil
+                    </a>
+                    {% if request.session.access_token and 'patient' in request.session.user_data.roles %}
+                        <a href="{% url 'hospital:create_appointment' %}?doctor={{ doctor.id }}" class="btn btn-success btn-sm flex-grow-1">
+                            <i class="bi bi-calendar-plus me-1"></i>Agendar
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-body text-center py-5">
+                <i class="bi bi-person-x display-1 text-muted mb-3"></i>
+                <h4>No hay médicos disponibles</h4>
+                <p class="text-muted">No se encontraron médicos registrados en el sistema en este momento.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Specialties Overview -->
+{% if doctors %}
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-list-stars me-2"></i>Especialidades Disponibles
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% regroup doctors by especialidad as specialty_list %}
+                    {% for specialty in specialty_list %}
+                    <div class="col-md-6 col-lg-4 mb-3">
+                        <div class="border rounded p-3 h-100">
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="bi bi-activity text-primary me-2"></i>
+                                <h6 class="mb-0">{{ specialty.grouper }}</h6>
+                            </div>
+                            <div class="text-muted small">
+                                {% for doctor in specialty.list %}
+                                    <div class="mb-1">
+                                        <i class="bi bi-person-fill me-1"></i>
+                                        Dr. {{ doctor.nombre }} {{ doctor.apellidos }}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            <div class="mt-2">
+                                <span class="badge bg-light text-dark">{{ specialty.list|length }} especialista{{ specialty.list|length|pluralize }}</span>
+                            </div>
+                        </div>
+                    </div>
                     {% endfor %}
-                </li>
-            {% endif %}
-        {% endfor %}
-    </ul>
-    
-    {% if request.session.access_token and 'patient' in request.session.user_data.roles %}
-        <p><strong><a href="{% url 'hospital:create_appointment' %}">➕ Crear Nueva Cita</a></strong></p>
-    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Call to Action for Patients -->
+{% if request.session.access_token and 'patient' in request.session.user_data.roles %}
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card shadow-sm bg-success bg-gradient text-white">
+            <div class="card-body text-center">
+                <div class="row align-items-center">
+                    <div class="col-md-8 text-md-start">
+                        <h5 class="mb-1">
+                            <i class="bi bi-calendar-heart me-2"></i>¿Necesita una cita médica?
+                        </h5>
+                        <p class="mb-0">Programe su consulta con cualquiera de nuestros especialistas de forma rápida y sencilla.</p>
+                    </div>
+                    <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                        <a href="{% url 'hospital:create_appointment' %}" class="btn btn-light btn-lg">
+                            <i class="bi bi-calendar-plus me-1"></i>Crear Nueva Cita
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
 {% endblock %}

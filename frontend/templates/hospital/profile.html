@@ -2,62 +2,207 @@
 
 {% block title %}Mi Perfil - Hospital Management System{% endblock %}
 
-{% block page_title %}Mi Perfil{% endblock %}
+{% block page_title %}
+    <i class="bi bi-person-circle me-3"></i>Mi Perfil de Usuario
+{% endblock %}
 
 {% block content %}
-    <h2>Información Personal</h2>
-    
-    <table border="1">
-        <tr>
-            <td><strong>ID:</strong></td>
-            <td>{{ request.session.user_data.id }}</td>
-        </tr>
-        <tr>
-            <td><strong>DNI:</strong></td>
-            <td>{{ request.session.user_data.dni }}</td>
-        </tr>
-        <tr>
-            <td><strong>Nombre:</strong></td>
-            <td>{{ request.session.user_data.nombre }}</td>
-        </tr>
-        <tr>
-            <td><strong>Apellidos:</strong></td>
-            <td>{{ request.session.user_data.apellidos }}</td>
-        </tr>
-        <tr>
-            <td><strong>Email:</strong></td>
-            <td>{{ request.session.user_data.email }}</td>
-        </tr>
-        <tr>
-            <td><strong>Teléfono:</strong></td>
-            <td>{{ request.session.user_data.telefono }}</td>
-        </tr>
-        <tr>
-            <td><strong>Roles:</strong></td>
-            <td>{{ request.session.user_data.roles|join:", " }}</td>
-        </tr>
-        <tr>
-            <td><strong>Estado:</strong></td>
-            <td>{% if request.session.user_data.is_active %}Activo{% else %}Inactivo{% endif %}</td>
-        </tr>
-        <tr>
-            <td><strong>Fecha de Creación:</strong></td>
-            <td>{{ request.session.user_data.created_at|default:"No disponible" }}</td>
-        </tr>
-    </table>
-    
-    <h3>Acciones Disponibles:</h3>
-    <ul>
-        <li><a href="{% url 'hospital:appointments' %}">Ver mis citas</a></li>
-        <li><a href="{% url 'hospital:create_appointment' %}">Crear nueva cita</a></li>
-        <li><a href="{% url 'hospital:doctors_list' %}">Ver médicos</a></li>
-        
-        {% if 'admin' in request.session.user_data.roles %}
-            <li><strong><a href="{% url 'hospital:admin_panel' %}">Panel de Administración</a></strong></li>
-        {% endif %}
-        
-        {% if 'doctor' in request.session.user_data.roles %}
-            <li><strong><a href="{% url 'hospital:doctor_panel' %}">Panel de Médico</a></strong></li>
-        {% endif %}
-    </ul>
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <!-- User Profile Card -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <h5 class="mb-0">
+                            <i class="bi bi-person-lines-fill me-2"></i>Información Personal
+                        </h5>
+                    </div>
+                    <div class="col-auto">
+                        {% if request.session.user_data.is_active %}
+                            <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Activo</span>
+                        {% else %}
+                            <span class="badge bg-danger"><i class="bi bi-x-circle me-1"></i>Inactivo</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-hash text-primary me-3"></i>
+                            <div>
+                                <small class="text-muted">ID de Usuario</small>
+                                <div class="fw-bold">{{ request.session.user_data.id }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6 mb-3">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-card-text text-primary me-3"></i>
+                            <div>
+                                <small class="text-muted">DNI</small>
+                                <div class="fw-bold">{{ request.session.user_data.dni }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6 mb-3">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-person text-primary me-3"></i>
+                            <div>
+                                <small class="text-muted">Nombre</small>
+                                <div class="fw-bold">{{ request.session.user_data.nombre }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6 mb-3">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-person text-primary me-3"></i>
+                            <div>
+                                <small class="text-muted">Apellidos</small>
+                                <div class="fw-bold">{{ request.session.user_data.apellidos }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6 mb-3">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-envelope text-primary me-3"></i>
+                            <div>
+                                <small class="text-muted">Email</small>
+                                <div class="fw-bold">{{ request.session.user_data.email }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6 mb-3">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-phone text-primary me-3"></i>
+                            <div>
+                                <small class="text-muted">Teléfono</small>
+                                <div class="fw-bold">{{ request.session.user_data.telefono }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-12 mb-3">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-shield-check text-primary me-3"></i>
+                            <div>
+                                <small class="text-muted">Roles en el Sistema</small>
+                                <div>
+                                    {% for role in request.session.user_data.roles %}
+                                        <span class="role-badge {{ role }}">
+                                            {% if role == 'patient' %}👤 Paciente
+                                            {% elif role == 'doctor' %}👨‍⚕️ Médico
+                                            {% elif role == 'admin' %}⚙️ Admin
+                                            {% else %}{{ role }}{% endif %}
+                                        </span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if request.session.user_data.created_at %}
+                    <div class="col-12 mb-0">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-calendar-plus text-muted me-3"></i>
+                            <div>
+                                <small class="text-muted">Miembro desde</small>
+                                <div class="fw-bold">{{ request.session.user_data.created_at|date:"d/m/Y H:i" }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-lightning me-2"></i>Acciones Rápidas
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <!-- Common Actions -->
+                    <div class="col-md-6 mb-3">
+                        <a href="{% url 'hospital:appointments' %}" class="btn btn-outline-primary w-100 text-start">
+                            <i class="bi bi-calendar-check me-2"></i>Ver mis citas
+                        </a>
+                    </div>
+                    
+                    <div class="col-md-6 mb-3">
+                        <a href="{% url 'hospital:create_appointment' %}" class="btn btn-outline-success w-100 text-start">
+                            <i class="bi bi-calendar-plus me-2"></i>Crear nueva cita
+                        </a>
+                    </div>
+                    
+                    <div class="col-md-6 mb-3">
+                        <a href="{% url 'hospital:doctors_list' %}" class="btn btn-outline-info w-100 text-start">
+                            <i class="bi bi-people me-2"></i>Ver médicos
+                        </a>
+                    </div>
+                    
+                    <!-- Role-specific Actions -->
+                    {% if 'admin' in request.session.user_data.roles %}
+                        <div class="col-md-6 mb-3">
+                            <a href="{% url 'hospital:admin_panel' %}" class="btn btn-outline-danger w-100 text-start">
+                                <i class="bi bi-gear me-2"></i>Panel de Administración
+                            </a>
+                        </div>
+                    {% endif %}
+                    
+                    {% if 'doctor' in request.session.user_data.roles %}
+                        <div class="col-md-6 mb-3">
+                            <a href="{% url 'hospital:doctor_panel' %}" class="btn btn-outline-warning w-100 text-start">
+                                <i class="bi bi-clipboard-data me-2"></i>Panel de Médico
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Account Summary -->
+        <div class="row mt-4">
+            <div class="col-md-4">
+                <div class="card text-center border-primary">
+                    <div class="card-body">
+                        <i class="bi bi-calendar-check display-4 text-primary mb-2"></i>
+                        <h6>Gestión de Citas</h6>
+                        <p class="text-muted small">Programe, vea y gestione sus citas médicas</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card text-center border-success">
+                    <div class="card-body">
+                        <i class="bi bi-people display-4 text-success mb-2"></i>
+                        <h6>Especialistas</h6>
+                        <p class="text-muted small">Acceda a nuestro equipo médico especializado</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card text-center border-info">
+                    <div class="card-body">
+                        <i class="bi bi-shield-check display-4 text-info mb-2"></i>
+                        <h6>Seguridad</h6>
+                        <p class="text-muted small">Sus datos están protegidos y seguros</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

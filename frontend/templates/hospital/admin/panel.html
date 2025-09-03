@@ -2,88 +2,273 @@
 
 {% block title %}Panel de Administración - Hospital Management System{% endblock %}
 
-{% block page_title %}Panel de Administración{% endblock %}
+{% block page_title %}
+    <i class="bi bi-shield-lock me-3"></i>Panel de Administración
+{% endblock %}
 
 {% block content %}
-    <h2>Bienvenido al Panel de Administración</h2>
-    
-    <h3>Estadísticas del Sistema:</h3>
-    <table border="1">
-        <tr>
-            <td><strong>Total Pacientes:</strong></td>
-            <td>{{ stats.total_patients|default:"0" }}</td>
-        </tr>
-        <tr>
-            <td><strong>Total Médicos:</strong></td>
-            <td>{{ stats.total_doctors|default:"0" }}</td>
-        </tr>
-        <tr>
-            <td><strong>Total Administradores:</strong></td>
-            <td>{{ stats.total_admins|default:"0" }}</td>
-        </tr>
-        <tr>
-            <td><strong>Registros Recientes:</strong></td>
-            <td>{{ stats.recent_registrations|default:"0" }}</td>
-        </tr>
-    </table>
-    
-    <h3>Gestión del Sistema:</h3>
-    <div style="display: flex; flex-wrap: wrap; gap: 20px;">
-        
-        <div style="border: 1px solid #ccc; padding: 15px; margin: 10px;">
-            <h4>👥 Gestión de Usuarios</h4>
-            <ul>
-                <li><a href="{% url 'hospital:admin_users' %}">Ver Todos los Usuarios</a></li>
-                <li><a href="{% url 'hospital:admin_create_patient' %}">Crear Nuevo Paciente</a></li>
-            </ul>
+<!-- Welcome Banner -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card shadow-sm bg-gradient" style="background: linear-gradient(135deg, #dc3545 0%, #b02a37 100%);">
+            <div class="card-body text-white">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h2 class="mb-1">
+                            <i class="bi bi-shield-lock-fill me-2"></i>
+                            Panel de Administración
+                        </h2>
+                        <p class="mb-0 opacity-75">Sistema de Gestión Hospitalaria - Control Total del Sistema</p>
+                    </div>
+                    <div class="col-md-4 text-md-end">
+                        <div class="d-flex align-items-center justify-content-md-end">
+                            <i class="bi bi-gear-wide-connected display-4 opacity-25"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-        
-        <div style="border: 1px solid #ccc; padding: 15px; margin: 10px;">
-            <h4>👨‍⚕️ Gestión de Médicos</h4>
-            <ul>
-                <li><a href="{% url 'hospital:admin_doctors' %}">Ver Todos los Médicos</a></li>
-                <li><a href="{% url 'hospital:admin_register_doctor' %}">Registrar Nuevo Médico</a></li>
-            </ul>
+    </div>
+</div>
+
+<!-- System Statistics -->
+<div class="row mb-4">
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card shadow-sm border-primary stats-card">
+            <div class="card-body text-center">
+                <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                    <i class="bi bi-people display-6 text-primary"></i>
+                </div>
+                <h4 class="mb-1">{{ stats.total_patients|default:"0" }}</h4>
+                <p class="text-muted mb-0">Pacientes</p>
+            </div>
         </div>
-        
-        <div style="border: 1px solid #ccc; padding: 15px; margin: 10px;">
-            <h4>📅 Gestión de Citas</h4>
-            <ul>
-                <li><a href="{% url 'hospital:admin_appointments' %}">Ver Todas las Citas</a></li>
-                <li><a href="{% url 'hospital:create_appointment' %}">Crear Cita (como Admin)</a></li>
-            </ul>
-        </div>
-        
-        <div style="border: 1px solid #ccc; padding: 15px; margin: 10px;">
-            <h4>🕐 Gestión de Disponibilidad</h4>
-            <ul>
-                <li><a href="{% url 'hospital:admin_availability' %}">Configurar Horarios Médicos</a></li>
-            </ul>
-        </div>
-        
     </div>
     
-    <h3>Acciones Rápidas:</h3>
-    <ul>
-        <li><strong><a href="http://127.0.0.1:8001/docs" target="_blank">📖 Ver Documentación API (FastAPI)</a></strong></li>
-        <li><a href="{% url 'hospital:doctors_list' %}">Ver Lista Pública de Médicos</a></li>
-        <li><a href="{% url 'hospital:appointments' %}">Ver Mis Citas (como paciente)</a></li>
-    </ul>
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card shadow-sm border-success stats-card">
+            <div class="card-body text-center">
+                <div class="bg-success bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                    <i class="bi bi-person-badge display-6 text-success"></i>
+                </div>
+                <h4 class="mb-1">{{ stats.total_doctors|default:"0" }}</h4>
+                <p class="text-muted mb-0">Médicos</p>
+            </div>
+        </div>
+    </div>
     
-    <h3>Estado del Sistema:</h3>
-    <p><strong>Backend API:</strong> <span id="api-status">Verificando...</span></p>
-    <p><strong>Último Admin:</strong> {{ request.session.user_data.nombre }} {{ request.session.user_data.apellidos }}</p>
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card shadow-sm border-danger stats-card">
+            <div class="card-body text-center">
+                <div class="bg-danger bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                    <i class="bi bi-shield-check display-6 text-danger"></i>
+                </div>
+                <h4 class="mb-1">{{ stats.total_admins|default:"0" }}</h4>
+                <p class="text-muted mb-0">Administradores</p>
+            </div>
+        </div>
+    </div>
     
-    <script>
-        // Simple API health check
-        fetch('http://127.0.0.1:8001/health')
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById('api-status').innerHTML = 
-                    data.status === 'healthy' ? '✅ Funcionando' : '❌ Error';
-            })
-            .catch(error => {
-                document.getElementById('api-status').innerHTML = '❌ No disponible';
-            });
-    </script>
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card shadow-sm border-info stats-card">
+            <div class="card-body text-center">
+                <div class="bg-info bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                    <i class="bi bi-person-plus display-6 text-info"></i>
+                </div>
+                <h4 class="mb-1">{{ stats.recent_registrations|default:"0" }}</h4>
+                <p class="text-muted mb-0">Registros Recientes</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Management Sections -->
+<div class="row mb-4">
+    <div class="col-lg-6 mb-3">
+        <div class="card shadow-sm action-card h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-start">
+                    <div class="bg-primary bg-opacity-10 rounded-circle p-3 me-3">
+                        <i class="bi bi-people display-6 text-primary"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                        <h5 class="card-title">Gestión de Usuarios</h5>
+                        <p class="card-text text-muted">Administrar pacientes y usuarios del sistema</p>
+                        <div class="d-grid gap-2 d-sm-flex">
+                            <a href="{% url 'hospital:admin_users' %}" class="btn btn-primary">
+                                <i class="bi bi-list me-1"></i>Ver Usuarios
+                            </a>
+                            <a href="{% url 'hospital:admin_create_patient' %}" class="btn btn-outline-primary">
+                                <i class="bi bi-person-plus me-1"></i>Crear Paciente
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-6 mb-3">
+        <div class="card shadow-sm action-card h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-start">
+                    <div class="bg-success bg-opacity-10 rounded-circle p-3 me-3">
+                        <i class="bi bi-person-badge display-6 text-success"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                        <h5 class="card-title">Gestión de Médicos</h5>
+                        <p class="card-text text-muted">Administrar médicos especialistas del hospital</p>
+                        <div class="d-grid gap-2 d-sm-flex">
+                            <a href="{% url 'hospital:admin_doctors' %}" class="btn btn-success">
+                                <i class="bi bi-list me-1"></i>Ver Médicos
+                            </a>
+                            <a href="{% url 'hospital:admin_register_doctor' %}" class="btn btn-outline-success">
+                                <i class="bi bi-person-plus me-1"></i>Registrar Médico
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-6 mb-3">
+        <div class="card shadow-sm action-card h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-start">
+                    <div class="bg-warning bg-opacity-10 rounded-circle p-3 me-3">
+                        <i class="bi bi-calendar-check display-6 text-warning"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                        <h5 class="card-title">Gestión de Citas</h5>
+                        <p class="card-text text-muted">Supervisar y gestionar todas las citas médicas</p>
+                        <div class="d-grid gap-2 d-sm-flex">
+                            <a href="{% url 'hospital:admin_appointments' %}" class="btn btn-warning">
+                                <i class="bi bi-calendar-event me-1"></i>Ver Citas
+                            </a>
+                            <a href="{% url 'hospital:create_appointment' %}" class="btn btn-outline-warning">
+                                <i class="bi bi-calendar-plus me-1"></i>Crear Cita
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-6 mb-3">
+        <div class="card shadow-sm action-card h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-start">
+                    <div class="bg-info bg-opacity-10 rounded-circle p-3 me-3">
+                        <i class="bi bi-clock display-6 text-info"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                        <h5 class="card-title">Gestión de Disponibilidad</h5>
+                        <p class="card-text text-muted">Configurar horarios y disponibilidad médica</p>
+                        <div class="d-grid">
+                            <a href="{% url 'hospital:admin_availability' %}" class="btn btn-info">
+                                <i class="bi bi-calendar-range me-1"></i>Configurar Horarios
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-lightning me-2"></i>Acciones Rápidas
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-2">
+                        <a href="http://127.0.0.1:8001/docs" target="_blank" class="btn btn-outline-primary w-100">
+                            <i class="bi bi-book me-1"></i>Documentación API
+                        </a>
+                    </div>
+                    <div class="col-md-4 mb-2">
+                        <a href="{% url 'hospital:doctors_list' %}" class="btn btn-outline-success w-100">
+                            <i class="bi bi-people me-1"></i>Lista Pública de Médicos
+                        </a>
+                    </div>
+                    <div class="col-md-4 mb-2">
+                        <a href="{% url 'hospital:appointments' %}" class="btn btn-outline-info w-100">
+                            <i class="bi bi-calendar me-1"></i>Mis Citas (Paciente)
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- System Status -->
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-activity me-2"></i>Estado del Sistema
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-server text-primary me-3"></i>
+                            <div>
+                                <small class="text-muted">Backend API</small>
+                                <div class="fw-bold" id="api-status">
+                                    <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+                                    Verificando...
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-0">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-person-gear text-danger me-3"></i>
+                            <div>
+                                <small class="text-muted">Administrador Activo</small>
+                                <div class="fw-bold">
+                                    <span class="badge bg-danger">
+                                        {{ request.session.user_data.nombre }} {{ request.session.user_data.apellidos }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // API health check with improved UI
+    fetch('http://127.0.0.1:8001/health')
+        .then(response => response.json())
+        .then(data => {
+            const statusElement = document.getElementById('api-status');
+            if (data.status === 'healthy') {
+                statusElement.innerHTML = '<i class="bi bi-check-circle-fill text-success me-1"></i>Funcionando';
+            } else {
+                statusElement.innerHTML = '<i class="bi bi-exclamation-triangle-fill text-warning me-1"></i>Con problemas';
+            }
+        })
+        .catch(error => {
+            document.getElementById('api-status').innerHTML = 
+                '<i class="bi bi-x-circle-fill text-danger me-1"></i>No disponible';
+        });
+</script>
 {% endblock %}

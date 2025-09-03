@@ -2,32 +2,200 @@
 
 {% block title %}Acerca de - Hospital Management System{% endblock %}
 
-{% block page_title %}Acerca del Sistema{% endblock %}
+{% block page_title %}
+    <i class="bi bi-info-circle me-3"></i>Acerca del Sistema Hospitalario
+{% endblock %}
 
 {% block content %}
-    <h2>Sistema de Gestión Hospitalaria</h2>
-    
-    <p>Este es un sistema de prueba desarrollado para gestionar citas médicas y administración hospitalaria.</p>
-    
-    <h3>Tecnologías Utilizadas:</h3>
-    <ul>
-        <li><strong>Backend:</strong> FastAPI (Python)</li>
-        <li><strong>Frontend:</strong> Django (Python) - Solo para pruebas</li>
-        <li><strong>Base de Datos:</strong> MySQL</li>
-        <li><strong>Autenticación:</strong> JWT Tokens</li>
-    </ul>
-    
-    <h3>Funcionalidades:</h3>
-    <ul>
-        <li>Registro y autenticación de usuarios</li>
-        <li>Sistema de roles (Paciente, Médico, Administrador)</li>
-        <li>Gestión de citas médicas</li>
-        <li>Administración de médicos</li>
-        <li>Control de disponibilidad médica</li>
-        <li>Historial de cambios en citas</li>
-    </ul>
-    
-    <h3>Endpoint FastAPI:</h3>
-    <p>Backend corriendo en: <code>http://127.0.0.1:8001</code></p>
-    <p>Documentación API: <a href="http://127.0.0.1:8001/docs" target="_blank">http://127.0.0.1:8001/docs</a></p>
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <!-- Hero Section -->
+        <div class="card shadow-sm mb-4 border-0">
+            <div class="card-body text-center py-5">
+                <i class="bi bi-hospital display-1 text-primary mb-3"></i>
+                <h2 class="fw-bold text-primary mb-3">Sistema de Gestión Hospitalaria</h2>
+                <p class="lead text-muted">Plataforma integral diseñada para optimizar la gestión médica y mejorar la experiencia del paciente a través de tecnología avanzada y procesos eficientes.</p>
+            </div>
+        </div>
+
+        <!-- Key Features -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header">
+                <h4 class="mb-0">
+                    <i class="bi bi-star me-2"></i>Características Principales
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="d-flex align-items-start">
+                            <i class="bi bi-person-plus-fill text-primary me-3 mt-1"></i>
+                            <div>
+                                <h6 class="fw-bold">Registro y Autenticación</h6>
+                                <p class="text-muted mb-0">Sistema seguro de registro para pacientes y gestión de accesos.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="d-flex align-items-start">
+                            <i class="bi bi-shield-check text-success me-3 mt-1"></i>
+                            <div>
+                                <h6 class="fw-bold">Sistema de Roles</h6>
+                                <p class="text-muted mb-0">Control de acceso diferenciado para Pacientes, Médicos y Administradores.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="d-flex align-items-start">
+                            <i class="bi bi-calendar-check text-info me-3 mt-1"></i>
+                            <div>
+                                <h6 class="fw-bold">Gestión de Citas</h6>
+                                <p class="text-muted mb-0">Programación, confirmación y seguimiento completo de citas médicas.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="d-flex align-items-start">
+                            <i class="bi bi-people text-warning me-3 mt-1"></i>
+                            <div>
+                                <h6 class="fw-bold">Administración Médica</h6>
+                                <p class="text-muted mb-0">Gestión completa de especialistas y personal médico.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="d-flex align-items-start">
+                            <i class="bi bi-clock text-secondary me-3 mt-1"></i>
+                            <div>
+                                <h6 class="fw-bold">Control de Disponibilidad</h6>
+                                <p class="text-muted mb-0">Verificación en tiempo real de horarios y disponibilidad médica.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="d-flex align-items-start">
+                            <i class="bi bi-journal-medical text-danger me-3 mt-1"></i>
+                            <div>
+                                <h6 class="fw-bold">Historial Médico</h6>
+                                <p class="text-muted mb-0">Registro detallado de consultas y seguimiento de tratamientos.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Technology Stack -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header">
+                <h4 class="mb-0">
+                    <i class="bi bi-gear me-2"></i>Tecnologías y Seguridad
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-primary mb-3">
+                            <i class="bi bi-code-slash me-2"></i>Stack Tecnológico
+                        </h6>
+                        <ul class="list-unstyled">
+                            <li class="mb-2">
+                                <i class="bi bi-server text-primary me-2"></i>
+                                <strong>Backend:</strong> API REST con Python
+                            </li>
+                            <li class="mb-2">
+                                <i class="bi bi-window-desktop text-success me-2"></i>
+                                <strong>Frontend:</strong> Interface web responsive
+                            </li>
+                            <li class="mb-2">
+                                <i class="bi bi-database text-info me-2"></i>
+                                <strong>Base de Datos:</strong> Sistema de almacenamiento seguro
+                            </li>
+                            <li class="mb-2">
+                                <i class="bi bi-key text-warning me-2"></i>
+                                <strong>Autenticación:</strong> Tokens JWT seguros
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-primary mb-3">
+                            <i class="bi bi-shield-lock me-2"></i>Seguridad y Privacidad
+                        </h6>
+                        <ul class="list-unstyled">
+                            <li class="mb-2">
+                                <i class="bi bi-lock text-success me-2"></i>
+                                Encriptación de datos médicos
+                            </li>
+                            <li class="mb-2">
+                                <i class="bi bi-person-check text-info me-2"></i>
+                                Control de acceso por roles
+                            </li>
+                            <li class="mb-2">
+                                <i class="bi bi-journal-check text-warning me-2"></i>
+                                Auditoría de cambios
+                            </li>
+                            <li class="mb-2">
+                                <i class="bi bi-shield-check text-danger me-2"></i>
+                                Cumplimiento normativo
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Benefits -->
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <div class="card h-100 text-center border-primary">
+                    <div class="card-body">
+                        <i class="bi bi-lightning-charge display-3 text-primary mb-3"></i>
+                        <h5>Eficiencia</h5>
+                        <p class="text-muted">Optimización de procesos administrativos y reducción de tiempos de espera.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="card h-100 text-center border-success">
+                    <div class="card-body">
+                        <i class="bi bi-heart-pulse display-3 text-success mb-3"></i>
+                        <h5>Calidad</h5>
+                        <p class="text-muted">Mejora en la calidad de atención mediante seguimiento personalizado.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="card h-100 text-center border-info">
+                    <div class="card-body">
+                        <i class="bi bi-globe display-3 text-info mb-3"></i>
+                        <h5>Accesibilidad</h5>
+                        <p class="text-muted">Acceso 24/7 desde cualquier dispositivo con conexión a internet.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contact CTA -->
+        <div class="card shadow-sm mt-4 bg-primary bg-gradient text-white">
+            <div class="card-body text-center">
+                <h5 class="mb-3">
+                    <i class="bi bi-headset me-2"></i>¿Necesita Ayuda?
+                </h5>
+                <p class="mb-3">Nuestro equipo de soporte está disponible para ayudarle con cualquier consulta sobre el sistema.</p>
+                <div class="row justify-content-center">
+                    <div class="col-auto">
+                        <a href="{% url 'hospital:login' %}" class="btn btn-light me-2">
+                            <i class="bi bi-box-arrow-in-right me-1"></i>Acceder al Sistema
+                        </a>
+                    </div>
+                    <div class="col-auto">
+                        <a href="{% url 'hospital:register' %}" class="btn btn-outline-light">
+                            <i class="bi bi-person-plus me-1"></i>Crear Cuenta
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

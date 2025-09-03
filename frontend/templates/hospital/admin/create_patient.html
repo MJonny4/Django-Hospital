@@ -2,14 +2,22 @@
 
 {% block title %}Crear Nuevo Paciente - Hospital Management System{% endblock %}
 
-{% block page_title %}Crear Nuevo Paciente (Admin){% endblock %}
+{% block page_title %}
+    <i class="bi bi-person-plus me-3"></i>Crear Nuevo Paciente (Admin)
+{% endblock %}
 
 {% block content %}
-    <div style="margin-bottom: 20px;">
-        <a href="{% url 'hospital:admin_panel' %}" style="text-decoration: none;">← Volver al Panel de Administración</a>
+<div class="row mb-3">
+    <div class="col-12">
+        <a href="{% url 'hospital:admin_panel' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Volver al Panel de Administración
+        </a>
     </div>
-    
-    <div style="max-width: 600px; margin: 0 auto;">
+</div>
+
+<div class="row">
+    <div class="col-lg-6 mx-auto">
+        <div class="card shadow-sm">
         <form method="post">
             {% csrf_token %}
             

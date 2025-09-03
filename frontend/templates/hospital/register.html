@@ -2,70 +2,331 @@
 
 {% block title %}Registro - Hospital Management System{% endblock %}
 
-{% block page_title %}Registro de Usuario{% endblock %}
+{% block page_title %}
+    <i class="bi bi-person-plus me-3"></i>Registro de Usuario
+{% endblock %}
 
 {% block content %}
-    <form method="post">
-        {% csrf_token %}
-        
-        <h2>Crear Cuenta de Paciente</h2>
-        
-        <div>
-            <label for="dni">DNI:</label>
-            <input type="text" id="dni" name="dni" placeholder="12345678A" pattern="[0-9]{8}[A-Za-z]" required>
-            <small>Formato: 8 números + 1 letra (ej: 12345678A)</small>
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow">
+            <div class="card-header">
+                <h4 class="mb-0">
+                    <i class="bi bi-person-plus-fill me-2"></i>Crear Cuenta de Paciente
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="post" class="needs-validation" novalidate>
+                    {% csrf_token %}
+                    
+                    <!-- Personal Information -->
+                    <div class="row">
+                        <div class="col-12">
+                            <h5 class="text-primary mb-3">
+                                <i class="bi bi-person-circle me-2"></i>Información Personal
+                            </h5>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="dni" class="form-label">
+                                <i class="bi bi-card-text me-1"></i>DNI <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control" id="dni" name="dni" 
+                                   placeholder="12345678A" pattern="[0-9]{8}[A-Za-z]" required>
+                            <div class="form-text">Formato: 8 números + 1 letra (ej: 12345678A)</div>
+                            <div class="invalid-feedback">
+                                Por favor ingrese un DNI válido (8 números + 1 letra).
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="fecha_nacimiento" class="form-label">
+                                <i class="bi bi-calendar me-1"></i>Fecha de Nacimiento <span class="text-danger">*</span>
+                            </label>
+                            <input type="date" class="form-control" id="fecha_nacimiento" name="fecha_nacimiento" required>
+                            <div class="invalid-feedback">
+                                Por favor seleccione su fecha de nacimiento.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="nombre" class="form-label">
+                                <i class="bi bi-person me-1"></i>Nombre <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control" id="nombre" name="nombre" required 
+                                   placeholder="Su nombre">
+                            <div class="invalid-feedback">
+                                Por favor ingrese su nombre.
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="apellidos" class="form-label">
+                                <i class="bi bi-person me-1"></i>Apellidos <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control" id="apellidos" name="apellidos" required 
+                                   placeholder="Sus apellidos">
+                            <div class="invalid-feedback">
+                                Por favor ingrese sus apellidos.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Contact Information -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <h5 class="text-primary mb-3">
+                                <i class="bi bi-telephone me-2"></i>Información de Contacto
+                            </h5>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="email" class="form-label">
+                                <i class="bi bi-envelope me-1"></i>Email <span class="text-danger">*</span>
+                            </label>
+                            <input type="email" class="form-control" id="email" name="email" required 
+                                   placeholder="su.email@ejemplo.com">
+                            <div class="invalid-feedback">
+                                Por favor ingrese un email válido.
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="telefono" class="form-label">
+                                <i class="bi bi-phone me-1"></i>Teléfono <span class="text-danger">*</span>
+                            </label>
+                            <input type="tel" class="form-control" id="telefono" name="telefono" 
+                                   placeholder="612345678" pattern="[679][0-9]{8}" required>
+                            <div class="form-text">Formato: números españoles (ej: 612345678)</div>
+                            <div class="invalid-feedback">
+                                Por favor ingrese un teléfono válido.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="direccion" class="form-label">
+                            <i class="bi bi-geo-alt me-1"></i>Dirección <span class="text-danger">*</span>
+                        </label>
+                        <input type="text" class="form-control" id="direccion" name="direccion" required 
+                               placeholder="Su dirección completa">
+                        <div class="invalid-feedback">
+                            Por favor ingrese su dirección.
+                        </div>
+                    </div>
+                    
+                    <!-- Security -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <h5 class="text-primary mb-3">
+                                <i class="bi bi-shield-lock me-2"></i>Seguridad
+                            </h5>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="password" class="form-label">
+                                <i class="bi bi-lock me-1"></i>Contraseña <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                <input type="password" class="form-control" id="password" name="password" 
+                                       minlength="8" required placeholder="Mínimo 8 caracteres">
+                                <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                    <i class="bi bi-eye" id="toggleIcon"></i>
+                                </button>
+                            </div>
+                            <div class="form-text">Mínimo 8 caracteres</div>
+                            <div class="invalid-feedback">
+                                La contraseña debe tener al menos 8 caracteres.
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="confirmPassword" class="form-label">
+                                <i class="bi bi-lock-fill me-1"></i>Confirmar Contraseña <span class="text-danger">*</span>
+                            </label>
+                            <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" 
+                                   minlength="8" required placeholder="Repetir contraseña">
+                            <div class="invalid-feedback">
+                                Las contraseñas no coinciden.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Submit -->
+                    <div class="d-grid mt-4">
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="bi bi-person-plus me-2"></i>Registrarse como Paciente
+                        </button>
+                    </div>
+                </form>
+                
+                <hr class="my-4">
+                
+                <div class="text-center">
+                    <p class="text-muted mb-2">¿Ya tienes cuenta?</p>
+                    <a href="{% url 'hospital:login' %}" class="btn btn-outline-primary">
+                        <i class="bi bi-box-arrow-in-right me-1"></i>Inicia sesión aquí
+                    </a>
+                </div>
+            </div>
         </div>
         
-        <div>
-            <label for="nombre">Nombre:</label>
-            <input type="text" id="nombre" name="nombre" required>
+        <!-- Information Card -->
+        <div class="card shadow mt-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-info-circle me-2"></i>Información Importante
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 text-center mb-3">
+                        <i class="bi bi-person-check display-4 text-primary"></i>
+                        <h6 class="mt-2">Solo Pacientes</h6>
+                        <p class="text-muted small">Esta página solo permite registro de <strong>pacientes</strong></p>
+                    </div>
+                    <div class="col-md-4 text-center mb-3">
+                        <i class="bi bi-person-badge display-4 text-warning"></i>
+                        <h6 class="mt-2">Médicos</h6>
+                        <p class="text-muted small">Los médicos son registrados por <strong>administradores</strong></p>
+                    </div>
+                    <div class="col-md-4 text-center mb-3">
+                        <i class="bi bi-arrow-right-circle display-4 text-success"></i>
+                        <h6 class="mt-2">Automático</h6>
+                        <p class="text-muted small">Después del registro, podrás acceder <strong>inmediatamente</strong></p>
+                    </div>
+                </div>
+            </div>
         </div>
-        
-        <div>
-            <label for="apellidos">Apellidos:</label>
-            <input type="text" id="apellidos" name="apellidos" required>
-        </div>
-        
-        <div>
-            <label for="email">Email:</label>
-            <input type="email" id="email" name="email" required>
-        </div>
-        
-        <div>
-            <label for="telefono">Teléfono:</label>
-            <input type="tel" id="telefono" name="telefono" placeholder="612345678" pattern="[679][0-9]{8}" required>
-            <small>Formato: números españoles (ej: 612345678)</small>
-        </div>
-        
-        <div>
-            <label for="direccion">Dirección:</label>
-            <input type="text" id="direccion" name="direccion" required>
-        </div>
-        
-        <div>
-            <label for="fecha_nacimiento">Fecha de Nacimiento:</label>
-            <input type="date" id="fecha_nacimiento" name="fecha_nacimiento" required>
-        </div>
-        
-        <div>
-            <label for="password">Contraseña:</label>
-            <input type="password" id="password" name="password" minlength="8" required>
-            <small>Mínimo 8 caracteres</small>
-        </div>
-        
-        <div>
-            <button type="submit">Registrarse</button>
-        </div>
-    </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Form validation
+    (function() {
+        'use strict';
+        window.addEventListener('load', function() {
+            var forms = document.getElementsByClassName('needs-validation');
+            var validation = Array.prototype.filter.call(forms, function(form) {
+                form.addEventListener('submit', function(event) {
+                    if (form.checkValidity() === false) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                }, false);
+            });
+        }, false);
+    })();
     
-    <hr>
+    // Toggle password visibility
+    document.getElementById('togglePassword').addEventListener('click', function() {
+        const passwordInput = document.getElementById('password');
+        const confirmPasswordInput = document.getElementById('confirmPassword');
+        const toggleIcon = document.getElementById('toggleIcon');
+        
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            confirmPasswordInput.type = 'text';
+            toggleIcon.className = 'bi bi-eye-slash';
+        } else {
+            passwordInput.type = 'password';
+            confirmPasswordInput.type = 'password';
+            toggleIcon.className = 'bi bi-eye';
+        }
+    });
     
-    <h3>Información:</h3>
-    <ul>
-        <li>Esta página solo permite registro de <strong>pacientes</strong></li>
-        <li>Los médicos son registrados por administradores</li>
-        <li>Después del registro, serás redirigido automáticamente</li>
-    </ul>
+    // Password confirmation validation
+    document.getElementById('confirmPassword').addEventListener('input', function() {
+        const password = document.getElementById('password').value;
+        const confirmPassword = this.value;
+        
+        if (password !== confirmPassword) {
+            this.setCustomValidity('Las contraseñas no coinciden');
+        } else {
+            this.setCustomValidity('');
+        }
+    });
     
-    <p><a href="{% url 'hospital:login' %}">¿Ya tienes cuenta? Inicia sesión aquí</a></p>
+    document.getElementById('password').addEventListener('input', function() {
+        const confirmPassword = document.getElementById('confirmPassword');
+        if (confirmPassword.value !== '') {
+            confirmPassword.dispatchEvent(new Event('input'));
+        }
+    });
+    
+    // DNI format validation
+    document.getElementById('dni').addEventListener('input', function() {
+        const value = this.value.toUpperCase();
+        this.value = value;
+        
+        // Format validation
+        const dniPattern = /^[0-9]{8}[A-Z]$/;
+        if (value.length === 9) {
+            if (dniPattern.test(value)) {
+                // Additional DNI letter validation
+                const letters = 'TRWAGMYFPDXBNJZSQVHLCKE';
+                const number = parseInt(value.substring(0, 8));
+                const letter = value.substring(8);
+                const expectedLetter = letters[number % 23];
+                
+                if (letter !== expectedLetter) {
+                    this.setCustomValidity('La letra del DNI no es correcta');
+                } else {
+                    this.setCustomValidity('');
+                }
+            } else {
+                this.setCustomValidity('Formato de DNI incorrecto');
+            }
+        } else {
+            this.setCustomValidity('');
+        }
+    });
+    
+    // Phone number format validation
+    document.getElementById('telefono').addEventListener('input', function() {
+        const value = this.value;
+        const phonePattern = /^[679][0-9]{8}$/;
+        
+        if (value.length === 9) {
+            if (!phonePattern.test(value)) {
+                this.setCustomValidity('El teléfono debe empezar por 6, 7 o 9 y tener 9 dígitos');
+            } else {
+                this.setCustomValidity('');
+            }
+        } else {
+            this.setCustomValidity('');
+        }
+    });
+    
+    // Age validation (must be at least 16 years old)
+    document.getElementById('fecha_nacimiento').addEventListener('change', function() {
+        const today = new Date();
+        const birthDate = new Date(this.value);
+        const age = today.getFullYear() - birthDate.getFullYear();
+        const monthDiff = today.getMonth() - birthDate.getMonth();
+        
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+            age--;
+        }
+        
+        if (age < 16) {
+            this.setCustomValidity('Debe ser mayor de 16 años para registrarse');
+        } else if (age > 120) {
+            this.setCustomValidity('Por favor verifique la fecha de nacimiento');
+        } else {
+            this.setCustomValidity('');
+        }
+    });
+</script>
 {% endblock %}

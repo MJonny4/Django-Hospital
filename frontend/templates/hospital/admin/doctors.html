@@ -2,70 +2,185 @@
 
 {% block title %}Gestión de Médicos - Hospital Management System{% endblock %}
 
-{% block page_title %}Gestión de Médicos{% endblock %}
+{% block page_title %}
+    <i class="bi bi-person-badge me-3"></i>Gestión de Médicos
+{% endblock %}
 
 {% block content %}
-    <div style="margin-bottom: 20px;">
-        <a href="{% url 'hospital:admin_panel' %}" style="text-decoration: none;">← Volver al Panel</a>
+<div class="row mb-3">
+    <div class="col-12">
+        <a href="{% url 'hospital:admin_panel' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Volver al Panel
+        </a>
     </div>
-    
-    <h2>Lista de Médicos</h2>
-    
-    {% if doctors %}
-        <table border="1" style="width: 100%; border-collapse: collapse;">
-            <thead>
-                <tr style="background-color: #f0f0f0;">
-                    <th>ID</th>
-                    <th>DNI</th>
-                    <th>Nombre</th>
-                    <th>Email</th>
-                    <th>Especialidad</th>
-                    <th>Hospital/Centro</th>
-                    <th>Número Colegiado</th>
-                    <th>Estado</th>
-                    <th>Fecha Alta</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for doctor in doctors %}
-                <tr>
-                    <td>{{ doctor.id }}</td>
-                    <td>{{ doctor.dni }}</td>
-                    <td>{{ doctor.nombre }} {{ doctor.apellidos }}</td>
-                    <td>{{ doctor.email }}</td>
-                    <td>{{ doctor.especialidad }}</td>
-                    <td>{{ doctor.hospital_centro }}</td>
-                    <td>{{ doctor.numero_colegiado }}</td>
-                    <td>
-                        {% if doctor.is_active %}
-                            <span style="color: green;">✅ Activo</span>
-                        {% else %}
-                            <span style="color: red;">❌ Inactivo</span>
-                        {% endif %}
-                    </td>
-                    <td>{{ doctor.fecha_alta_sistema|date:"d/m/Y"|default:"N/A" }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        
-        <p><strong>Total de médicos:</strong> {{ doctors|length }}</p>
-    {% else %}
-        <p>No se encontraron médicos registrados.</p>
-        <div style="background-color: #f0f0f0; padding: 15px; border-radius: 5px;">
-            <p><strong>Posibles causas:</strong></p>
-            <ul>
-                <li>Error de conexión con la API</li>
-                <li>No hay médicos registrados en el sistema</li>
-                <li>Problema con los permisos de administrador</li>
-            </ul>
+</div>
+
+{% if doctors %}
+    <!-- Doctors Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h5 class="mb-0">
+                                <i class="bi bi-list me-2"></i>Lista de Médicos Especialistas
+                            </h5>
+                        </div>
+                        <div class="col-auto">
+                            <span class="badge bg-success">{{ doctors|length }} médicos</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th class="text-center">ID</th>
+                                    <th>DNI</th>
+                                    <th>Médico</th>
+                                    <th>Especialidad</th>
+                                    <th>Hospital/Centro</th>
+                                    <th>Número Colegiado</th>
+                                    <th class="text-center">Estado</th>
+                                    <th>Fecha Alta</th>
+                                    <th class="text-center">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for doctor in doctors %}
+                                <tr>
+                                    <td class="text-center">
+                                        <small class="text-muted">#{{ doctor.id }}</small>
+                                    </td>
+                                    <td>
+                                        <code>{{ doctor.dni }}</code>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <i class="bi bi-person-badge text-success me-2"></i>
+                                            <div>
+                                                <strong>Dr. {{ doctor.nombre }} {{ doctor.apellidos }}</strong>
+                                                <br><small class="text-muted">{{ doctor.email }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-primary">{{ doctor.especialidad }}</span>
+                                        {% if doctor.subespecialidad %}
+                                            <br><small class="text-muted">{{ doctor.subespecialidad }}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <i class="bi bi-building text-info me-2"></i>
+                                            {{ doctor.hospital_centro }}
+                                        </div>
+                                        {% if doctor.departamento_servicio %}
+                                            <small class="text-muted">{{ doctor.departamento_servicio }}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <code>{{ doctor.numero_colegiado }}</code>
+                                        {% if doctor.colegio_medico %}
+                                            <br><small class="text-muted">{{ doctor.colegio_medico }}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">
+                                        {% if doctor.is_active %}
+                                            <span class="badge bg-success">
+                                                <i class="bi bi-check-circle me-1"></i>Activo
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-danger">
+                                                <i class="bi bi-x-circle me-1"></i>Inactivo
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">{{ doctor.fecha_alta_sistema|date:"d/m/Y"|default:"N/A" }}</small>
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <a href="{% url 'hospital:doctor_detail' doctor.id %}" class="btn btn-outline-primary">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                            <button type="button" class="btn btn-outline-secondary" onclick="showDoctorInfo({{ doctor.id }})">
+                                                <i class="bi bi-info-circle"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
-    {% endif %}
-    
-    <h3>Acciones:</h3>
-    <ul>
-        <li><a href="{% url 'hospital:admin_register_doctor' %}">Registrar Nuevo Médico</a></li>
-        <li><a href="{% url 'hospital:admin_availability' %}">Configurar Horarios de Médicos</a></li>
-        <li><a href="{% url 'hospital:admin_users' %}">Ver Todos los Usuarios</a></li>
-    </ul>
+    </div>
+
+{% else %}
+    <!-- No Doctors Found -->
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card shadow-sm">
+                <div class="card-body text-center py-5">
+                    <i class="bi bi-person-x display-1 text-muted mb-3"></i>
+                    <h4>No se encontraron médicos</h4>
+                    <p class="text-muted mb-4">No hay médicos registrados en el sistema en este momento.</p>
+                    
+                    <div class="alert alert-warning">
+                        <h6><i class="bi bi-exclamation-triangle me-2"></i>Posibles causas:</h6>
+                        <ul class="list-unstyled mb-0">
+                            <li>• Error de conexión con la API</li>
+                            <li>• No hay médicos registrados en el sistema</li>
+                            <li>• Problema con los permisos de administrador</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+<!-- Quick Actions -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-lightning me-2"></i>Acciones Rápidas
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-2">
+                        <a href="{% url 'hospital:admin_register_doctor' %}" class="btn btn-outline-success w-100">
+                            <i class="bi bi-person-plus me-1"></i>Registrar Nuevo Médico
+                        </a>
+                    </div>
+                    <div class="col-md-4 mb-2">
+                        <a href="{% url 'hospital:admin_availability' %}" class="btn btn-outline-info w-100">
+                            <i class="bi bi-calendar-range me-1"></i>Configurar Horarios
+                        </a>
+                    </div>
+                    <div class="col-md-4 mb-2">
+                        <a href="{% url 'hospital:admin_users' %}" class="btn btn-outline-primary w-100">
+                            <i class="bi bi-people me-1"></i>Ver Todos los Usuarios
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function showDoctorInfo(doctorId) {
+    // Simple info function - could be expanded to show modal with more details
+    alert(`Mostrando información adicional del médico #${doctorId}\n\nEsta funcionalidad se puede expandir para mostrar un modal con información detallada.`);
+}
+</script>
 {% endblock %}

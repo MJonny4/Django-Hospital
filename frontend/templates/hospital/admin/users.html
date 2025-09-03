@@ -2,74 +2,162 @@
 
 {% block title %}Gestión de Usuarios - Hospital Management System{% endblock %}
 
-{% block page_title %}Gestión de Usuarios{% endblock %}
+{% block page_title %}
+    <i class="bi bi-people me-3"></i>Gestión de Usuarios
+{% endblock %}
 
 {% block content %}
-    <div style="margin-bottom: 20px;">
-        <a href="{% url 'hospital:admin_panel' %}" style="text-decoration: none;">← Volver al Panel</a>
+<div class="row mb-3">
+    <div class="col-12">
+        <a href="{% url 'hospital:admin_panel' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Volver al Panel
+        </a>
     </div>
-    
-    <h2>Lista de Todos los Usuarios</h2>
-    
-    {% if users %}
-        <table border="1" style="width: 100%; border-collapse: collapse;">
-            <thead>
-                <tr style="background-color: #f0f0f0;">
-                    <th>ID</th>
-                    <th>DNI</th>
-                    <th>Nombre Completo</th>
-                    <th>Email</th>
-                    <th>Teléfono</th>
-                    <th>Roles</th>
-                    <th>Estado</th>
-                    <th>Fecha Registro</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for user in users %}
-                <tr>
-                    <td>{{ user.id }}</td>
-                    <td>{{ user.dni }}</td>
-                    <td>{{ user.nombre }} {{ user.apellidos }}</td>
-                    <td>{{ user.email }}</td>
-                    <td>{{ user.telefono }}</td>
-                    <td>
-                        {% for role in user.roles %}
-                            <span style="background-color: #e0e0e0; padding: 2px 6px; border-radius: 3px; margin: 1px;">
-                                {{ role }}
-                            </span>
-                        {% endfor %}
-                    </td>
-                    <td>
-                        {% if user.is_active %}
-                            <span style="color: green;">✅ Activo</span>
-                        {% else %}
-                            <span style="color: red;">❌ Inactivo</span>
-                        {% endif %}
-                    </td>
-                    <td>{{ user.created_at|date:"d/m/Y H:i"|default:"N/A" }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        
-        <p><strong>Total de usuarios:</strong> {{ users|length }}</p>
-    {% else %}
-        <p>No se encontraron usuarios.</p>
-        <div style="background-color: #f0f0f0; padding: 15px; border-radius: 5px;">
-            <p><strong>Posibles causas:</strong></p>
-            <ul>
-                <li>Error de conexión con la API</li>
-                <li>No hay usuarios registrados en el sistema</li>
-                <li>Problema con los permisos de administrador</li>
-            </ul>
+</div>
+
+{% if users %}
+    <!-- Users Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h5 class="mb-0">
+                                <i class="bi bi-list me-2"></i>Lista de Usuarios
+                            </h5>
+                        </div>
+                        <div class="col-auto">
+                            <span class="badge bg-primary">{{ users|length }} usuarios</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th class="text-center">ID</th>
+                                    <th>DNI</th>
+                                    <th>Nombre Completo</th>
+                                    <th>Email</th>
+                                    <th>Teléfono</th>
+                                    <th>Roles</th>
+                                    <th class="text-center">Estado</th>
+                                    <th>Registro</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in users %}
+                                <tr>
+                                    <td class="text-center">
+                                        <small class="text-muted">#{{ user.id }}</small>
+                                    </td>
+                                    <td>
+                                        <code>{{ user.dni }}</code>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <i class="bi bi-person-circle text-primary me-2"></i>
+                                            <strong>{{ user.nombre }} {{ user.apellidos }}</strong>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <small>{{ user.email }}</small>
+                                    </td>
+                                    <td>
+                                        <small>{{ user.telefono }}</small>
+                                    </td>
+                                    <td>
+                                        {% for role in user.roles %}
+                                            {% if role == 'patient' %}
+                                                <span class="badge bg-primary me-1">👤 Paciente</span>
+                                            {% elif role == 'doctor' %}
+                                                <span class="badge bg-success me-1">👨‍⚕️ Médico</span>
+                                            {% elif role == 'admin' %}
+                                                <span class="badge bg-danger me-1">⚙️ Admin</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary me-1">{{ role }}</span>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </td>
+                                    <td class="text-center">
+                                        {% if user.is_active %}
+                                            <span class="badge bg-success">
+                                                <i class="bi bi-check-circle me-1"></i>Activo
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-danger">
+                                                <i class="bi bi-x-circle me-1"></i>Inactivo
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">{{ user.created_at|date:"d/m/Y H:i"|default:"N/A" }}</small>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
-    {% endif %}
-    
-    <h3>Acciones:</h3>
-    <ul>
-        <li><a href="{% url 'hospital:register' %}">Crear Nuevo Paciente</a></li>
-        <li><a href="{% url 'hospital:admin_register_doctor' %}">Registrar Nuevo Médico</a></li>
-        <li><a href="{% url 'hospital:admin_doctors' %}">Ver Lista de Médicos</a></li>
-    </ul>
+    </div>
+
+{% else %}
+    <!-- No Users Found -->
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card shadow-sm">
+                <div class="card-body text-center py-5">
+                    <i class="bi bi-people-fill display-1 text-muted mb-3"></i>
+                    <h4>No se encontraron usuarios</h4>
+                    <p class="text-muted mb-4">No hay usuarios registrados en el sistema en este momento.</p>
+                    
+                    <div class="alert alert-warning">
+                        <h6><i class="bi bi-exclamation-triangle me-2"></i>Posibles causas:</h6>
+                        <ul class="list-unstyled mb-0">
+                            <li>• Error de conexión con la API</li>
+                            <li>• No hay usuarios registrados en el sistema</li>
+                            <li>• Problema con los permisos de administrador</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+<!-- Quick Actions -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-lightning me-2"></i>Acciones Rápidas
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-2">
+                        <a href="{% url 'hospital:register' %}" class="btn btn-outline-primary w-100">
+                            <i class="bi bi-person-plus me-1"></i>Crear Nuevo Paciente
+                        </a>
+                    </div>
+                    <div class="col-md-4 mb-2">
+                        <a href="{% url 'hospital:admin_register_doctor' %}" class="btn btn-outline-success w-100">
+                            <i class="bi bi-person-badge me-1"></i>Registrar Nuevo Médico
+                        </a>
+                    </div>
+                    <div class="col-md-4 mb-2">
+                        <a href="{% url 'hospital:admin_doctors' %}" class="btn btn-outline-info w-100">
+                            <i class="bi bi-people me-1"></i>Ver Lista de Médicos
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

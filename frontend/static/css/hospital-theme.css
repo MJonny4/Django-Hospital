@@ -126,13 +126,42 @@ body {
   border: none;
   border-radius: 15px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  transition: all 0.3s ease;
   background-color: var(--white);
 }
 
-.card:hover {
+/* Only apply hover animation to interactive/clickable cards */
+.card.card-interactive {
+  transition: all 0.3s ease;
+}
+
+.card.card-interactive:hover {
   transform: translateY(-5px);
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+}
+
+/* Apply to cards that contain primarily actions/links */
+.card a.btn:only-child:hover,
+.card .btn-group:hover,
+.card .d-grid:hover {
+  transform: none; /* Prevent double animation */
+}
+
+/* Specific interactive cards that should have hover animation */
+.doctor-card,
+.service-card,
+.action-card,
+.stats-card:hover,
+.clickable-card {
+  transition: all 0.3s ease;
+}
+
+.doctor-card:hover,
+.service-card:hover,
+.action-card:hover,
+.stats-card:hover,
+.clickable-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.1);
 }
 
 .card-header {

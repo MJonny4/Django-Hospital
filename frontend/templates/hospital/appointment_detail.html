@@ -2,155 +2,315 @@
 
 {% block title %}Detalle de Cita - Hospital Management System{% endblock %}
 
-{% block page_title %}Detalle de la Cita{% endblock %}
+{% block page_title %}
+    <i class="bi bi-calendar-event me-3"></i>Detalle de la Cita
+{% endblock %}
 
 {% block content %}
-    {% if appointment %}
-        <div>
-            <p><a href="{% url 'hospital:appointments' %}">← Volver a Mis Citas</a></p>
-            
-            <h2>Cita #{{ appointment.id }}</h2>
-            
-            <table border="1" style="width: 100%; max-width: 800px;">
-                <tr>
-                    <th style="background-color: #f0f0f0; padding: 10px; text-align: left; width: 200px;">Campo</th>
-                    <th style="background-color: #f0f0f0; padding: 10px; text-align: left;">Información</th>
-                </tr>
-                
-                <tr>
-                    <td style="padding: 10px; font-weight: bold;">Estado</td>
-                    <td style="padding: 10px;">
-                        <strong>
-                            {% if appointment.status == 'scheduled' %}📅 Programada
-                            {% elif appointment.status == 'confirmed' %}✅ Confirmada
-                            {% elif appointment.status == 'in_progress' %}🔄 En Curso
-                            {% elif appointment.status == 'completed' %}✅ Completada
-                            {% elif appointment.status == 'cancelled' %}❌ Cancelada
-                            {% elif appointment.status == 'no_show' %}❌ No Asistió
-                            {% elif appointment.status == 'rescheduled' %}📅 Reprogramada
-                            {% else %}{{ appointment.status }}
+<div class="row mb-3">
+    <div class="col-12">
+        <a href="{% url 'hospital:appointments' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Volver a Mis Citas
+        </a>
+    </div>
+</div>
+
+{% if appointment %}
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <!-- Appointment Header -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h4 class="mb-0">
+                                <i class="bi bi-calendar-event me-2"></i>Cita #{{ appointment.id }}
+                            </h4>
+                        </div>
+                        <div class="col-auto">
+                            {% if appointment.status == 'scheduled' %}
+                                <span class="badge bg-info fs-6"><i class="bi bi-calendar me-1"></i>Programada</span>
+                            {% elif appointment.status == 'confirmed' %}
+                                <span class="badge bg-success fs-6"><i class="bi bi-check-circle me-1"></i>Confirmada</span>
+                            {% elif appointment.status == 'in_progress' %}
+                                <span class="badge bg-warning fs-6"><i class="bi bi-hourglass-split me-1"></i>En Curso</span>
+                            {% elif appointment.status == 'completed' %}
+                                <span class="badge bg-success fs-6"><i class="bi bi-check-circle-fill me-1"></i>Completada</span>
+                            {% elif appointment.status == 'cancelled' %}
+                                <span class="badge bg-danger fs-6"><i class="bi bi-x-circle me-1"></i>Cancelada</span>
+                            {% elif appointment.status == 'no_show' %}
+                                <span class="badge bg-secondary fs-6"><i class="bi bi-person-x me-1"></i>No Asistió</span>
+                            {% elif appointment.status == 'rescheduled' %}
+                                <span class="badge bg-primary fs-6"><i class="bi bi-calendar-event me-1"></i>Reprogramada</span>
+                            {% else %}
+                                <span class="badge bg-light text-dark fs-6">{{ appointment.status }}</span>
                             {% endif %}
-                        </strong>
-                    </td>
-                </tr>
-                
-                <tr>
-                    <td style="padding: 10px; font-weight: bold;">Fecha y Hora</td>
-                    <td style="padding: 10px;">{{ appointment.appointment_date|date:"l, d de F de Y \a \l\a\s H:i" }}</td>
-                </tr>
-                
-                <tr>
-                    <td style="padding: 10px; font-weight: bold;">Duración</td>
-                    <td style="padding: 10px;">{{ appointment.duration_minutes }} minutos</td>
-                </tr>
-                
-                <tr>
-                    <td style="padding: 10px; font-weight: bold;">Tipo de Cita</td>
-                    <td style="padding: 10px;">
-                        {% if appointment.appointment_type == 'consultation' %}Consulta General
-                        {% elif appointment.appointment_type == 'follow_up' %}Seguimiento
-                        {% elif appointment.appointment_type == 'emergency' %}Urgencia
-                        {% elif appointment.appointment_type == 'check_up' %}Revisión
-                        {% elif appointment.appointment_type == 'procedure' %}Procedimiento
-                        {% elif appointment.appointment_type == 'vaccination' %}Vacunación
-                        {% else %}{{ appointment.appointment_type }}
-                        {% endif %}
-                    </td>
-                </tr>
-                
-                <tr>
-                    <td style="padding: 10px; font-weight: bold;">Prioridad</td>
-                    <td style="padding: 10px;">
-                        {% if appointment.priority == 'low' %}🔵 Baja
-                        {% elif appointment.priority == 'normal' %}⚪ Normal
-                        {% elif appointment.priority == 'high' %}🟡 Alta
-                        {% elif appointment.priority == 'urgent' %}🔴 Urgente
-                        {% else %}{{ appointment.priority }}
-                        {% endif %}
-                    </td>
-                </tr>
-                
-                <tr>
-                    <td style="padding: 10px; font-weight: bold;">Médico</td>
-                    <td style="padding: 10px;">
-                        {% if appointment.doctor_name %}
-                            <strong>{{ appointment.doctor_name }}</strong><br>
-                            {% if appointment.doctor_specialidad %}
-                                <em>{{ appointment.doctor_specialidad }}</em><br>
-                            {% endif %}
-                            {% if appointment.doctor_hospital %}
-                                {{ appointment.doctor_hospital }}
-                            {% endif %}
-                        {% else %}
-                            Información del médico no disponible
-                        {% endif %}
-                    </td>
-                </tr>
-                
-                <tr>
-                    <td style="padding: 10px; font-weight: bold;">Paciente</td>
-                    <td style="padding: 10px;">
-                        {% if appointment.patient %}
-                            <strong>{{ appointment.patient.nombre }} {{ appointment.patient.apellidos }}</strong><br>
-                            DNI: {{ appointment.patient.dni }}<br>
-                            Email: {{ appointment.patient.email }}<br>
-                            Teléfono: {{ appointment.patient.telefono }}
-                        {% else %}
-                            Información del paciente no disponible
-                        {% endif %}
-                    </td>
-                </tr>
-                
-                <tr>
-                    <td style="padding: 10px; font-weight: bold;">Motivo</td>
-                    <td style="padding: 10px;">{{ appointment.reason|default:"No especificado" }}</td>
-                </tr>
-                
-                <tr>
-                    <td style="padding: 10px; font-weight: bold;">Notas Adicionales</td>
-                    <td style="padding: 10px;">{{ appointment.notes|default:"Sin notas adicionales" }}</td>
-                </tr>
-                
-                {% if appointment.created_at %}
-                <tr>
-                    <td style="padding: 10px; font-weight: bold;">Creada el</td>
-                    <td style="padding: 10px;">{{ appointment.created_at|date:"d/m/Y H:i" }}</td>
-                </tr>
-                {% endif %}
-                
-                {% if appointment.cancellation_reason %}
-                <tr style="background-color: #ffe6e6;">
-                    <td style="padding: 10px; font-weight: bold;">Motivo de Cancelación</td>
-                    <td style="padding: 10px;">{{ appointment.cancellation_reason }}</td>
-                </tr>
-                {% endif %}
-            </table>
-            
-            <br>
-            
-            <!-- Action buttons -->
-            <div>
-                {% if appointment.status == 'scheduled' or appointment.status == 'confirmed' %}
-                    <form method="post" action="{% url 'hospital:cancel_appointment' appointment.id %}" style="display:inline;">
-                        {% csrf_token %}
-                        <label for="cancellation_reason">Motivo de cancelación (opcional):</label><br>
-                        <textarea id="cancellation_reason" name="cancellation_reason" rows="3" cols="40" placeholder="Escriba el motivo de la cancelación..."></textarea><br><br>
-                        <button type="submit" onclick="return confirm('¿Está seguro de cancelar esta cita?')" style="background-color: #dc3545; color: white; padding: 10px 20px;">
-                            ❌ Cancelar Cita
-                        </button>
-                    </form>
-                {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-calendar-date text-primary me-3"></i>
+                                <div>
+                                    <small class="text-muted">Fecha y Hora</small>
+                                    <div class="fw-bold">{{ appointment.appointment_date|date:"l, d de F de Y \a \l\a\s H:i" }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-clock text-success me-3"></i>
+                                <div>
+                                    <small class="text-muted">Duración</small>
+                                    <div class="fw-bold">{{ appointment.duration_minutes }} minutos</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-clipboard-pulse text-info me-3"></i>
+                                <div>
+                                    <small class="text-muted">Tipo de Cita</small>
+                                    <div class="fw-bold">
+                                        {% if appointment.appointment_type == 'consultation' %}Consulta General
+                                        {% elif appointment.appointment_type == 'follow_up' %}Seguimiento
+                                        {% elif appointment.appointment_type == 'emergency' %}Urgencia
+                                        {% elif appointment.appointment_type == 'check_up' %}Revisión
+                                        {% elif appointment.appointment_type == 'procedure' %}Procedimiento
+                                        {% elif appointment.appointment_type == 'vaccination' %}Vacunación
+                                        {% else %}{{ appointment.appointment_type }}
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-0">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-flag text-warning me-3"></i>
+                                <div>
+                                    <small class="text-muted">Prioridad</small>
+                                    <div class="fw-bold">
+                                        {% if appointment.priority == 'low' %}<span class="text-primary">Baja</span>
+                                        {% elif appointment.priority == 'normal' %}<span class="text-secondary">Normal</span>
+                                        {% elif appointment.priority == 'high' %}<span class="text-warning">Alta</span>
+                                        {% elif appointment.priority == 'urgent' %}<span class="text-danger">Urgente</span>
+                                        {% else %}{{ appointment.priority }}
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            
-            <br>
-            <p><a href="{% url 'hospital:appointments' %}">← Volver a Mis Citas</a></p>
-            
+
+            <!-- Doctor Information -->
+            {% if appointment.doctor_name %}
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-person-badge me-2"></i>Información del Médico
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-person text-primary me-3"></i>
+                                <div>
+                                    <small class="text-muted">Médico</small>
+                                    <div class="fw-bold">{{ appointment.doctor_name }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        {% if appointment.doctor_specialidad %}
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-activity text-success me-3"></i>
+                                <div>
+                                    <small class="text-muted">Especialidad</small>
+                                    <div class="fw-bold">{{ appointment.doctor_specialidad }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% if appointment.doctor_hospital %}
+                        <div class="col-md-12 mb-0">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-building text-info me-3"></i>
+                                <div>
+                                    <small class="text-muted">Hospital/Centro</small>
+                                    <div class="fw-bold">{{ appointment.doctor_hospital }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Patient Information -->
+            {% if appointment.patient %}
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-person-circle me-2"></i>Información del Paciente
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-person text-primary me-3"></i>
+                                <div>
+                                    <small class="text-muted">Nombre Completo</small>
+                                    <div class="fw-bold">{{ appointment.patient.nombre }} {{ appointment.patient.apellidos }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-card-text text-secondary me-3"></i>
+                                <div>
+                                    <small class="text-muted">DNI</small>
+                                    <div class="fw-bold">{{ appointment.patient.dni }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-envelope text-info me-3"></i>
+                                <div>
+                                    <small class="text-muted">Email</small>
+                                    <div class="fw-bold">{{ appointment.patient.email }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-0">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-phone text-success me-3"></i>
+                                <div>
+                                    <small class="text-muted">Teléfono</small>
+                                    <div class="fw-bold">{{ appointment.patient.telefono }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Appointment Details -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-clipboard2-data me-2"></i>Detalles de la Cita
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <div class="d-flex align-items-start">
+                                <i class="bi bi-chat-left-text text-primary me-3 mt-1"></i>
+                                <div>
+                                    <small class="text-muted">Motivo</small>
+                                    <div class="mt-1">{{ appointment.reason|default:"No especificado" }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 mb-3">
+                            <div class="d-flex align-items-start">
+                                <i class="bi bi-sticky text-secondary me-3 mt-1"></i>
+                                <div>
+                                    <small class="text-muted">Notas Adicionales</small>
+                                    <div class="mt-1">{{ appointment.notes|default:"Sin notas adicionales" }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        {% if appointment.created_at %}
+                        <div class="col-12 mb-0">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-calendar-plus text-muted me-3"></i>
+                                <div>
+                                    <small class="text-muted">Creada el</small>
+                                    <div class="fw-bold">{{ appointment.created_at|date:"d/m/Y H:i" }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cancellation Information -->
+            {% if appointment.cancellation_reason %}
+            <div class="card shadow-sm border-danger mb-4">
+                <div class="card-header bg-danger bg-opacity-10">
+                    <h5 class="mb-0 text-danger">
+                        <i class="bi bi-x-circle me-2"></i>Información de Cancelación
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-start">
+                        <i class="bi bi-exclamation-triangle text-danger me-3 mt-1"></i>
+                        <div>
+                            <small class="text-muted">Motivo de Cancelación</small>
+                            <div class="mt-1 text-danger">{{ appointment.cancellation_reason }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Action Buttons -->
+            {% if appointment.status == 'scheduled' or appointment.status == 'confirmed' %}
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-gear me-2"></i>Acciones Disponibles
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="{% url 'hospital:cancel_appointment' appointment.id %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="cancellation_reason" class="form-label">
+                                <i class="bi bi-chat-left-text me-1"></i>Motivo de cancelación (opcional)
+                            </label>
+                            <textarea id="cancellation_reason" name="cancellation_reason" 
+                                      class="form-control" rows="3" 
+                                      placeholder="Escriba el motivo de la cancelación..."></textarea>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-danger"
+                                    onclick="return confirm('¿Está seguro de cancelar esta cita?')">
+                                <i class="bi bi-x-circle me-1"></i>Cancelar Cita
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            {% endif %}
         </div>
-    {% else %}
-        <div>
-            <h2>Cita no encontrada</h2>
-            <p>La cita solicitada no existe o no tienes permisos para verla.</p>
-            <p><a href="{% url 'hospital:appointments' %}">← Volver a Mis Citas</a></p>
+    </div>
+
+{% else %}
+    <div class="row">
+        <div class="col-lg-6 mx-auto">
+            <div class="card shadow-sm">
+                <div class="card-body text-center py-5">
+                    <i class="bi bi-calendar-x display-1 text-muted mb-3"></i>
+                    <h3 class="text-muted">Cita no encontrada</h3>
+                    <p class="text-muted mb-4">La cita solicitada no existe o no tienes permisos para verla.</p>
+                    <a href="{% url 'hospital:appointments' %}" class="btn btn-primary">
+                        <i class="bi bi-arrow-left me-1"></i>Volver a Mis Citas
+                    </a>
+                </div>
+            </div>
         </div>
-    {% endif %}
+    </div>
+{% endif %}
 {% endblock %}

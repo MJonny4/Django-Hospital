@@ -2,96 +2,228 @@
 
 {% block title %}Gestión de Citas - Hospital Management System{% endblock %}
 
-{% block page_title %}Gestión de Citas{% endblock %}
+{% block page_title %}
+    <i class="bi bi-calendar-check me-3"></i>Gestión de Citas
+{% endblock %}
 
 {% block content %}
-    <div style="margin-bottom: 20px;">
-        <a href="{% url 'hospital:admin_panel' %}" style="text-decoration: none;">← Volver al Panel</a>
+<div class="row mb-3">
+    <div class="col-12">
+        <a href="{% url 'hospital:admin_panel' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Volver al Panel
+        </a>
     </div>
-    
-    <h2>Todas las Citas del Sistema</h2>
-    
-    {% if appointments_data.appointments %}
-        <div style="margin-bottom: 20px;">
-            <p><strong>Total de citas:</strong> {{ appointments_data.total }}</p>
-            <p><strong>Página:</strong> {{ appointments_data.page }} de {{ appointments_data.size }}</p>
+</div>
+
+{% if appointments_data.appointments %}
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card shadow-sm border-primary">
+                <div class="card-body text-center">
+                    <i class="bi bi-calendar-event display-4 text-primary mb-2"></i>
+                    <h4 class="mb-1">{{ appointments_data.total }}</h4>
+                    <p class="text-muted mb-0">Total de Citas</p>
+                </div>
+            </div>
         </div>
-        
-        <table border="1" style="width: 100%; border-collapse: collapse;">
-            <thead>
-                <tr style="background-color: #f0f0f0;">
-                    <th>ID</th>
-                    <th>Fecha y Hora</th>
-                    <th>Paciente ID</th>
-                    <th>Médico ID</th>
-                    <th>Tipo</th>
-                    <th>Estado</th>
-                    <th>Prioridad</th>
-                    <th>Duración</th>
-                    <th>Motivo</th>
-                    <th>Creada</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for appointment in appointments_data.appointments %}
-                <tr>
-                    <td>{{ appointment.id }}</td>
-                    <td>{{ appointment.appointment_date|date:"d/m/Y H:i" }}</td>
-                    <td>{{ appointment.patient_id }}</td>
-                    <td>{{ appointment.doctor_profile_id }}</td>
-                    <td>{{ appointment.appointment_type }}</td>
-                    <td>
-                        {% if appointment.status == "scheduled" %}
-                            <span style="color: blue;">📅 Programada</span>
-                        {% elif appointment.status == "confirmed" %}
-                            <span style="color: green;">✅ Confirmada</span>
-                        {% elif appointment.status == "cancelled" %}
-                            <span style="color: red;">❌ Cancelada</span>
-                        {% elif appointment.status == "completed" %}
-                            <span style="color: darkgreen;">✔️ Completada</span>
-                        {% elif appointment.status == "in_progress" %}
-                            <span style="color: orange;">🔄 En Curso</span>
-                        {% elif appointment.status == "no_show" %}
-                            <span style="color: darkred;">👻 No Asistió</span>
-                        {% else %}
-                            <span>{{ appointment.status }}</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if appointment.priority == "high" %}
-                            <span style="color: red;">🔴 Alta</span>
-                        {% elif appointment.priority == "normal" %}
-                            <span style="color: blue;">🔵 Normal</span>
-                        {% elif appointment.priority == "low" %}
-                            <span style="color: gray;">⚫ Baja</span>
-                        {% else %}
-                            {{ appointment.priority }}
-                        {% endif %}
-                    </td>
-                    <td>{{ appointment.duration_minutes }} min</td>
-                    <td>{{ appointment.reason|default:"N/A"|truncatechars:50 }}</td>
-                    <td>{{ appointment.created_at|date:"d/m/Y"|default:"N/A" }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    {% else %}
-        <p>No se encontraron citas.</p>
-        <div style="background-color: #f0f0f0; padding: 15px; border-radius: 5px;">
-            <p><strong>Posibles causas:</strong></p>
-            <ul>
-                <li>Error de conexión con la API</li>
-                <li>No hay citas programadas en el sistema</li>
-                <li>Problema con los permisos de administrador</li>
-            </ul>
+        <div class="col-md-6">
+            <div class="card shadow-sm border-info">
+                <div class="card-body text-center">
+                    <i class="bi bi-grid display-4 text-info mb-2"></i>
+                    <h4 class="mb-1">{{ appointments_data.page }} / {{ appointments_data.size }}</h4>
+                    <p class="text-muted mb-0">Paginación</p>
+                </div>
+            </div>
         </div>
-    {% endif %}
-    
-    <h3>Acciones:</h3>
-    <ul>
-        <li><a href="{% url 'hospital:create_appointment' %}">Crear Nueva Cita</a></li>
-        <li><a href="{% url 'hospital:admin_doctors' %}">Ver Médicos</a></li>
-        <li><a href="{% url 'hospital:admin_users' %}">Ver Usuarios</a></li>
-        <li><a href="{% url 'hospital:admin_availability' %}">Configurar Disponibilidad</a></li>
-    </ul>
+    </div>
+
+    <!-- Appointments Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h5 class="mb-0">
+                                <i class="bi bi-list me-2"></i>Todas las Citas del Sistema
+                            </h5>
+                        </div>
+                        <div class="col-auto">
+                            <span class="badge bg-warning">{{ appointments_data.appointments|length }} en esta página</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th class="text-center">ID</th>
+                                    <th>Fecha y Hora</th>
+                                    <th>Paciente</th>
+                                    <th>Médico</th>
+                                    <th>Tipo</th>
+                                    <th class="text-center">Estado</th>
+                                    <th class="text-center">Prioridad</th>
+                                    <th>Duración</th>
+                                    <th>Motivo</th>
+                                    <th>Creada</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for appointment in appointments_data.appointments %}
+                                <tr>
+                                    <td class="text-center">
+                                        <small class="text-muted">#{{ appointment.id }}</small>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <i class="bi bi-calendar-date text-primary me-2"></i>
+                                            <div>
+                                                <strong>{{ appointment.appointment_date|date:"d/m/Y" }}</strong>
+                                                <br><small class="text-muted">{{ appointment.appointment_date|date:"H:i" }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-light text-dark">ID: {{ appointment.patient_id }}</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-success">Dr. ID: {{ appointment.doctor_profile_id }}</span>
+                                    </td>
+                                    <td>
+                                        {% if appointment.appointment_type == 'consultation' %}
+                                            <span class="badge bg-primary">Consulta</span>
+                                        {% elif appointment.appointment_type == 'follow_up' %}
+                                            <span class="badge bg-info">Seguimiento</span>
+                                        {% elif appointment.appointment_type == 'emergency' %}
+                                            <span class="badge bg-danger">Urgencia</span>
+                                        {% elif appointment.appointment_type == 'check_up' %}
+                                            <span class="badge bg-success">Revisión</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">{{ appointment.appointment_type }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">
+                                        {% if appointment.status == "scheduled" %}
+                                            <span class="badge bg-info">
+                                                <i class="bi bi-calendar me-1"></i>Programada
+                                            </span>
+                                        {% elif appointment.status == "confirmed" %}
+                                            <span class="badge bg-success">
+                                                <i class="bi bi-check-circle me-1"></i>Confirmada
+                                            </span>
+                                        {% elif appointment.status == "cancelled" %}
+                                            <span class="badge bg-danger">
+                                                <i class="bi bi-x-circle me-1"></i>Cancelada
+                                            </span>
+                                        {% elif appointment.status == "completed" %}
+                                            <span class="badge bg-success">
+                                                <i class="bi bi-check-circle-fill me-1"></i>Completada
+                                            </span>
+                                        {% elif appointment.status == "in_progress" %}
+                                            <span class="badge bg-warning">
+                                                <i class="bi bi-hourglass-split me-1"></i>En Curso
+                                            </span>
+                                        {% elif appointment.status == "no_show" %}
+                                            <span class="badge bg-secondary">
+                                                <i class="bi bi-person-x me-1"></i>No Asistió
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-light text-dark">{{ appointment.status }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">
+                                        {% if appointment.priority == "high" %}
+                                            <span class="badge bg-danger">Alta</span>
+                                        {% elif appointment.priority == "normal" %}
+                                            <span class="badge bg-primary">Normal</span>
+                                        {% elif appointment.priority == "low" %}
+                                            <span class="badge bg-secondary">Baja</span>
+                                        {% elif appointment.priority == "urgent" %}
+                                            <span class="badge bg-danger">Urgente</span>
+                                        {% else %}
+                                            <span class="badge bg-light text-dark">{{ appointment.priority }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">{{ appointment.duration_minutes }} min</span>
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">{{ appointment.reason|default:"N/A"|truncatechars:30 }}</small>
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">{{ appointment.created_at|date:"d/m/Y"|default:"N/A" }}</small>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% else %}
+    <!-- No Appointments Found -->
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card shadow-sm">
+                <div class="card-body text-center py-5">
+                    <i class="bi bi-calendar-x display-1 text-muted mb-3"></i>
+                    <h4>No se encontraron citas</h4>
+                    <p class="text-muted mb-4">No hay citas programadas en el sistema en este momento.</p>
+                    
+                    <div class="alert alert-warning">
+                        <h6><i class="bi bi-exclamation-triangle me-2"></i>Posibles causas:</h6>
+                        <ul class="list-unstyled mb-0">
+                            <li>• Error de conexión con la API</li>
+                            <li>• No hay citas programadas en el sistema</li>
+                            <li>• Problema con los permisos de administrador</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+<!-- Quick Actions -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-lightning me-2"></i>Acciones Rápidas
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-2">
+                        <a href="{% url 'hospital:create_appointment' %}" class="btn btn-outline-success w-100">
+                            <i class="bi bi-calendar-plus me-1"></i>Crear Nueva Cita
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <a href="{% url 'hospital:admin_doctors' %}" class="btn btn-outline-primary w-100">
+                            <i class="bi bi-person-badge me-1"></i>Ver Médicos
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <a href="{% url 'hospital:admin_users' %}" class="btn btn-outline-info w-100">
+                            <i class="bi bi-people me-1"></i>Ver Usuarios
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <a href="{% url 'hospital:admin_availability' %}" class="btn btn-outline-warning w-100">
+                            <i class="bi bi-calendar-range me-1"></i>Disponibilidad
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

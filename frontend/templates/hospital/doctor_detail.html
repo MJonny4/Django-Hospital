@@ -1,208 +1,382 @@
 {% extends 'hospital/base.html' %}
 
-{% block title %}{{ doctor.nombre }} {{ doctor.apellidos }} - Hospital Management System{% endblock %}
+{% block title %}Dr. {{ doctor.nombre }} {{ doctor.apellidos }} - Hospital Management System{% endblock %}
 
-{% block page_title %}Información del Médico{% endblock %}
+{% block page_title %}
+    <i class="bi bi-person-badge me-3"></i>Perfil Médico
+{% endblock %}
 
 {% block content %}
-    <div style="margin-bottom: 20px;">
-        <a href="{% url 'hospital:doctors_list' %}" style="text-decoration: none;">← Volver a Lista de Médicos</a>
+<div class="row mb-3">
+    <div class="col-12">
+        <a href="{% url 'hospital:doctors_list' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Volver a Lista de Médicos
+        </a>
     </div>
+</div>
 
-    {% if doctor %}
-        
-        {% if is_self_viewing %}
-            <div style="background-color: #ffeaa7; border: 1px solid #fdcb6e; padding: 15px; margin: 15px 0; border-radius: 5px;">
-                <strong>⚠️ Nota:</strong> Está viendo su propio perfil como paciente. 
-                No puede programar citas consigo mismo. 
-                <a href="{% url 'hospital:switch_role' %}" onclick="document.querySelector('select[name=role]').value='doctor'; this.parentElement.parentElement.querySelector('form').submit(); return false;">
+{% if doctor %}
+    {% if is_self_viewing %}
+        <div class="alert alert-warning d-flex align-items-center" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-3"></i>
+            <div class="flex-grow-1">
+                <strong>Nota:</strong> Está viendo su propio perfil como paciente. 
+                No puede programar citas consigo mismo.
+            </div>
+            <div>
+                <a href="{% url 'hospital:switch_role' %}" class="btn btn-sm btn-warning"
+                   onclick="document.querySelector('select[name=role]').value='doctor'; this.parentElement.parentElement.querySelector('form').submit(); return false;">
                     Cambiar a rol de Médico
                 </a>
             </div>
-        {% endif %}
-        
-        <div style="display: flex; gap: 30px; flex-wrap: wrap;">
-            <!-- Doctor Photo -->
-            <div style="flex: 0 0 200px;">
-                {% if doctor.foto_url %}
-                    <img src="{{ doctor.foto_url }}" alt="Foto de {{ doctor.nombre }}" style="width: 200px; height: 250px; object-fit: cover; border-radius: 10px; border: 1px solid #ccc;">
-                {% else %}
-                    <div style="width: 200px; height: 250px; background-color: #f0f0f0; border-radius: 10px; display: flex; align-items: center; justify-content: center; border: 1px solid #ccc;">
-                        <span style="color: #666;">Sin foto</span>
-                    </div>
-                {% endif %}
-            </div>
-
-            <!-- Doctor Information -->
-            <div style="flex: 1; min-width: 400px;">
-                <h2>{{ doctor.nombre }} {{ doctor.apellidos }}</h2>
-                
-                <div style="background-color: #f8f9fa; padding: 20px; border-radius: 5px; margin-bottom: 20px;">
-                    <h3>📋 Información Personal</h3>
-                    <table style="width: 100%;">
-                        <tr>
-                            <td style="font-weight: bold; padding: 5px 10px 5px 0;">DNI:</td>
-                            <td style="padding: 5px;">{{ doctor.dni }}</td>
-                        </tr>
-                        <tr>
-                            <td style="font-weight: bold; padding: 5px 10px 5px 0;">Email:</td>
-                            <td style="padding: 5px;">{{ doctor.email }}</td>
-                        </tr>
-                        <tr>
-                            <td style="font-weight: bold; padding: 5px 10px 5px 0;">Teléfono:</td>
-                            <td style="padding: 5px;">{{ doctor.telefono }}</td>
-                        </tr>
-                        <tr>
-                            <td style="font-weight: bold; padding: 5px 10px 5px 0;">Estado:</td>
-                            <td style="padding: 5px;">
-                                {% if doctor.is_active %}
-                                    <span style="color: green;">✅ Activo</span>
-                                {% else %}
-                                    <span style="color: red;">❌ Inactivo</span>
-                                {% endif %}
-                            </td>
-                        </tr>
-                    </table>
-                </div>
-
-                <div style="background-color: #e8f4fd; padding: 20px; border-radius: 5px; margin-bottom: 20px;">
-                    <h3>👨‍⚕️ Información Profesional</h3>
-                    <table style="width: 100%;">
-                        <tr>
-                            <td style="font-weight: bold; padding: 5px 10px 5px 0;">Especialidad:</td>
-                            <td style="padding: 5px;"><strong>{{ doctor.especialidad }}</strong></td>
-                        </tr>
-                        {% if doctor.subespecialidad %}
-                        <tr>
-                            <td style="font-weight: bold; padding: 5px 10px 5px 0;">Subespecialidad:</td>
-                            <td style="padding: 5px;">{{ doctor.subespecialidad }}</td>
-                        </tr>
-                        {% endif %}
-                        <tr>
-                            <td style="font-weight: bold; padding: 5px 10px 5px 0;">Número Colegiado:</td>
-                            <td style="padding: 5px;">{{ doctor.numero_colegiado }}</td>
-                        </tr>
-                        <tr>
-                            <td style="font-weight: bold; padding: 5px 10px 5px 0;">Colegio Médico:</td>
-                            <td style="padding: 5px;">{{ doctor.colegio_medico }}</td>
-                        </tr>
-                        <tr>
-                            <td style="font-weight: bold; padding: 5px 10px 5px 0;">Hospital/Centro:</td>
-                            <td style="padding: 5px;">{{ doctor.hospital_centro }}</td>
-                        </tr>
-                        <tr>
-                            <td style="font-weight: bold; padding: 5px 10px 5px 0;">Departamento:</td>
-                            <td style="padding: 5px;">{{ doctor.departamento_servicio }}</td>
-                        </tr>
-                        {% if doctor.consulta_numero %}
-                        <tr>
-                            <td style="font-weight: bold; padding: 5px 10px 5px 0;">Consulta:</td>
-                            <td style="padding: 5px;">{{ doctor.consulta_numero }}</td>
-                        </tr>
-                        {% endif %}
-                        {% if doctor.horario_consulta %}
-                        <tr>
-                            <td style="font-weight: bold; padding: 5px 10px 5px 0;">Horario:</td>
-                            <td style="padding: 5px;">{{ doctor.horario_consulta }}</td>
-                        </tr>
-                        {% endif %}
-                    </table>
-                </div>
-
-                <div style="background-color: #f0f8f0; padding: 20px; border-radius: 5px; margin-bottom: 20px;">
-                    <h3>🎓 Formación Académica</h3>
-                    <table style="width: 100%;">
-                        <tr>
-                            <td style="font-weight: bold; padding: 5px 10px 5px 0;">Universidad:</td>
-                            <td style="padding: 5px;">{{ doctor.universidad }}</td>
-                        </tr>
-                        <tr>
-                            <td style="font-weight: bold; padding: 5px 10px 5px 0;">Año de Graduación:</td>
-                            <td style="padding: 5px;">{{ doctor.ano_graduacion }}</td>
-                        </tr>
-                        {% if doctor.titulo_especialista %}
-                        <tr>
-                            <td style="font-weight: bold; padding: 5px 10px 5px 0;">Título de Especialista:</td>
-                            <td style="padding: 5px;">{{ doctor.titulo_especialista }}</td>
-                        </tr>
-                        {% endif %}
-                    </table>
-                </div>
-
-                {% if doctor.idiomas or doctor.biografia %}
-                <div style="background-color: #fff8e1; padding: 20px; border-radius: 5px; margin-bottom: 20px;">
-                    <h3>💬 Información Adicional</h3>
-                    {% if doctor.idiomas %}
-                    <p><strong>Idiomas:</strong> {{ doctor.idiomas }}</p>
-                    {% endif %}
-                    {% if doctor.biografia %}
-                    <p><strong>Biografía:</strong></p>
-                    <p style="text-align: justify; line-height: 1.5;">{{ doctor.biografia }}</p>
-                    {% endif %}
-                </div>
-                {% endif %}
-
-                <!-- Actions -->
-                <div style="margin-top: 30px;">
-                    <h3>🗓️ Acciones</h3>
-                    {% if user.is_authenticated %}
-                        <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-                            <a href="{% url 'hospital:create_appointment' %}" style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
-                                📅 Agendar Cita
-                            </a>
-                            <a href="#" onclick="checkAvailability({{ doctor.profile_id }})" style="background-color: #28a745; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
-                                🕒 Ver Disponibilidad
-                            </a>
-                        </div>
-                    {% else %}
-                        <p style="color: #666;">
-                            <a href="{% url 'hospital:login' %}">Inicie sesión</a> para agendar una cita con este médico.
-                        </p>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-
-        <!-- Doctor Statistics (if available) -->
-        <div style="margin-top: 40px; background-color: #f8f9fa; padding: 20px; border-radius: 5px;">
-            <h3>📊 Información del Sistema</h3>
-            <table style="width: 100%;">
-                <tr>
-                    <td style="font-weight: bold; padding: 5px 10px 5px 0;">ID de Usuario:</td>
-                    <td style="padding: 5px;">{{ doctor.id }}</td>
-                </tr>
-                <tr>
-                    <td style="font-weight: bold; padding: 5px 10px 5px 0;">ID de Perfil Médico:</td>
-                    <td style="padding: 5px;">{{ doctor.profile_id }}</td>
-                </tr>
-                {% if doctor.fecha_alta_sistema %}
-                <tr>
-                    <td style="font-weight: bold; padding: 5px 10px 5px 0;">Fecha de Alta:</td>
-                    <td style="padding: 5px;">{{ doctor.fecha_alta_sistema|date:"d/m/Y" }}</td>
-                </tr>
-                {% endif %}
-                <tr>
-                    <td style="font-weight: bold; padding: 5px 10px 5px 0;">Roles:</td>
-                    <td style="padding: 5px;">
-                        {% for role in doctor.roles %}
-                            <span style="background-color: #e0e0e0; padding: 2px 6px; border-radius: 3px; margin: 1px;">
-                                {{ role }}
-                            </span>
-                        {% endfor %}
-                    </td>
-                </tr>
-            </table>
-        </div>
-
-    {% else %}
-        <div style="text-align: center; padding: 40px;">
-            <h3>❌ Médico no encontrado</h3>
-            <p>El médico que está buscando no existe o no está disponible.</p>
-            <a href="{% url 'hospital:doctors_list' %}" style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
-                Volver a Lista de Médicos
-            </a>
         </div>
     {% endif %}
+    
+    <div class="row">
+        <!-- Doctor Photo and Basic Info -->
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-body text-center">
+                    <!-- Doctor Photo -->
+                    <div class="mb-3">
+                        {% if doctor.foto_url %}
+                            <img src="{{ doctor.foto_url }}" alt="Dr. {{ doctor.nombre }}" 
+                                 class="rounded img-fluid shadow" style="max-width: 250px; max-height: 300px; object-fit: cover;">
+                        {% else %}
+                            <div class="bg-primary rounded d-flex align-items-center justify-content-center text-white mx-auto" 
+                                 style="width: 200px; height: 250px;">
+                                <i class="bi bi-person-fill display-1"></i>
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Doctor Name and Status -->
+                    <h3 class="fw-bold text-primary">Dr. {{ doctor.nombre }} {{ doctor.apellidos }}</h3>
+                    <p class="text-muted mb-3">{{ doctor.especialidad }}</p>
+                    
+                    <!-- Status Badge -->
+                    {% if doctor.is_active %}
+                        <span class="badge bg-success fs-6">
+                            <i class="bi bi-check-circle me-1"></i>Activo
+                        </span>
+                    {% else %}
+                        <span class="badge bg-danger fs-6">
+                            <i class="bi bi-x-circle me-1"></i>Inactivo
+                        </span>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Quick Actions -->
+            <div class="card shadow-sm mt-4">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="bi bi-lightning me-2"></i>Acciones Rápidas
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        {% if user.is_authenticated %}
+                            <a href="{% url 'hospital:create_appointment' %}" class="btn btn-success">
+                                <i class="bi bi-calendar-plus me-1"></i>Agendar Cita
+                            </a>
+                            <button class="btn btn-outline-info" onclick="checkAvailability({{ doctor.profile_id }})">
+                                <i class="bi bi-clock me-1"></i>Ver Disponibilidad
+                            </button>
+                        {% else %}
+                            <a href="{% url 'hospital:login' %}" class="btn btn-primary">
+                                <i class="bi bi-box-arrow-in-right me-1"></i>Iniciar Sesión
+                            </a>
+                            <p class="text-muted small mb-0 mt-2">Inicie sesión para agendar una cita</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Doctor Information Details -->
+        <div class="col-lg-8 mb-4">
+            <!-- Personal Information -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-person-lines-fill me-2"></i>Información Personal
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-card-text text-primary me-3"></i>
+                                <div>
+                                    <small class="text-muted">DNI</small>
+                                    <div class="fw-bold">{{ doctor.dni }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-envelope text-primary me-3"></i>
+                                <div>
+                                    <small class="text-muted">Email</small>
+                                    <div class="fw-bold">{{ doctor.email }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-phone text-primary me-3"></i>
+                                <div>
+                                    <small class="text-muted">Teléfono</small>
+                                    <div class="fw-bold">{{ doctor.telefono }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Professional Information -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-briefcase me-2"></i>Información Profesional
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-activity text-success me-3"></i>
+                                <div>
+                                    <small class="text-muted">Especialidad</small>
+                                    <div class="fw-bold">{{ doctor.especialidad }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        {% if doctor.subespecialidad %}
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-chevron-right text-info me-3"></i>
+                                <div>
+                                    <small class="text-muted">Subespecialidad</small>
+                                    <div class="fw-bold">{{ doctor.subespecialidad }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-award text-warning me-3"></i>
+                                <div>
+                                    <small class="text-muted">Número Colegiado</small>
+                                    <div class="fw-bold">{{ doctor.numero_colegiado }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-building text-secondary me-3"></i>
+                                <div>
+                                    <small class="text-muted">Colegio Médico</small>
+                                    <div class="fw-bold">{{ doctor.colegio_medico }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-hospital text-primary me-3"></i>
+                                <div>
+                                    <small class="text-muted">Hospital/Centro</small>
+                                    <div class="fw-bold">{{ doctor.hospital_centro }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-diagram-3 text-info me-3"></i>
+                                <div>
+                                    <small class="text-muted">Departamento</small>
+                                    <div class="fw-bold">{{ doctor.departamento_servicio }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        {% if doctor.consulta_numero %}
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-door-open text-warning me-3"></i>
+                                <div>
+                                    <small class="text-muted">Consulta</small>
+                                    <div class="fw-bold">{{ doctor.consulta_numero }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% if doctor.horario_consulta %}
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-clock text-success me-3"></i>
+                                <div>
+                                    <small class="text-muted">Horario</small>
+                                    <div class="fw-bold">{{ doctor.horario_consulta }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Academic Formation -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-mortarboard me-2"></i>Formación Académica
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-bank text-primary me-3"></i>
+                                <div>
+                                    <small class="text-muted">Universidad</small>
+                                    <div class="fw-bold">{{ doctor.universidad }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-calendar-event text-success me-3"></i>
+                                <div>
+                                    <small class="text-muted">Año de Graduación</small>
+                                    <div class="fw-bold">{{ doctor.ano_graduacion }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        {% if doctor.titulo_especialista %}
+                        <div class="col-md-12 mb-3">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-patch-check text-warning me-3"></i>
+                                <div>
+                                    <small class="text-muted">Título de Especialista</small>
+                                    <div class="fw-bold">{{ doctor.titulo_especialista }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Additional Information -->
+            {% if doctor.idiomas or doctor.biografia %}
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-chat-dots me-2"></i>Información Adicional
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if doctor.idiomas %}
+                    <div class="mb-3">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-translate text-primary me-3"></i>
+                            <div>
+                                <small class="text-muted">Idiomas</small>
+                                <div class="fw-bold">{{ doctor.idiomas }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% if doctor.biografia %}
+                    <div class="mb-0">
+                        <div class="d-flex align-items-start">
+                            <i class="bi bi-person-lines-fill text-primary me-3 mt-1"></i>
+                            <div>
+                                <small class="text-muted">Biografía</small>
+                                <div class="mt-2">{{ doctor.biografia }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- System Information -->
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-info-circle me-2"></i>Información del Sistema
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-hash text-secondary me-3"></i>
+                                <div>
+                                    <small class="text-muted">ID de Usuario</small>
+                                    <div class="fw-bold">{{ doctor.id }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-person-badge text-secondary me-3"></i>
+                                <div>
+                                    <small class="text-muted">ID de Perfil Médico</small>
+                                    <div class="fw-bold">{{ doctor.profile_id }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        {% if doctor.fecha_alta_sistema %}
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-calendar-plus text-secondary me-3"></i>
+                                <div>
+                                    <small class="text-muted">Fecha de Alta</small>
+                                    <div class="fw-bold">{{ doctor.fecha_alta_sistema|date:"d/m/Y" }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        <div class="col-md-6 mb-0">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-shield-check text-secondary me-3"></i>
+                                <div>
+                                    <small class="text-muted">Roles del Sistema</small>
+                                    <div>
+                                        {% for role in doctor.roles %}
+                                            <span class="badge bg-light text-dark me-1">{{ role }}</span>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% else %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-body text-center py-5">
+                    <i class="bi bi-person-x display-1 text-muted mb-3"></i>
+                    <h3 class="text-muted">Médico no encontrado</h3>
+                    <p class="text-muted mb-4">El médico que está buscando no existe o no está disponible.</p>
+                    <a href="{% url 'hospital:doctors_list' %}" class="btn btn-primary">
+                        <i class="bi bi-arrow-left me-1"></i>Volver a Lista de Médicos
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
 
     <script>
         function checkAvailability(doctorProfileId) {
