@@ -1,0 +1,570 @@
+{% extends 'hospital/base.html' %}
+
+{% block title %}
+    {% if user_data.active_role == 'patient' %}Mis Recetas
+    {% elif user_data.active_role == 'doctor' %}Recetas de Mis Pacientes
+    {% else %}Todas las Recetas{% endif %} - Hospital Management System
+{% endblock %}
+
+{% block page_title %}
+    <i class="bi bi-capsule me-3"></i>Gestión de Prescripciones
+{% endblock %}
+
+{% block content %}
+<!-- Prescription Management Dashboard with Alpine.js -->
+<div x-data="prescriptionsApp()" x-init="loadPrescriptions()" class="prescriptions-dashboard">
+    
+    <!-- Quick Stats -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card stat-card border-primary">
+                <div class="card-body text-center">
+                    <i class="bi bi-capsule display-4 text-primary mb-2"></i>
+                    <h3 x-text="stats.total" class="fw-bold text-primary">0</h3>
+                    <p class="text-muted mb-0">Total Recetas</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card stat-card border-success">
+                <div class="card-body text-center">
+                    <i class="bi bi-check-circle display-4 text-success mb-2"></i>
+                    <h3 x-text="stats.active" class="fw-bold text-success">0</h3>
+                    <p class="text-muted mb-0">Activas</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card stat-card border-warning">
+                <div class="card-body text-center">
+                    <i class="bi bi-clock display-4 text-warning mb-2"></i>
+                    <h3 x-text="stats.expiring" class="fw-bold text-warning">0</h3>
+                    <p class="text-muted mb-0">Por Vencer</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card stat-card border-info">
+                <div class="card-body text-center">
+                    <i class="bi bi-arrow-repeat display-4 text-info mb-2"></i>
+                    <h3 x-text="stats.refillable" class="fw-bold text-info">0</h3>
+                    <p class="text-muted mb-0">Renovables</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="row align-items-end">
+                <div class="col-md-2 mb-3">
+                    <label class="form-label">Estado</label>
+                    <select x-model="filters.status" @change="applyFilters()" class="form-select">
+                        <option value="">Todos</option>
+                        <option value="active">Activa</option>
+                        <option value="completed">Completada</option>
+                        <option value="discontinued">Descontinuada</option>
+                        <option value="on_hold">En Pausa</option>
+                    </select>
+                </div>
+                <div class="col-md-2 mb-3">
+                    <label class="form-label">Medicamento</label>
+                    <input type="text" x-model="filters.medication" @input="applyFilters()" 
+                           class="form-control" placeholder="Buscar...">
+                </div>
+                <div class="col-md-2 mb-3">
+                    <label class="form-label">Paciente</label>
+                    <select x-model="filters.patient_id" @change="applyFilters()" class="form-select">
+                        <option value="">Todos</option>
+                        <template x-for="patient in patients" :key="patient.id">
+                            <option :value="patient.id" x-text="patient.name"></option>
+                        </template>
+                    </select>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="form-check">
+                        <input type="checkbox" x-model="filters.expiring_soon" @change="applyFilters()" 
+                               class="form-check-input" id="expiringSoon">
+                        <label class="form-check-label" for="expiringSoon">
+                            Solo próximas a vencer
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" x-model="filters.refillable_only" @change="applyFilters()" 
+                               class="form-check-input" id="refillableOnly">
+                        <label class="form-check-label" for="refillableOnly">
+                            Solo renovables
+                        </label>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <button @click="resetFilters()" class="btn btn-outline-secondary me-2">
+                        <i class="bi bi-arrow-clockwise me-1"></i>Limpiar
+                    </button>
+                    {% if user_data.active_role == 'doctor' %}
+                    <button @click="showCreateModal = true" class="btn btn-primary">
+                        <i class="bi bi-plus-circle me-1"></i>Nueva Receta
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Prescriptions List -->
+    <div class="row">
+        <template x-for="prescription in filteredPrescriptions" :key="prescription.id">
+            <div class="col-12 col-xl-6 mb-3">
+                <div class="card prescription-card h-100" 
+                     :class="getStatusClass(prescription.status)"
+                     x-data="{ expanded: false }">
+                    
+                    <!-- Prescription Header -->
+                    <div class="card-header" @click="expanded = !expanded" style="cursor: pointer;">
+                        <div class="row align-items-center">
+                            <div class="col-8">
+                                <h6 class="mb-1 fw-bold">
+                                    <i class="bi bi-capsule me-2"></i>
+                                    <span x-text="prescription.medication_name"></span>
+                                </h6>
+                                <small class="text-muted">
+                                    <span x-text="prescription.dosage"></span> - 
+                                    <span x-text="prescription.frequency"></span>
+                                </small>
+                            </div>
+                            <div class="col-4 text-end">
+                                <span class="badge" :class="getStatusBadgeClass(prescription.status)" 
+                                      x-text="getStatusText(prescription.status)"></span>
+                                <i class="bi ms-2" :class="expanded ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
+                            </div>
+                        </div>
+                        
+                        <!-- Quick Info -->
+                        <div class="mt-2" x-show="!expanded">
+                            <div class="row">
+                                <div class="col-6">
+                                    <small class="text-muted">Paciente:</small>
+                                    <div class="fw-semibold" x-text="prescription.patient_name"></div>
+                                </div>
+                                <div class="col-6">
+                                    <small class="text-muted">Vence:</small>
+                                    <div class="fw-semibold" :class="isExpiringSoon(prescription) ? 'text-warning' : 'text-muted'"
+                                         x-text="formatDate(prescription.end_date)"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Expanded Details -->
+                    <div x-show="expanded" x-transition class="card-body">
+                        <div class="row g-3">
+                            <!-- Medication Details -->
+                            <div class="col-md-6">
+                                <h6 class="text-primary mb-2">
+                                    <i class="bi bi-info-circle me-1"></i>Información del Medicamento
+                                </h6>
+                                <div class="medication-details">
+                                    <div class="detail-row">
+                                        <small class="text-muted">Nombre Comercial:</small>
+                                        <div class="fw-semibold" x-text="prescription.medication_name"></div>
+                                    </div>
+                                    <div class="detail-row" x-show="prescription.generic_name">
+                                        <small class="text-muted">Nombre Genérico:</small>
+                                        <div x-text="prescription.generic_name"></div>
+                                    </div>
+                                    <div class="detail-row">
+                                        <small class="text-muted">Dosificación:</small>
+                                        <div x-text="prescription.dosage"></div>
+                                    </div>
+                                    <div class="detail-row">
+                                        <small class="text-muted">Frecuencia:</small>
+                                        <div x-text="prescription.frequency"></div>
+                                    </div>
+                                    <div class="detail-row" x-show="prescription.duration_days">
+                                        <small class="text-muted">Duración:</small>
+                                        <div x-text="prescription.duration_days + ' días'"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Treatment Schedule -->
+                            <div class="col-md-6">
+                                <h6 class="text-primary mb-2">
+                                    <i class="bi bi-calendar-range me-1"></i>Cronograma de Tratamiento
+                                </h6>
+                                <div class="treatment-schedule">
+                                    <div class="detail-row">
+                                        <small class="text-muted">Inicio:</small>
+                                        <div class="fw-semibold" x-text="formatDate(prescription.start_date)"></div>
+                                    </div>
+                                    <div class="detail-row" x-show="prescription.end_date">
+                                        <small class="text-muted">Fin:</small>
+                                        <div class="fw-semibold" 
+                                             :class="isExpired(prescription) ? 'text-danger' : isExpiringSoon(prescription) ? 'text-warning' : ''"
+                                             x-text="formatDate(prescription.end_date)"></div>
+                                    </div>
+                                    <div class="detail-row">
+                                        <small class="text-muted">Días Restantes:</small>
+                                        <div class="fw-semibold" 
+                                             :class="getDaysRemainingClass(prescription)"
+                                             x-text="getDaysRemaining(prescription)"></div>
+                                    </div>
+                                    <div class="detail-row">
+                                        <small class="text-muted">Refills Disponibles:</small>
+                                        <div class="fw-semibold">
+                                            <span x-text="prescription.refills_remaining"></span> de 
+                                            <span x-text="prescription.total_refills_authorized"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Instructions -->
+                            <div class="col-12" x-show="prescription.instructions">
+                                <h6 class="text-primary mb-2">
+                                    <i class="bi bi-clipboard-check me-1"></i>Instrucciones
+                                </h6>
+                                <div class="bg-light p-3 rounded instructions-text" x-text="prescription.instructions"></div>
+                            </div>
+                            
+                            <!-- Warnings -->
+                            <div class="col-12" x-show="prescription.warnings">
+                                <h6 class="text-warning mb-2">
+                                    <i class="bi bi-exclamation-triangle me-1"></i>Advertencias
+                                </h6>
+                                <div class="alert alert-warning" x-text="prescription.warnings"></div>
+                            </div>
+                            
+                            <!-- Doctor and Medical Record Info -->
+                            <div class="col-12">
+                                <h6 class="text-primary mb-2">
+                                    <i class="bi bi-person-badge me-1"></i>Información Médica
+                                </h6>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <small class="text-muted">Prescrito por:</small>
+                                        <div class="fw-semibold" x-text="'Dr. ' + prescription.doctor_name"></div>
+                                    </div>
+                                    <div class="col-md-6" x-show="prescription.medical_record_diagnosis">
+                                        <small class="text-muted">Diagnóstico Asociado:</small>
+                                        <div x-text="prescription.medical_record_diagnosis"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Pharmacy Notes -->
+                            <div class="col-12" x-show="prescription.pharmacy_notes">
+                                <h6 class="text-info mb-2">
+                                    <i class="bi bi-shop me-1"></i>Notas de Farmacia
+                                </h6>
+                                <div class="bg-info bg-opacity-10 p-3 rounded" x-text="prescription.pharmacy_notes"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Actions Footer -->
+                    <div x-show="expanded" x-transition class="card-footer bg-light">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">
+                                ID: #<span x-text="prescription.id"></span> | 
+                                Creada: <span x-text="formatDate(prescription.created_at)"></span>
+                            </small>
+                            <div class="btn-group">
+                                <button @click="viewPrescription(prescription)" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-eye me-1"></i>Ver Completa
+                                </button>
+                                
+                                <!-- Patient actions -->
+                                <template x-if="'{{ user_data.active_role }}' === 'patient' && canRefill(prescription)">
+                                    <button @click="requestRefill(prescription)" class="btn btn-sm btn-success">
+                                        <i class="bi bi-arrow-repeat me-1"></i>Solicitar Refill
+                                    </button>
+                                </template>
+                                
+                                <!-- Doctor actions -->
+                                <template x-if="'{{ user_data.active_role }}' === 'doctor'">
+                                    <button @click="editPrescription(prescription)" class="btn btn-sm btn-outline-secondary">
+                                        <i class="bi bi-pencil me-1"></i>Editar
+                                    </button>
+                                    <button @click="authorizeRefill(prescription)" 
+                                            x-show="prescription.refills_remaining < prescription.total_refills_authorized"
+                                            class="btn btn-sm btn-info">
+                                        <i class="bi bi-plus-circle me-1"></i>Autorizar Refill
+                                    </button>
+                                    <button @click="discontinuePrescription(prescription)" 
+                                            x-show="prescription.status === 'active'"
+                                            class="btn btn-sm btn-warning">
+                                        <i class="bi bi-pause-circle me-1"></i>Descontinuar
+                                    </button>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </template>
+        
+        <!-- Empty State -->
+        <div class="col-12" x-show="filteredPrescriptions.length === 0 && !loading">
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <i class="bi bi-capsule-pill display-1 text-muted mb-3"></i>
+                    <h4 class="text-muted">No hay prescripciones</h4>
+                    <p class="text-muted">No se encontraron prescripciones con los filtros aplicados.</p>
+                    <button @click="resetFilters()" class="btn btn-outline-primary">
+                        <i class="bi bi-arrow-clockwise me-1"></i>Limpiar Filtros
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function prescriptionsApp() {
+    return {
+        // State
+        prescriptions: [],
+        patients: [],
+        filteredPrescriptions: [],
+        loading: false,
+        showCreateModal: false,
+        
+        // Filters
+        filters: {
+            status: '',
+            medication: '',
+            patient_id: '',
+            expiring_soon: false,
+            refillable_only: false
+        },
+        
+        // Stats
+        stats: {
+            total: 0,
+            active: 0,
+            expiring: 0,
+            refillable: 0
+        },
+        
+        // Initialize
+        async loadPrescriptions() {
+            this.loading = true;
+            try {
+                // Mock data
+                this.prescriptions = [
+                    {
+                        id: 1,
+                        patient_id: 1,
+                        patient_name: "María González",
+                        doctor_name: "Juan Pérez",
+                        medication_name: "Enalapril",
+                        generic_name: "Enalaprilato",
+                        dosage: "10mg",
+                        frequency: "Una vez al día",
+                        duration_days: 30,
+                        start_date: "2024-01-15",
+                        end_date: "2024-02-15",
+                        status: "active",
+                        refills_remaining: 2,
+                        total_refills_authorized: 3,
+                        instructions: "Tomar con el estómago vacío, preferiblemente por la mañana",
+                        warnings: "Puede causar mareos. No conducir si siente somnolencia.",
+                        medical_record_diagnosis: "Hipertensión arterial leve",
+                        created_at: "2024-01-15"
+                    },
+                    {
+                        id: 2,
+                        patient_id: 2,
+                        patient_name: "Carlos Rodríguez",
+                        doctor_name: "Ana Martín",
+                        medication_name: "Metformina",
+                        generic_name: "Metformina HCL",
+                        dosage: "850mg",
+                        frequency: "Dos veces al día",
+                        duration_days: 60,
+                        start_date: "2024-01-10",
+                        end_date: "2024-03-10",
+                        status: "active",
+                        refills_remaining: 0,
+                        total_refills_authorized: 2,
+                        instructions: "Tomar con las comidas para reducir efectos gastrointestinales",
+                        warnings: "Puede causar malestar estomacal. Informar si hay náuseas persistentes.",
+                        medical_record_diagnosis: "Diabetes mellitus tipo 2",
+                        pharmacy_notes: "Paciente prefiere genérico",
+                        created_at: "2024-01-10"
+                    }
+                ];
+                
+                this.patients = [
+                    { id: 1, name: "María González" },
+                    { id: 2, name: "Carlos Rodríguez" }
+                ];
+                
+                this.updateStats();
+                this.applyFilters();
+            } catch (error) {
+                console.error('Error loading prescriptions:', error);
+            } finally {
+                this.loading = false;
+            }
+        },
+        
+        // Filtering
+        applyFilters() {
+            let filtered = this.prescriptions;
+            
+            if (this.filters.status) {
+                filtered = filtered.filter(p => p.status === this.filters.status);
+            }
+            
+            if (this.filters.medication) {
+                filtered = filtered.filter(p => 
+                    p.medication_name.toLowerCase().includes(this.filters.medication.toLowerCase()) ||
+                    (p.generic_name && p.generic_name.toLowerCase().includes(this.filters.medication.toLowerCase()))
+                );
+            }
+            
+            if (this.filters.patient_id) {
+                filtered = filtered.filter(p => p.patient_id == this.filters.patient_id);
+            }
+            
+            if (this.filters.expiring_soon) {
+                filtered = filtered.filter(p => this.isExpiringSoon(p));
+            }
+            
+            if (this.filters.refillable_only) {
+                filtered = filtered.filter(p => this.canRefill(p));
+            }
+            
+            this.filteredPrescriptions = filtered;
+        },
+        
+        resetFilters() {
+            this.filters = {
+                status: '',
+                medication: '',
+                patient_id: '',
+                expiring_soon: false,
+                refillable_only: false
+            };
+            this.applyFilters();
+        },
+        
+        // Utility functions
+        formatDate(dateString) {
+            return new Date(dateString).toLocaleDateString('es-ES');
+        },
+        
+        isExpired(prescription) {
+            if (!prescription.end_date) return false;
+            return new Date() > new Date(prescription.end_date);
+        },
+        
+        isExpiringSoon(prescription) {
+            if (!prescription.end_date) return false;
+            const endDate = new Date(prescription.end_date);
+            const sevenDaysFromNow = new Date();
+            sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
+            return endDate <= sevenDaysFromNow && endDate >= new Date();
+        },
+        
+        getDaysRemaining(prescription) {
+            if (!prescription.end_date) return "Sin límite";
+            const endDate = new Date(prescription.end_date);
+            const today = new Date();
+            const diffTime = endDate - today;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            if (diffDays < 0) return "Expirada";
+            if (diffDays === 0) return "Expira hoy";
+            return diffDays + " días";
+        },
+        
+        getDaysRemainingClass(prescription) {
+            const days = this.getDaysRemaining(prescription);
+            if (days === "Expirada") return "text-danger";
+            if (days === "Expira hoy" || this.isExpiringSoon(prescription)) return "text-warning";
+            return "text-success";
+        },
+        
+        canRefill(prescription) {
+            return prescription.refills_remaining > 0 && 
+                   prescription.status === 'active' && 
+                   !this.isExpired(prescription);
+        },
+        
+        getStatusClass(status) {
+            const classes = {
+                active: 'border-success',
+                completed: 'border-info',
+                discontinued: 'border-warning',
+                on_hold: 'border-secondary'
+            };
+            return classes[status] || '';
+        },
+        
+        getStatusBadgeClass(status) {
+            const classes = {
+                active: 'bg-success',
+                completed: 'bg-info',
+                discontinued: 'bg-warning',
+                on_hold: 'bg-secondary'
+            };
+            return classes[status] || 'bg-secondary';
+        },
+        
+        getStatusText(status) {
+            const texts = {
+                active: 'Activa',
+                completed: 'Completada',
+                discontinued: 'Descontinuada',
+                on_hold: 'En Pausa'
+            };
+            return texts[status] || status;
+        },
+        
+        updateStats() {
+            this.stats.total = this.prescriptions.length;
+            this.stats.active = this.prescriptions.filter(p => p.status === 'active').length;
+            this.stats.expiring = this.prescriptions.filter(p => this.isExpiringSoon(p)).length;
+            this.stats.refillable = this.prescriptions.filter(p => this.canRefill(p)).length;
+        },
+        
+        // Actions
+        viewPrescription(prescription) {
+            window.location.href = `/prescriptions/${prescription.id}/`;
+        },
+        
+        requestRefill(prescription) {
+            if (confirm('¿Solicitar refill para ' + prescription.medication_name + '?')) {
+                // API call to request refill
+                console.log('Refill requested:', prescription);
+            }
+        },
+        
+        editPrescription(prescription) {
+            // Open edit modal
+            console.log('Edit prescription:', prescription);
+        },
+        
+        authorizeRefill(prescription) {
+            if (confirm('¿Autorizar refill adicional?')) {
+                prescription.refills_remaining += 1;
+                prescription.total_refills_authorized += 1;
+                console.log('Refill authorized:', prescription);
+            }
+        },
+        
+        discontinuePrescription(prescription) {
+            if (confirm('¿Descontinuar esta prescripción?')) {
+                prescription.status = 'discontinued';
+                this.updateStats();
+                console.log('Prescription discontinued:', prescription);
+            }
+        }
+    }
+}
+</script>
+{% endblock %}

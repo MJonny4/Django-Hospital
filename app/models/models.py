@@ -367,3 +367,220 @@ class AppointmentHistory(Base):
     # Relationships
     appointment = relationship("Appointment", foreign_keys=[appointment_id])
     changed_by = relationship("User", foreign_keys=[changed_by_user_id])
+
+# Medical Records System
+
+# Severity levels for medical records
+class MedicalRecordSeverity(enum.Enum):
+    LOW = "low"
+    MEDIUM = "medium"
+    HIGH = "high"
+    CRITICAL = "critical"
+
+class MedicalRecord(Base):
+    __tablename__ = "medical_records"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    
+    # Core relationships
+    patient_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    doctor_id = Column(Integer, ForeignKey('doctor_profiles.id'), nullable=False)
+    appointment_id = Column(Integer, ForeignKey('appointments.id'), nullable=True)
+    
+    # Record metadata
+    record_date = Column(DateTime(timezone=True), server_default=func.now())
+    
+    # Medical information
+    diagnosis = Column(Text, nullable=True)
+    treatment_plan = Column(Text, nullable=True)
+    medications = Column(Text, nullable=True)  # JSON string for medication list
+    lab_results = Column(Text, nullable=True)  # JSON string for lab results
+    vital_signs = Column(Text, nullable=True)  # JSON string for vital signs
+    attachments = Column(Text, nullable=True)  # JSON string for file attachments
+    follow_up_notes = Column(Text, nullable=True)
+    
+    # Classification
+    severity = Column(Enum(MedicalRecordSeverity, values_callable=lambda x: [e.value for e in x]), default=MedicalRecordSeverity.MEDIUM)
+    is_confidential = Column(Boolean, default=False)
+    
+    # System timestamps
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    
+    # Relationships
+    patient = relationship("User", foreign_keys=[patient_id])
+    doctor_profile = relationship("DoctorProfile", foreign_keys=[doctor_id])
+    appointment = relationship("Appointment", foreign_keys=[appointment_id])
+    
+    # Helper methods
+    def get_medications(self):
+        """Parse medications from JSON"""
+        if self.medications:
+            try:
+                return json.loads(self.medications)
+            except (json.JSONDecodeError, TypeError):
+                return []
+        return []
+    
+    def set_medications(self, medications_list):
+        """Set medications as JSON"""
+        self.medications = json.dumps(medications_list) if medications_list else None
+    
+    def get_lab_results(self):
+        """Parse lab results from JSON"""
+        if self.lab_results:
+            try:
+                return json.loads(self.lab_results)
+            except (json.JSONDecodeError, TypeError):
+                return {}
+        return {}
+    
+    def set_lab_results(self, lab_results_dict):
+        """Set lab results as JSON"""
+        self.lab_results = json.dumps(lab_results_dict) if lab_results_dict else None
+    
+    def get_vital_signs(self):
+        """Parse vital signs from JSON"""
+        if self.vital_signs:
+            try:
+                return json.loads(self.vital_signs)
+            except (json.JSONDecodeError, TypeError):
+                return {}
+        return {}
+    
+    def set_vital_signs(self, vital_signs_dict):
+        """Set vital signs as JSON"""
+        self.vital_signs = json.dumps(vital_signs_dict) if vital_signs_dict else None
+
+# Prescription Management System
+
+# Prescription status enum
+class PrescriptionStatus(enum.Enum):
+    ACTIVE = "active"
+    COMPLETED = "completed"
+    DISCONTINUED = "discontinued"
+    ON_HOLD = "on_hold"
+
+class Prescription(Base):
+    __tablename__ = "prescriptions"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    
+    # Core relationships
+    medical_record_id = Column(Integer, ForeignKey('medical_records.id'), nullable=False)
+    patient_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    doctor_id = Column(Integer, ForeignKey('doctor_profiles.id'), nullable=False)
+    
+    # Medication details
+    medication_name = Column(String(200), nullable=False)
+    generic_name = Column(String(200), nullable=True)
+    dosage = Column(String(100), nullable=False)  # e.g., "500mg", "10ml"
+    frequency = Column(String(100), nullable=False)  # e.g., "Twice daily", "Every 8 hours"
+    duration_days = Column(Integer, nullable=True)  # Treatment duration
+    
+    # Schedule
+    start_date = Column(DateTime(timezone=True), nullable=False)
+    end_date = Column(DateTime(timezone=True), nullable=True)
+    
+    # Instructions and warnings
+    instructions = Column(Text, nullable=True)  # How to take the medication
+    warnings = Column(Text, nullable=True)      # Side effects, precautions
+    
+    # Status and refills
+    status = Column(Enum(PrescriptionStatus, values_callable=lambda x: [e.value for e in x]), default=PrescriptionStatus.ACTIVE)
+    refills_remaining = Column(Integer, default=0)
+    total_refills_authorized = Column(Integer, default=0)
+    
+    # Pharmacy information
+    pharmacy_notes = Column(Text, nullable=True)
+    
+    # System timestamps
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    
+    # Relationships
+    medical_record = relationship("MedicalRecord", foreign_keys=[medical_record_id])
+    patient = relationship("User", foreign_keys=[patient_id])
+    doctor_profile = relationship("DoctorProfile", foreign_keys=[doctor_id])
+    
+    # Helper methods
+    def is_active(self):
+        """Check if prescription is currently active"""
+        if self.status != PrescriptionStatus.ACTIVE:
+            return False
+        
+        now = datetime.now()
+        if self.end_date and now > self.end_date:
+            return False
+        
+        return now >= self.start_date
+    
+    def is_expired(self):
+        """Check if prescription has expired"""
+        if not self.end_date:
+            return False
+        return datetime.now() > self.end_date
+    
+    def days_remaining(self):
+        """Calculate days remaining for treatment"""
+        if not self.end_date:
+            return None
+        
+        now = datetime.now()
+        if now > self.end_date:
+            return 0
+        
+        return (self.end_date - now).days
+    
+    def can_refill(self):
+        """Check if prescription can be refilled"""
+        return self.refills_remaining > 0 and self.status == PrescriptionStatus.ACTIVE
+
+# Enhanced User Model Extensions
+def enhance_user_model():
+    """Add medical information columns to existing users table"""
+    # These would be added via database migration
+    # Adding them here for reference
+    
+    # Emergency contact information
+    # emergency_contact_name = Column(String(200), nullable=True)
+    # emergency_contact_phone = Column(String(15), nullable=True)
+    # emergency_contact_relationship = Column(String(50), nullable=True)
+    
+    # Insurance information
+    # insurance_provider = Column(String(200), nullable=True)
+    # insurance_policy_number = Column(String(100), nullable=True)
+    # insurance_group_number = Column(String(100), nullable=True)
+    
+    # Medical information
+    # blood_type = Column(Enum(['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-', 'Unknown']), nullable=True)
+    # allergies = Column(Text, nullable=True)
+    # chronic_conditions = Column(Text, nullable=True)
+    # medical_history_summary = Column(Text, nullable=True)
+    # preferred_language = Column(String(50), default='Spanish')
+    
+    pass
+
+# Enhanced Appointment Model Extensions  
+def enhance_appointment_model():
+    """Add financial and workflow columns to existing appointments table"""
+    # These would be added via database migration
+    # Adding them here for reference
+    
+    # Financial information
+    # estimated_cost = Column(Decimal(10,2), nullable=True)
+    # actual_cost = Column(Decimal(10,2), nullable=True)
+    # insurance_covered = Column(Boolean, default=False)
+    # copay_amount = Column(Decimal(10,2), nullable=True)
+    
+    # Follow-up workflow
+    # follow_up_required = Column(Boolean, default=False)
+    # follow_up_date = Column(DateTime(timezone=True), nullable=True)
+    
+    # Consultation details
+    # consultation_type = Column(Enum(['in_person', 'telemedicine', 'phone']), default='in_person')
+    # waiting_room_checkin = Column(DateTime(timezone=True), nullable=True)
+    # consultation_start = Column(DateTime(timezone=True), nullable=True)
+    # consultation_end = Column(DateTime(timezone=True), nullable=True)
+    
+    pass

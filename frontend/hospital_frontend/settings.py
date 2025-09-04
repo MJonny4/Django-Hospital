@@ -3,14 +3,19 @@ Django settings for hospital_frontend project.
 """
 
 from pathlib import Path
+import os
+from dotenv import load_dotenv
 
 # Build paths inside the project
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
+
+# Load environment variables
+load_dotenv(BASE_DIR / '.env')
 
 # Quick-start development settings
-SECRET_KEY = 'django-insecure-test-key-for-frontend-testing-only'
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-test-key-for-frontend-testing-only')
 
-DEBUG = True
+DEBUG = os.getenv('DJANGO_DEBUG', 'True').lower() == 'true'
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
@@ -97,7 +102,7 @@ STATICFILES_DIRS = [
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # FastAPI Backend Configuration
-FASTAPI_BASE_URL = 'http://127.0.0.1:8001'
+FASTAPI_BASE_URL = os.getenv('FASTAPI_BASE_URL', 'http://127.0.0.1:8001')
 
 # Crispy Forms Configuration
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"

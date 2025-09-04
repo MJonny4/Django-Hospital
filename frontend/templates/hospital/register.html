@@ -15,156 +15,426 @@
                     <i class="bi bi-person-plus-fill me-2"></i>Crear Cuenta de Paciente
                 </h4>
             </div>
-            <div class="card-body">
-                <form method="post" class="needs-validation" novalidate>
+            <div class="card-body p-0">
+                <!-- Progress Indicator -->
+                <div class="registration-progress bg-light p-3">
+                    <div class="row text-center">
+                        <div class="col-3">
+                            <div class="progress-step active" data-step="1">
+                                <i class="bi bi-person-circle"></i>
+                                <small class="d-block mt-1">Personal</small>
+                            </div>
+                        </div>
+                        <div class="col-3">
+                            <div class="progress-step" data-step="2">
+                                <i class="bi bi-telephone"></i>
+                                <small class="d-block mt-1">Contacto</small>
+                            </div>
+                        </div>
+                        <div class="col-3">
+                            <div class="progress-step" data-step="3">
+                                <i class="bi bi-heart-pulse"></i>
+                                <small class="d-block mt-1">Médica</small>
+                            </div>
+                        </div>
+                        <div class="col-3">
+                            <div class="progress-step" data-step="4">
+                                <i class="bi bi-shield-lock"></i>
+                                <small class="d-block mt-1">Cuenta</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="progress mt-2">
+                        <div class="progress-bar" role="progressbar" style="width: 25%"></div>
+                    </div>
+                </div>
+                
+                <form method="post" class="needs-validation registration-form" novalidate>
                     {% csrf_token %}
                     
-                    <!-- Personal Information -->
-                    <div class="row">
-                        <div class="col-12">
-                            <h5 class="text-primary mb-3">
+                    <!-- Tab Navigation -->
+                    <ul class="nav nav-tabs nav-justified" id="registrationTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="personal-tab" data-bs-toggle="tab" 
+                                    data-bs-target="#personal-info" type="button" role="tab">
+                                <i class="bi bi-person-circle me-1"></i>Información Personal
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="contact-tab" data-bs-toggle="tab" 
+                                    data-bs-target="#contact-info" type="button" role="tab" disabled>
+                                <i class="bi bi-telephone me-1"></i>Datos de Contacto
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="medical-tab" data-bs-toggle="tab" 
+                                    data-bs-target="#medical-info" type="button" role="tab" disabled>
+                                <i class="bi bi-heart-pulse me-1"></i>Información Médica
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="account-tab" data-bs-toggle="tab" 
+                                    data-bs-target="#account-setup" type="button" role="tab" disabled>
+                                <i class="bi bi-shield-lock me-1"></i>Configuración de Cuenta
+                            </button>
+                        </li>
+                    </ul>
+                    
+                    <!-- Tab Content -->
+                    <div class="tab-content p-4" id="registrationTabContent">
+                        
+                        <!-- Personal Information Tab -->
+                        <div class="tab-pane fade show active" id="personal-info" role="tabpanel">
+                            <h4 class="text-primary mb-4">
                                 <i class="bi bi-person-circle me-2"></i>Información Personal
-                            </h5>
-                        </div>
-                    </div>
-                    
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="dni" class="form-label">
-                                <i class="bi bi-card-text me-1"></i>DNI <span class="text-danger">*</span>
-                            </label>
-                            <input type="text" class="form-control" id="dni" name="dni" 
-                                   placeholder="12345678A" pattern="[0-9]{8}[A-Za-z]" required>
-                            <div class="form-text">Formato: 8 números + 1 letra (ej: 12345678A)</div>
-                            <div class="invalid-feedback">
-                                Por favor ingrese un DNI válido (8 números + 1 letra).
+                            </h4>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="dni" class="form-label">
+                                        <i class="bi bi-card-text me-1"></i>DNI <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="text" class="form-control" id="dni" name="dni" 
+                                           placeholder="12345678A" pattern="[0-9]{8}[A-Za-z]" required>
+                                    <div class="form-text">Formato: 8 números + 1 letra (ej: 12345678A)</div>
+                                    <div class="invalid-feedback">
+                                        Por favor ingrese un DNI válido (8 números + 1 letra).
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label for="fecha_nacimiento" class="form-label">
+                                        <i class="bi bi-calendar me-1"></i>Fecha de Nacimiento <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="date" class="form-control" id="fecha_nacimiento" name="fecha_nacimiento" required>
+                                    <div class="invalid-feedback">
+                                        Por favor seleccione su fecha de nacimiento.
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                        
-                        <div class="col-md-6 mb-3">
-                            <label for="fecha_nacimiento" class="form-label">
-                                <i class="bi bi-calendar me-1"></i>Fecha de Nacimiento <span class="text-danger">*</span>
-                            </label>
-                            <input type="date" class="form-control" id="fecha_nacimiento" name="fecha_nacimiento" required>
-                            <div class="invalid-feedback">
-                                Por favor seleccione su fecha de nacimiento.
-                            </div>
-                        </div>
-                    </div>
 
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="nombre" class="form-label">
-                                <i class="bi bi-person me-1"></i>Nombre <span class="text-danger">*</span>
-                            </label>
-                            <input type="text" class="form-control" id="nombre" name="nombre" required 
-                                   placeholder="Su nombre">
-                            <div class="invalid-feedback">
-                                Por favor ingrese su nombre.
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="nombre" class="form-label">
+                                        <i class="bi bi-person me-1"></i>Nombre <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="text" class="form-control" id="nombre" name="nombre" required 
+                                           placeholder="Su nombre">
+                                    <div class="invalid-feedback">
+                                        Por favor ingrese su nombre.
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label for="apellidos" class="form-label">
+                                        <i class="bi bi-person me-1"></i>Apellidos <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="text" class="form-control" id="apellidos" name="apellidos" required 
+                                           placeholder="Sus apellidos">
+                                    <div class="invalid-feedback">
+                                        Por favor ingrese sus apellidos.
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                        
-                        <div class="col-md-6 mb-3">
-                            <label for="apellidos" class="form-label">
-                                <i class="bi bi-person me-1"></i>Apellidos <span class="text-danger">*</span>
-                            </label>
-                            <input type="text" class="form-control" id="apellidos" name="apellidos" required 
-                                   placeholder="Sus apellidos">
-                            <div class="invalid-feedback">
-                                Por favor ingrese sus apellidos.
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Contact Information -->
-                    <div class="row mt-4">
-                        <div class="col-12">
-                            <h5 class="text-primary mb-3">
-                                <i class="bi bi-telephone me-2"></i>Información de Contacto
-                            </h5>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="email" class="form-label">
-                                <i class="bi bi-envelope me-1"></i>Email <span class="text-danger">*</span>
-                            </label>
-                            <input type="email" class="form-control" id="email" name="email" required 
-                                   placeholder="su.email@ejemplo.com">
-                            <div class="invalid-feedback">
-                                Por favor ingrese un email válido.
-                            </div>
-                        </div>
-                        
-                        <div class="col-md-6 mb-3">
-                            <label for="telefono" class="form-label">
-                                <i class="bi bi-phone me-1"></i>Teléfono <span class="text-danger">*</span>
-                            </label>
-                            <input type="tel" class="form-control" id="telefono" name="telefono" 
-                                   placeholder="612345678" pattern="[679][0-9]{8}" required>
-                            <div class="form-text">Formato: números españoles (ej: 612345678)</div>
-                            <div class="invalid-feedback">
-                                Por favor ingrese un teléfono válido.
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="direccion" class="form-label">
-                            <i class="bi bi-geo-alt me-1"></i>Dirección <span class="text-danger">*</span>
-                        </label>
-                        <input type="text" class="form-control" id="direccion" name="direccion" required 
-                               placeholder="Su dirección completa">
-                        <div class="invalid-feedback">
-                            Por favor ingrese su dirección.
-                        </div>
-                    </div>
-                    
-                    <!-- Security -->
-                    <div class="row mt-4">
-                        <div class="col-12">
-                            <h5 class="text-primary mb-3">
-                                <i class="bi bi-shield-lock me-2"></i>Seguridad
-                            </h5>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="password" class="form-label">
-                                <i class="bi bi-lock me-1"></i>Contraseña <span class="text-danger">*</span>
-                            </label>
-                            <div class="input-group">
-                                <input type="password" class="form-control" id="password" name="password" 
-                                       minlength="8" required placeholder="Mínimo 8 caracteres">
-                                <button class="btn btn-outline-secondary" type="button" id="togglePassword">
-                                    <i class="bi bi-eye" id="toggleIcon"></i>
+                            
+                            <!-- Tab Navigation Buttons -->
+                            <div class="d-flex justify-content-end mt-4">
+                                <button type="button" class="btn btn-primary next-tab" data-next-tab="contact-info">
+                                    Siguiente: Contacto <i class="bi bi-arrow-right ms-1"></i>
                                 </button>
                             </div>
-                            <div class="form-text">Mínimo 8 caracteres</div>
-                            <div class="invalid-feedback">
-                                La contraseña debe tener al menos 8 caracteres.
+                        </div>
+                        
+                        <!-- Contact Information Tab -->
+                        <div class="tab-pane fade" id="contact-info" role="tabpanel">
+                            <h4 class="text-primary mb-4">
+                                <i class="bi bi-telephone me-2"></i>Información de Contacto
+                            </h4>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="email" class="form-label">
+                                        <i class="bi bi-envelope me-1"></i>Email <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="email" class="form-control" id="email" name="email" required 
+                                           placeholder="su.email@ejemplo.com">
+                                    <div class="invalid-feedback">
+                                        Por favor ingrese un email válido.
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label for="telefono" class="form-label">
+                                        <i class="bi bi-phone me-1"></i>Teléfono <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="tel" class="form-control" id="telefono" name="telefono" 
+                                           placeholder="612345678" pattern="[679][0-9]{8}" required>
+                                    <div class="form-text">Formato: números españoles (ej: 612345678)</div>
+                                    <div class="invalid-feedback">
+                                        Por favor ingrese un teléfono válido.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="direccion" class="form-label">
+                                    <i class="bi bi-geo-alt me-1"></i>Dirección <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" class="form-control" id="direccion" name="direccion" required 
+                                       placeholder="Su dirección completa">
+                                <div class="invalid-feedback">
+                                    Por favor ingrese su dirección.
+                                </div>
+                            </div>
+                            
+                            <!-- Emergency Contact -->
+                            <h5 class="text-secondary mb-3 mt-4">
+                                <i class="bi bi-person-exclamation me-2"></i>Contacto de Emergencia
+                            </h5>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="emergency_contact_name" class="form-label">
+                                        <i class="bi bi-person-heart me-1"></i>Nombre Completo
+                                    </label>
+                                    <input type="text" class="form-control" id="emergency_contact_name" 
+                                           name="emergency_contact_name" placeholder="Nombre del contacto de emergencia">
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label for="emergency_contact_phone" class="form-label">
+                                        <i class="bi bi-telephone-forward me-1"></i>Teléfono
+                                    </label>
+                                    <input type="tel" class="form-control" id="emergency_contact_phone" 
+                                           name="emergency_contact_phone" placeholder="612345678">
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="emergency_contact_relationship" class="form-label">
+                                    <i class="bi bi-people me-1"></i>Relación
+                                </label>
+                                <select class="form-select" id="emergency_contact_relationship" 
+                                        name="emergency_contact_relationship">
+                                    <option value="">Seleccione la relación...</option>
+                                    <option value="padre">Padre</option>
+                                    <option value="madre">Madre</option>
+                                    <option value="esposo">Esposo/a</option>
+                                    <option value="hijo">Hijo/a</option>
+                                    <option value="hermano">Hermano/a</option>
+                                    <option value="familiar">Otro familiar</option>
+                                    <option value="amigo">Amigo/a</option>
+                                </select>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between mt-4">
+                                <button type="button" class="btn btn-outline-secondary prev-tab" data-prev-tab="personal-info">
+                                    <i class="bi bi-arrow-left me-1"></i>Anterior
+                                </button>
+                                <button type="button" class="btn btn-primary next-tab" data-next-tab="medical-info">
+                                    Siguiente: Información Médica <i class="bi bi-arrow-right ms-1"></i>
+                                </button>
                             </div>
                         </div>
                         
-                        <div class="col-md-6 mb-3">
-                            <label for="confirmPassword" class="form-label">
-                                <i class="bi bi-lock-fill me-1"></i>Confirmar Contraseña <span class="text-danger">*</span>
-                            </label>
-                            <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" 
-                                   minlength="8" required placeholder="Repetir contraseña">
-                            <div class="invalid-feedback">
-                                Las contraseñas no coinciden.
+                        <!-- Medical Information Tab -->
+                        <div class="tab-pane fade" id="medical-info" role="tabpanel">
+                            <h4 class="text-primary mb-4">
+                                <i class="bi bi-heart-pulse me-2"></i>Información Médica
+                            </h4>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="blood_type" class="form-label">
+                                        <i class="bi bi-droplet me-1"></i>Tipo de Sangre
+                                    </label>
+                                    <select class="form-select" id="blood_type" name="blood_type">
+                                        <option value="">Seleccione...</option>
+                                        <option value="A+">A+</option>
+                                        <option value="A-">A-</option>
+                                        <option value="B+">B+</option>
+                                        <option value="B-">B-</option>
+                                        <option value="AB+">AB+</option>
+                                        <option value="AB-">AB-</option>
+                                        <option value="O+">O+</option>
+                                        <option value="O-">O-</option>
+                                        <option value="Unknown">No lo sé</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label for="preferred_language" class="form-label">
+                                        <i class="bi bi-translate me-1"></i>Idioma Preferido
+                                    </label>
+                                    <select class="form-select" id="preferred_language" name="preferred_language">
+                                        <option value="Spanish">Español</option>
+                                        <option value="English">English</option>
+                                        <option value="French">Français</option>
+                                        <option value="German">Deutsch</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="allergies" class="form-label">
+                                    <i class="bi bi-exclamation-triangle me-1"></i>Alergias Conocidas
+                                </label>
+                                <textarea class="form-control" id="allergies" name="allergies" rows="3" 
+                                          placeholder="Describa cualquier alergia conocida (medicamentos, alimentos, etc.)"></textarea>
+                                <div class="form-text">Si no tiene alergias conocidas, puede dejarlo en blanco</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="chronic_conditions" class="form-label">
+                                    <i class="bi bi-clipboard2-pulse me-1"></i>Condiciones Médicas Crónicas
+                                </label>
+                                <textarea class="form-control" id="chronic_conditions" name="chronic_conditions" rows="3" 
+                                          placeholder="Describa cualquier condición médica crónica que padezca"></textarea>
+                                <div class="form-text">Por ejemplo: diabetes, hipertensión, asma, etc.</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="medical_history_summary" class="form-label">
+                                    <i class="bi bi-journal-medical me-1"></i>Resumen del Historial Médico
+                                </label>
+                                <textarea class="form-control" id="medical_history_summary" name="medical_history_summary" rows="4" 
+                                          placeholder="Breve resumen de su historial médico relevante"></textarea>
+                                <div class="form-text">Incluya cirugías pasadas, hospitalizaciones importantes, medicamentos actuales, etc.</div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between mt-4">
+                                <button type="button" class="btn btn-outline-secondary prev-tab" data-prev-tab="contact-info">
+                                    <i class="bi bi-arrow-left me-1"></i>Anterior
+                                </button>
+                                <button type="button" class="btn btn-primary next-tab" data-next-tab="account-setup">
+                                    Siguiente: Configurar Cuenta <i class="bi bi-arrow-right ms-1"></i>
+                                </button>
                             </div>
                         </div>
-                    </div>
-                    
-                    <!-- Submit -->
-                    <div class="d-grid mt-4">
-                        <button type="submit" class="btn btn-success btn-lg">
-                            <i class="bi bi-person-plus me-2"></i>Registrarse como Paciente
-                        </button>
+                        
+                        <!-- Account Setup Tab -->
+                        <div class="tab-pane fade" id="account-setup" role="tabpanel">
+                            <h4 class="text-primary mb-4">
+                                <i class="bi bi-shield-lock me-2"></i>Configuración de la Cuenta
+                            </h4>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="password" class="form-label">
+                                        <i class="bi bi-lock me-1"></i>Contraseña <span class="text-danger">*</span>
+                                    </label>
+                                    <div class="input-group">
+                                        <input type="password" class="form-control" id="password" name="password" 
+                                               minlength="8" required placeholder="Mínimo 8 caracteres">
+                                        <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                            <i class="bi bi-eye" id="toggleIcon"></i>
+                                        </button>
+                                    </div>
+                                    <div class="form-text">Mínimo 8 caracteres</div>
+                                    <div class="invalid-feedback">
+                                        La contraseña debe tener al menos 8 caracteres.
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label for="confirmPassword" class="form-label">
+                                        <i class="bi bi-lock-fill me-1"></i>Confirmar Contraseña <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" 
+                                           minlength="8" required placeholder="Repetir contraseña">
+                                    <div class="invalid-feedback">
+                                        Las contraseñas no coinciden.
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Insurance Information -->
+                            <h5 class="text-secondary mb-3 mt-4">
+                                <i class="bi bi-shield-check me-2"></i>Información del Seguro (Opcional)
+                            </h5>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="insurance_provider" class="form-label">
+                                        <i class="bi bi-building me-1"></i>Compañía de Seguros
+                                    </label>
+                                    <input type="text" class="form-control" id="insurance_provider" 
+                                           name="insurance_provider" placeholder="Nombre de la compañía aseguradora">
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label for="insurance_policy_number" class="form-label">
+                                        <i class="bi bi-card-checklist me-1"></i>Número de Póliza
+                                    </label>
+                                    <input type="text" class="form-control" id="insurance_policy_number" 
+                                           name="insurance_policy_number" placeholder="Número de la póliza">
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="insurance_group_number" class="form-label">
+                                    <i class="bi bi-people me-1"></i>Número de Grupo
+                                </label>
+                                <input type="text" class="form-control" id="insurance_group_number" 
+                                       name="insurance_group_number" placeholder="Número de grupo (si aplica)">
+                            </div>
+                            
+                            <!-- Terms and Conditions -->
+                            <div class="card bg-light mt-4">
+                                <div class="card-body">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="acceptTerms" 
+                                               name="acceptTerms" required>
+                                        <label class="form-check-label" for="acceptTerms">
+                                            <strong>Acepto los términos y condiciones</strong>
+                                        </label>
+                                        <div class="invalid-feedback">
+                                            Debe aceptar los términos y condiciones para continuar.
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-check mt-2">
+                                        <input class="form-check-input" type="checkbox" id="acceptPrivacy" 
+                                               name="acceptPrivacy" required>
+                                        <label class="form-check-label" for="acceptPrivacy">
+                                            Acepto la <strong>política de privacidad</strong> y el tratamiento de mis datos personales
+                                        </label>
+                                        <div class="invalid-feedback">
+                                            Debe aceptar la política de privacidad.
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-check mt-2">
+                                        <input class="form-check-input" type="checkbox" id="acceptMedical" 
+                                               name="acceptMedical" required>
+                                        <label class="form-check-label" for="acceptMedical">
+                                            Consiento el almacenamiento y tratamiento de mi <strong>información médica</strong> 
+                                            para fines de atención sanitaria
+                                        </label>
+                                        <div class="invalid-feedback">
+                                            Debe consentir el tratamiento de información médica.
+                                        </div>
+                                    </div>
+                                    
+                                    <small class="text-muted mt-2 d-block">
+                                        <i class="bi bi-info-circle me-1"></i>
+                                        Al registrarse, acepta que sus datos se almacenen de forma segura y se utilicen únicamente 
+                                        para la prestación de servicios médicos y comunicaciones relacionadas con su atención sanitaria.
+                                    </small>
+                                </div>
+                            </div>
+                            
+                            <!-- Navigation Buttons -->
+                            <div class="d-flex justify-content-between mt-4">
+                                <button type="button" class="btn btn-outline-secondary prev-tab" data-prev-tab="medical-info">
+                                    <i class="bi bi-arrow-left me-1"></i>Anterior
+                                </button>
+                                <button type="submit" class="btn btn-success btn-lg" id="submitRegistration">
+                                    <i class="bi bi-person-plus me-2"></i>Crear Mi Cuenta
+                                </button>
+                            </div>
+                        </div>
+                        
                     </div>
                 </form>
                 
@@ -212,7 +482,237 @@
 
 {% block extra_js %}
 <script>
-    // Form validation
+    // Enhanced Registration Form with Tab Management
+    document.addEventListener('DOMContentLoaded', function() {
+        
+        // Tab Management
+        let currentStep = 1;
+        const totalSteps = 4;
+        
+        // Tab progression tracking
+        const completedSteps = new Set();
+        const tabData = {};
+        
+        // Initialize tab navigation
+        initializeTabNavigation();
+        
+        // Save progress between tabs
+        function saveTabProgress() {
+            const formData = new FormData(document.querySelector('.registration-form'));
+            const currentTab = document.querySelector('.tab-pane.show.active').id;
+            tabData[currentTab] = Object.fromEntries(formData.entries());
+            localStorage.setItem('registrationProgress', JSON.stringify(tabData));
+        }
+        
+        // Load saved progress
+        function loadTabProgress() {
+            const saved = localStorage.getItem('registrationProgress');
+            if (saved) {
+                try {
+                    const data = JSON.parse(saved);
+                    Object.keys(data).forEach(tabId => {
+                        const tabFields = data[tabId];
+                        Object.keys(tabFields).forEach(fieldName => {
+                            const field = document.querySelector(`[name="${fieldName}"]`);
+                            if (field) {
+                                if (field.type === 'checkbox') {
+                                    field.checked = tabFields[fieldName] === 'on';
+                                } else {
+                                    field.value = tabFields[fieldName];
+                                }
+                            }
+                        });
+                    });
+                } catch (e) {
+                    console.warn('Could not load saved progress');
+                }
+            }
+        }
+        
+        function initializeTabNavigation() {
+            // Load saved progress
+            loadTabProgress();
+            
+            // Next tab buttons
+            document.querySelectorAll('.next-tab').forEach(button => {
+                button.addEventListener('click', function() {
+                    const nextTabId = this.getAttribute('data-next-tab');
+                    if (validateCurrentTab()) {
+                        saveTabProgress();
+                        markStepComplete(currentStep);
+                        switchToTab(nextTabId);
+                    }
+                });
+            });
+            
+            // Previous tab buttons
+            document.querySelectorAll('.prev-tab').forEach(button => {
+                button.addEventListener('click', function() {
+                    const prevTabId = this.getAttribute('data-prev-tab');
+                    saveTabProgress();
+                    switchToTab(prevTabId);
+                });
+            });
+            
+            // Direct tab clicks (only if step is accessible)
+            document.querySelectorAll('#registrationTabs button').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    const targetTab = this.getAttribute('data-bs-target');
+                    const stepNum = getStepFromTab(targetTab);
+                    
+                    if (stepNum > currentStep && !isStepAccessible(stepNum)) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        showStepWarning();
+                        return false;
+                    }
+                    
+                    if (stepNum <= currentStep) {
+                        saveTabProgress();
+                        switchToTab(targetTab.substring(1)); // Remove #
+                    }
+                });
+            });
+        }
+        
+        function validateCurrentTab() {
+            const activeTab = document.querySelector('.tab-pane.show.active');
+            const requiredFields = activeTab.querySelectorAll('input[required], select[required], textarea[required]');
+            let isValid = true;
+            
+            requiredFields.forEach(field => {
+                if (!field.checkValidity()) {
+                    field.reportValidity();
+                    isValid = false;
+                }
+            });
+            
+            return isValid;
+        }
+        
+        function switchToTab(tabId) {
+            // Update step tracking
+            currentStep = getStepFromTab(`#${tabId}`);
+            
+            // Enable the target tab
+            const targetButton = document.querySelector(`button[data-bs-target="#${tabId}"]`);
+            targetButton.disabled = false;
+            
+            // Activate the tab
+            const tab = new bootstrap.Tab(targetButton);
+            tab.show();
+            
+            // Update progress indicator
+            updateProgressIndicator();
+            
+            // Update tab navigation states
+            updateTabStates();
+        }
+        
+        function getStepFromTab(tabId) {
+            const stepMapping = {
+                '#personal-info': 1,
+                '#contact-info': 2,
+                '#medical-info': 3,
+                '#account-setup': 4
+            };
+            return stepMapping[tabId] || 1;
+        }
+        
+        function isStepAccessible(stepNum) {
+            // Step 1 is always accessible
+            if (stepNum === 1) return true;
+            
+            // Other steps require previous steps to be completed
+            for (let i = 1; i < stepNum; i++) {
+                if (!completedSteps.has(i)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        
+        function markStepComplete(stepNum) {
+            completedSteps.add(stepNum);
+            const stepElement = document.querySelector(`[data-step="${stepNum}"]`);
+            if (stepElement) {
+                stepElement.classList.add('completed');
+            }
+        }
+        
+        function updateProgressIndicator() {
+            // Update step indicators
+            document.querySelectorAll('.progress-step').forEach(step => {
+                const stepNum = parseInt(step.getAttribute('data-step'));
+                step.classList.remove('active', 'completed');
+                
+                if (stepNum === currentStep) {
+                    step.classList.add('active');
+                } else if (stepNum < currentStep || completedSteps.has(stepNum)) {
+                    step.classList.add('completed');
+                }
+            });
+            
+            // Update progress bar
+            const progressPercent = (currentStep / totalSteps) * 100;
+            const progressBar = document.querySelector('.progress-bar');
+            progressBar.style.width = `${progressPercent}%`;
+            progressBar.setAttribute('aria-valuenow', progressPercent);
+        }
+        
+        function updateTabStates() {
+            // Enable tabs up to current step
+            document.querySelectorAll('#registrationTabs button').forEach(button => {
+                const tabId = button.getAttribute('data-bs-target');
+                const stepNum = getStepFromTab(tabId);
+                
+                if (stepNum <= currentStep || isStepAccessible(stepNum)) {
+                    button.disabled = false;
+                } else {
+                    button.disabled = true;
+                }
+            });
+        }
+        
+        function showStepWarning() {
+            // Create a temporary alert
+            const alert = document.createElement('div');
+            alert.className = 'alert alert-warning alert-dismissible fade show position-fixed';
+            alert.style.top = '20px';
+            alert.style.right = '20px';
+            alert.style.zIndex = '9999';
+            alert.innerHTML = `
+                <i class="bi bi-exclamation-triangle me-2"></i>
+                Complete los pasos anteriores antes de continuar
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            document.body.appendChild(alert);
+            
+            // Auto-dismiss after 3 seconds
+            setTimeout(() => {
+                if (alert.parentNode) {
+                    alert.parentNode.removeChild(alert);
+                }
+            }, 3000);
+        }
+        
+        // Form submission handler
+        document.querySelector('.registration-form').addEventListener('submit', function(e) {
+            // Clear saved progress on successful submission
+            if (this.checkValidity()) {
+                localStorage.removeItem('registrationProgress');
+            }
+        });
+        
+        // Auto-save progress periodically
+        setInterval(saveTabProgress, 30000); // Save every 30 seconds
+        
+        // Save progress when user leaves page
+        window.addEventListener('beforeunload', saveTabProgress);
+    });
+    
+    // Enhanced Form validation
     (function() {
         'use strict';
         window.addEventListener('load', function() {
@@ -222,6 +722,19 @@
                     if (form.checkValidity() === false) {
                         event.preventDefault();
                         event.stopPropagation();
+                        
+                        // Find first invalid field and show its tab
+                        const firstInvalid = form.querySelector(':invalid');
+                        if (firstInvalid) {
+                            const tabPane = firstInvalid.closest('.tab-pane');
+                            if (tabPane) {
+                                const tabButton = document.querySelector(`button[data-bs-target="#${tabPane.id}"]`);
+                                if (tabButton) {
+                                    const tab = new bootstrap.Tab(tabButton);
+                                    tab.show();
+                                }
+                            }
+                        }
                     }
                     form.classList.add('was-validated');
                 }, false);

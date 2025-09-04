@@ -1,0 +1,560 @@
+{% extends 'hospital/base.html' %}
+
+{% block title %}
+    {% if user_data.active_role == 'patient' %}Mis Registros Médicos
+    {% elif user_data.active_role == 'doctor' %}Registros Médicos de Pacientes
+    {% elif user_data.active_role == 'admin' %}Todos los Registros Médicos
+    {% else %}Registros Médicos{% endif %} - Hospital Management System
+{% endblock %}
+
+{% block page_title %}
+    {% if user_data.active_role == 'patient' %}<i class="bi bi-clipboard2-pulse me-3"></i>Mis Registros Médicos
+    {% elif user_data.active_role == 'doctor' %}<i class="bi bi-journal-medical me-3"></i>Registros de Mis Pacientes
+    {% elif user_data.active_role == 'admin' %}<i class="bi bi-database me-3"></i>Todos los Registros Médicos
+    {% else %}<i class="bi bi-clipboard2 me-3"></i>Registros Médicos{% endif %}
+{% endblock %}
+
+{% block content %}
+<!-- Medical Records Dashboard with Alpine.js -->
+<div x-data="medicalRecordsApp()" x-init="loadRecords()" class="medical-records-dashboard">
+    
+    <!-- Quick Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card stat-card border-primary">
+                <div class="card-body text-center">
+                    <i class="bi bi-clipboard2-pulse display-4 text-primary mb-2"></i>
+                    <h3 x-text="stats.total" class="fw-bold text-primary">0</h3>
+                    <p class="text-muted mb-0">Total Registros</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card stat-card border-warning">
+                <div class="card-body text-center">
+                    <i class="bi bi-exclamation-triangle display-4 text-warning mb-2"></i>
+                    <h3 x-text="stats.critical" class="fw-bold text-warning">0</h3>
+                    <p class="text-muted mb-0">Críticos</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card stat-card border-success">
+                <div class="card-body text-center">
+                    <i class="bi bi-calendar-check display-4 text-success mb-2"></i>
+                    <h3 x-text="stats.thisMonth" class="fw-bold text-success">0</h3>
+                    <p class="text-muted mb-0">Este Mes</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card stat-card border-info">
+                <div class="card-body text-center">
+                    <i class="bi bi-clock-history display-4 text-info mb-2"></i>
+                    <h3 x-text="stats.recent" class="fw-bold text-info">0</h3>
+                    <p class="text-muted mb-0">Últimos 7 días</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters and Actions -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="row align-items-end">
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">Filtrar por Paciente</label>
+                    <select x-model="filters.patient_id" @change="applyFilters()" class="form-select">
+                        <option value="">Todos los pacientes</option>
+                        <template x-for="patient in patients" :key="patient.id">
+                            <option :value="patient.id" x-text="patient.name"></option>
+                        </template>
+                    </select>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">Severidad</label>
+                    <select x-model="filters.severity" @change="applyFilters()" class="form-select">
+                        <option value="">Todas</option>
+                        <option value="critical">Crítica</option>
+                        <option value="high">Alta</option>
+                        <option value="medium">Media</option>
+                        <option value="low">Baja</option>
+                    </select>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">Fecha Desde</label>
+                    <input type="date" x-model="filters.date_from" @change="applyFilters()" class="form-control">
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="d-flex gap-2">
+                        <button @click="resetFilters()" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-clockwise me-1"></i>Limpiar
+                        </button>
+                        {% if user_data.active_role == 'doctor' %}
+                        <button @click="showCreateModal = true" class="btn btn-primary">
+                            <i class="bi bi-plus-circle me-1"></i>Nuevo Registro
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Medical Records List -->
+    <div class="row">
+        <template x-for="record in filteredRecords" :key="record.id">
+            <div class="col-12 mb-3">
+                <div class="card medical-record-card h-100" 
+                     :class="getSeverityClass(record.severity)"
+                     x-data="{ expanded: false }">
+                    
+                    <!-- Record Header (Always Visible) -->
+                    <div class="card-header bg-white border-0 pb-2" 
+                         @click="expanded = !expanded" 
+                         style="cursor: pointer;">
+                        <div class="row align-items-center">
+                            <div class="col-8">
+                                <h6 class="mb-1 fw-bold" :class="getSeverityTextClass(record.severity)">
+                                    <i class="bi bi-clipboard2-pulse me-2"></i>
+                                    <span x-text="record.patient_name || 'Paciente #' + record.patient_id"></span>
+                                </h6>
+                                <small class="text-muted">
+                                    <i class="bi bi-calendar3 me-1"></i>
+                                    <span x-text="formatDate(record.record_date)"></span>
+                                    <span class="ms-3">
+                                        <i class="bi bi-person-badge me-1"></i>
+                                        Dr. <span x-text="record.doctor_name"></span>
+                                    </span>
+                                </small>
+                            </div>
+                            <div class="col-4 text-end">
+                                <span class="badge" :class="getSeverityBadgeClass(record.severity)" x-text="record.severity.toUpperCase()"></span>
+                                <i class="bi ms-2" :class="expanded ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
+                            </div>
+                        </div>
+                        
+                        <!-- Quick Preview -->
+                        <div class="mt-2" x-show="!expanded">
+                            <div class="row">
+                                <div class="col-md-6" x-show="record.diagnosis">
+                                    <small class="text-muted">Diagnóstico:</small>
+                                    <div class="fw-semibold" x-text="truncateText(record.diagnosis, 50)"></div>
+                                </div>
+                                <div class="col-md-6" x-show="record.medications && record.medications.length > 0">
+                                    <small class="text-muted">Medicamentos:</small>
+                                    <div class="fw-semibold">
+                                        <span x-text="record.medications.length"></span> prescrito(s)
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Expanded Details -->
+                    <div x-show="expanded" x-transition class="card-body">
+                        <div class="row g-4">
+                            <!-- Diagnosis -->
+                            <div class="col-12" x-show="record.diagnosis">
+                                <h6 class="text-primary mb-2">
+                                    <i class="bi bi-search me-1"></i>Diagnóstico
+                                </h6>
+                                <div class="bg-light p-3 rounded" x-text="record.diagnosis"></div>
+                            </div>
+                            
+                            <!-- Treatment Plan -->
+                            <div class="col-12" x-show="record.treatment_plan">
+                                <h6 class="text-primary mb-2">
+                                    <i class="bi bi-clipboard-check me-1"></i>Plan de Tratamiento
+                                </h6>
+                                <div class="bg-light p-3 rounded" x-text="record.treatment_plan"></div>
+                            </div>
+                            
+                            <!-- Vital Signs -->
+                            <div class="col-md-6" x-show="record.vital_signs">
+                                <h6 class="text-primary mb-2">
+                                    <i class="bi bi-heart-pulse me-1"></i>Signos Vitales
+                                </h6>
+                                <div class="vital-signs-grid">
+                                    <template x-for="(value, key) in record.vital_signs" :key="key">
+                                        <div class="d-flex justify-content-between border-bottom py-1">
+                                            <small x-text="formatVitalSignName(key)"></small>
+                                            <strong x-text="value"></strong>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                            
+                            <!-- Medications -->
+                            <div class="col-md-6" x-show="record.medications && record.medications.length > 0">
+                                <h6 class="text-primary mb-2">
+                                    <i class="bi bi-capsule me-1"></i>Medicamentos
+                                </h6>
+                                <template x-for="medication in record.medications" :key="medication.name">
+                                    <div class="medication-item mb-2">
+                                        <div class="fw-semibold" x-text="medication.name"></div>
+                                        <small class="text-muted">
+                                            <span x-text="medication.dosage"></span> - 
+                                            <span x-text="medication.frequency"></span>
+                                        </small>
+                                    </div>
+                                </template>
+                            </div>
+                            
+                            <!-- Lab Results -->
+                            <div class="col-12" x-show="record.lab_results && Object.keys(record.lab_results).length > 0">
+                                <h6 class="text-primary mb-2">
+                                    <i class="bi bi-clipboard-data me-1"></i>Resultados de Laboratorio
+                                </h6>
+                                <div class="table-responsive">
+                                    <table class="table table-sm">
+                                        <template x-for="(value, test) in record.lab_results" :key="test">
+                                            <tr>
+                                                <td x-text="test"></td>
+                                                <td class="fw-semibold" x-text="value"></td>
+                                            </tr>
+                                        </template>
+                                    </table>
+                                </div>
+                            </div>
+                            
+                            <!-- Follow-up Notes -->
+                            <div class="col-12" x-show="record.follow_up_notes">
+                                <h6 class="text-primary mb-2">
+                                    <i class="bi bi-calendar-plus me-1"></i>Notas de Seguimiento
+                                </h6>
+                                <div class="bg-light p-3 rounded" x-text="record.follow_up_notes"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Actions Footer -->
+                    <div class="card-footer bg-light border-0" x-show="expanded" x-transition>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">
+                                ID: #<span x-text="record.id"></span> | 
+                                Creado: <span x-text="formatDate(record.created_at)"></span>
+                            </small>
+                            <div class="btn-group">
+                                <button @click="viewFullRecord(record)" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-eye me-1"></i>Ver Completo
+                                </button>
+                                {% if user_data.active_role == 'doctor' %}
+                                <button @click="editRecord(record)" class="btn btn-sm btn-outline-secondary">
+                                    <i class="bi bi-pencil me-1"></i>Editar
+                                </button>
+                                <button @click="createPrescription(record)" class="btn btn-sm btn-success">
+                                    <i class="bi bi-capsule me-1"></i>Recetar
+                                </button>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </template>
+        
+        <!-- Empty State -->
+        <div class="col-12" x-show="filteredRecords.length === 0 && !loading">
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <i class="bi bi-clipboard2-x display-1 text-muted mb-3"></i>
+                    <h4 class="text-muted">No hay registros médicos</h4>
+                    <p class="text-muted">No se encontraron registros médicos con los filtros aplicados.</p>
+                    <button @click="resetFilters()" class="btn btn-outline-primary">
+                        <i class="bi bi-arrow-clockwise me-1"></i>Limpiar Filtros
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Loading State -->
+        <div class="col-12" x-show="loading">
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <div class="spinner-border text-primary mb-3" role="status">
+                        <span class="visually-hidden">Cargando...</span>
+                    </div>
+                    <p class="text-muted">Cargando registros médicos...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Pagination -->
+    <div class="d-flex justify-content-center mt-4" x-show="totalPages > 1">
+        <nav>
+            <ul class="pagination">
+                <li class="page-item" :class="{ disabled: currentPage === 1 }">
+                    <button @click="changePage(currentPage - 1)" class="page-link">Anterior</button>
+                </li>
+                <template x-for="page in visiblePages" :key="page">
+                    <li class="page-item" :class="{ active: page === currentPage }">
+                        <button @click="changePage(page)" class="page-link" x-text="page"></button>
+                    </li>
+                </template>
+                <li class="page-item" :class="{ disabled: currentPage === totalPages }">
+                    <button @click="changePage(currentPage + 1)" class="page-link">Siguiente</button>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</div>
+
+<!-- Create Medical Record Modal -->
+<div class="modal fade" id="createRecordModal" x-show="showCreateModal" style="display: none;">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="bi bi-plus-circle me-2"></i>Nuevo Registro Médico
+                </h5>
+                <button type="button" class="btn-close" @click="showCreateModal = false"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Medical Record Form would go here -->
+                <p class="text-muted">Formulario de creación de registro médico...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function medicalRecordsApp() {
+    return {
+        // State
+        records: [],
+        patients: [],
+        filteredRecords: [],
+        loading: false,
+        showCreateModal: false,
+        
+        // Filters
+        filters: {
+            patient_id: '',
+            severity: '',
+            date_from: '',
+            date_to: '',
+            search: ''
+        },
+        
+        // Pagination
+        currentPage: 1,
+        pageSize: 10,
+        totalPages: 1,
+        
+        // Stats
+        stats: {
+            total: 0,
+            critical: 0,
+            thisMonth: 0,
+            recent: 0
+        },
+        
+        // Initialize
+        async loadRecords() {
+            this.loading = true;
+            try {
+                // Simulate API call - replace with actual API
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                // Mock data
+                this.records = [
+                    {
+                        id: 1,
+                        patient_id: 1,
+                        patient_name: "María González",
+                        doctor_name: "Dr. Juan Pérez",
+                        record_date: "2024-01-15",
+                        diagnosis: "Hipertensión arterial leve",
+                        treatment_plan: "Control dietético y ejercicio regular",
+                        severity: "medium",
+                        medications: [
+                            { name: "Enalapril", dosage: "10mg", frequency: "Una vez al día" }
+                        ],
+                        vital_signs: {
+                            blood_pressure: "140/90",
+                            heart_rate: "75 bpm",
+                            temperature: "36.5°C"
+                        },
+                        created_at: "2024-01-15T10:30:00"
+                    },
+                    {
+                        id: 2,
+                        patient_id: 2,
+                        patient_name: "Carlos Rodríguez",
+                        doctor_name: "Dr. Ana Martín",
+                        record_date: "2024-01-14",
+                        diagnosis: "Diabetes mellitus tipo 2 descompensada",
+                        treatment_plan: "Ajuste de medicación y control nutricional estricto",
+                        severity: "high",
+                        medications: [
+                            { name: "Metformina", dosage: "850mg", frequency: "Dos veces al día" },
+                            { name: "Insulina", dosage: "20 UI", frequency: "Antes de las comidas" }
+                        ],
+                        vital_signs: {
+                            blood_pressure: "160/95",
+                            heart_rate: "82 bpm",
+                            glucose: "280 mg/dl"
+                        },
+                        lab_results: {
+                            "Glucosa en ayunas": "280 mg/dl",
+                            "HbA1c": "9.2%",
+                            "Creatinina": "1.2 mg/dl"
+                        },
+                        follow_up_notes: "Cita de control en 2 semanas para evaluar respuesta al tratamiento",
+                        created_at: "2024-01-14T14:20:00"
+                    }
+                ];
+                
+                this.patients = [
+                    { id: 1, name: "María González" },
+                    { id: 2, name: "Carlos Rodríguez" }
+                ];
+                
+                this.updateStats();
+                this.applyFilters();
+            } catch (error) {
+                console.error('Error loading records:', error);
+            } finally {
+                this.loading = false;
+            }
+        },
+        
+        // Filtering
+        applyFilters() {
+            let filtered = this.records;
+            
+            if (this.filters.patient_id) {
+                filtered = filtered.filter(r => r.patient_id == this.filters.patient_id);
+            }
+            
+            if (this.filters.severity) {
+                filtered = filtered.filter(r => r.severity === this.filters.severity);
+            }
+            
+            if (this.filters.date_from) {
+                filtered = filtered.filter(r => r.record_date >= this.filters.date_from);
+            }
+            
+            this.filteredRecords = filtered;
+            this.updatePagination();
+        },
+        
+        resetFilters() {
+            this.filters = {
+                patient_id: '',
+                severity: '',
+                date_from: '',
+                date_to: '',
+                search: ''
+            };
+            this.applyFilters();
+        },
+        
+        // Utilities
+        getSeverityClass(severity) {
+            const classes = {
+                critical: 'border-danger',
+                high: 'border-warning', 
+                medium: 'border-info',
+                low: 'border-success'
+            };
+            return classes[severity] || 'border-secondary';
+        },
+        
+        getSeverityTextClass(severity) {
+            const classes = {
+                critical: 'text-danger',
+                high: 'text-warning',
+                medium: 'text-info', 
+                low: 'text-success'
+            };
+            return classes[severity] || 'text-secondary';
+        },
+        
+        getSeverityBadgeClass(severity) {
+            const classes = {
+                critical: 'bg-danger',
+                high: 'bg-warning',
+                medium: 'bg-info',
+                low: 'bg-success'
+            };
+            return classes[severity] || 'bg-secondary';
+        },
+        
+        formatDate(dateString) {
+            return new Date(dateString).toLocaleDateString('es-ES');
+        },
+        
+        formatVitalSignName(key) {
+            const names = {
+                blood_pressure: 'Presión Arterial',
+                heart_rate: 'Frecuencia Cardíaca', 
+                temperature: 'Temperatura',
+                glucose: 'Glucosa'
+            };
+            return names[key] || key.replace('_', ' ');
+        },
+        
+        truncateText(text, length) {
+            return text && text.length > length ? text.substring(0, length) + '...' : text;
+        },
+        
+        updateStats() {
+            this.stats.total = this.records.length;
+            this.stats.critical = this.records.filter(r => r.severity === 'critical').length;
+            
+            const now = new Date();
+            const thisMonth = now.getMonth();
+            const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+            
+            this.stats.thisMonth = this.records.filter(r => 
+                new Date(r.record_date).getMonth() === thisMonth
+            ).length;
+            
+            this.stats.recent = this.records.filter(r =>
+                new Date(r.record_date) >= sevenDaysAgo
+            ).length;
+        },
+        
+        updatePagination() {
+            this.totalPages = Math.ceil(this.filteredRecords.length / this.pageSize);
+        },
+        
+        get visiblePages() {
+            const pages = [];
+            const start = Math.max(1, this.currentPage - 2);
+            const end = Math.min(this.totalPages, this.currentPage + 2);
+            
+            for (let i = start; i <= end; i++) {
+                pages.push(i);
+            }
+            return pages;
+        },
+        
+        changePage(page) {
+            if (page >= 1 && page <= this.totalPages) {
+                this.currentPage = page;
+            }
+        },
+        
+        // Actions
+        viewFullRecord(record) {
+            // Navigate to full record view
+            window.location.href = `/medical-records/${record.id}/`;
+        },
+        
+        editRecord(record) {
+            // Open edit modal or navigate to edit page
+            console.log('Edit record:', record);
+        },
+        
+        createPrescription(record) {
+            // Open prescription creation modal
+            console.log('Create prescription for record:', record);
+        }
+    }
+}
+</script>
+{% endblock %}

@@ -240,6 +240,928 @@ body {
   color: var(--white);
 }
 
+/* Enhanced Appointment Cards */
+.appointment-card {
+  transition: all 0.3s ease;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.appointment-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(65, 105, 225, 0.15);
+  border-color: var(--royal-blue-light);
+}
+
+.appointment-card .card-header {
+  background: linear-gradient(135deg, rgba(65, 105, 225, 0.05) 0%, rgba(100, 149, 237, 0.05) 100%);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.appointment-card .details-toggle {
+  transition: all 0.3s ease;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  min-width: 120px;
+}
+
+.appointment-card .details-toggle:hover {
+  background-color: var(--royal-blue);
+  border-color: var(--royal-blue);
+  color: white;
+  transform: translateY(-1px);
+}
+
+.appointment-card .details-toggle[aria-expanded="true"] {
+  background-color: var(--royal-blue);
+  border-color: var(--royal-blue);
+  color: white;
+}
+
+.appointment-card .details-toggle[aria-expanded="true"] .bi-chevron-down {
+  transform: rotate(180deg);
+}
+
+.appointment-card .details-toggle .bi-chevron-down {
+  transition: transform 0.3s ease;
+}
+
+.appointment-card .collapse {
+  transition: all 0.3s ease;
+}
+
+.appointment-card .card-footer {
+  background-color: rgba(248, 249, 250, 0.8);
+  border-top: 1px solid var(--border-color);
+}
+
+.appointment-card .badge {
+  font-size: 0.75rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: 20px;
+}
+
+/* Enhanced card animations */
+.appointment-card[data-status="urgent"] {
+  border-left: 4px solid var(--danger);
+}
+
+.appointment-card[data-status="emergency"] {
+  border-left: 4px solid var(--danger);
+  box-shadow: 0 0 15px rgba(239, 68, 68, 0.2);
+}
+
+.appointment-card[data-status="completed"] {
+  opacity: 0.8;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.02) 0%, rgba(5, 150, 105, 0.02) 100%);
+}
+
+.appointment-card[data-status="cancelled"] {
+  opacity: 0.7;
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.02) 0%, rgba(220, 38, 38, 0.02) 100%);
+}
+
+/* Responsive improvements */
+@media (max-width: 768px) {
+  .appointment-card .card-body {
+    padding: 1rem 0.75rem;
+  }
+  
+  .appointment-card .details-toggle {
+    font-size: 0.8rem;
+    min-width: 100px;
+    padding: 0.4rem 0.8rem;
+  }
+}
+
+/* Enhanced Registration Form Styling */
+.registration-progress {
+  border-bottom: 1px solid var(--border-color);
+}
+
+.progress-step {
+  cursor: pointer;
+  padding: 10px;
+  border-radius: 50px;
+  transition: all 0.3s ease;
+  background: rgba(108, 117, 125, 0.1);
+  border: 2px solid transparent;
+  color: #6c757d;
+}
+
+.progress-step.active {
+  background: linear-gradient(135deg, var(--royal-blue) 0%, var(--royal-blue-light) 100%);
+  color: white;
+  border-color: var(--royal-blue);
+  transform: scale(1.1);
+}
+
+.progress-step.completed {
+  background: linear-gradient(135deg, var(--success) 0%, #059669 100%);
+  color: white;
+  border-color: var(--success);
+}
+
+.progress-step i {
+  font-size: 1.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.progress-step:hover:not(.active) {
+  background: rgba(65, 105, 225, 0.1);
+  color: var(--royal-blue);
+  transform: translateY(-2px);
+}
+
+/* Enhanced Tab Navigation */
+.nav-tabs {
+  border-bottom: 2px solid var(--border-color);
+}
+
+.nav-tabs .nav-link {
+  border: none;
+  padding: 1rem 1.5rem;
+  font-weight: 500;
+  color: #6c757d;
+  background: transparent;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.nav-tabs .nav-link:hover:not(.active):not([disabled]) {
+  color: var(--royal-blue);
+  background: rgba(65, 105, 225, 0.05);
+  border-color: transparent;
+  transform: translateY(-1px);
+}
+
+.nav-tabs .nav-link.active {
+  color: var(--royal-blue);
+  background: linear-gradient(135deg, rgba(65, 105, 225, 0.1) 0%, rgba(100, 149, 237, 0.1) 100%);
+  border-color: var(--royal-blue);
+  border-bottom: 2px solid var(--royal-blue);
+  font-weight: 600;
+}
+
+.nav-tabs .nav-link:disabled {
+  color: #adb5bd;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.nav-tabs .nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  background: var(--royal-blue);
+  transition: all 0.3s ease;
+  transform: translateX(-50%);
+}
+
+.nav-tabs .nav-link.active::after {
+  width: 100%;
+}
+
+/* Tab Content Styling */
+.tab-content {
+  background: white;
+  min-height: 400px;
+  border-radius: 0 0 12px 12px;
+}
+
+.tab-pane {
+  animation: fadeInUp 0.3s ease;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Enhanced Form Controls */
+.registration-form .form-control,
+.registration-form .form-select {
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  padding: 0.75rem;
+  transition: all 0.3s ease;
+}
+
+.registration-form .form-control:focus,
+.registration-form .form-select:focus {
+  border-color: var(--royal-blue);
+  box-shadow: 0 0 0 0.2rem rgba(65, 105, 225, 0.25);
+}
+
+.registration-form .form-control.is-valid,
+.registration-form .form-select.is-valid {
+  border-color: var(--success);
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%2328a745' d='m2.3 6.73.94-.94L4.4 4.62 6.53 2.5l.94.94L4.4 6.5z'/%3e%3c/svg%3e");
+}
+
+.registration-form .form-control.is-invalid,
+.registration-form .form-select.is-invalid {
+  border-color: var(--danger);
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' stroke='%23dc3545' viewBox='0 0 12 12'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath d='m5.8 4.6 1.4 1.4m0-1.4L5.8 6'/%3e%3c/svg%3e");
+}
+
+/* Tab Navigation Buttons */
+.registration-form .btn {
+  border-radius: 25px;
+  padding: 0.75rem 1.5rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.registration-form .prev-tab {
+  min-width: 120px;
+}
+
+.registration-form .next-tab {
+  min-width: 200px;
+}
+
+.registration-form .btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+/* Checkboxes and Radio Buttons */
+.registration-form .form-check-input {
+  width: 1.2em;
+  height: 1.2em;
+  margin-top: 0.1em;
+  margin-right: 0.5em;
+}
+
+.registration-form .form-check-input:checked {
+  background-color: var(--royal-blue);
+  border-color: var(--royal-blue);
+}
+
+/* Progress Bar Enhancements */
+.registration-progress .progress {
+  height: 6px;
+  background-color: rgba(108, 117, 125, 0.2);
+  border-radius: 3px;
+}
+
+.registration-progress .progress-bar {
+  background: linear-gradient(90deg, var(--royal-blue) 0%, var(--royal-blue-light) 100%);
+  border-radius: 3px;
+  transition: width 0.6s ease;
+}
+
+/* Responsive Improvements */
+@media (max-width: 768px) {
+  .registration-progress .col-3 {
+    flex: 0 0 25%;
+    max-width: 25%;
+  }
+  
+  .progress-step {
+    padding: 8px;
+    font-size: 0.85rem;
+  }
+  
+  .progress-step i {
+    font-size: 1.2rem;
+  }
+  
+  .nav-tabs .nav-link {
+    padding: 0.75rem 0.5rem;
+    font-size: 0.85rem;
+  }
+  
+  .tab-content {
+    padding: 1rem !important;
+  }
+  
+  .registration-form .next-tab,
+  .registration-form .prev-tab {
+    min-width: auto;
+    padding: 0.5rem 1rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .progress-step small {
+    font-size: 0.7rem;
+  }
+  
+  .nav-tabs .nav-link {
+    padding: 0.5rem 0.25rem;
+    font-size: 0.8rem;
+  }
+  
+  .nav-tabs .nav-link i {
+    display: none;
+  }
+}
+
+/* Enhanced Doctor Profile Collapsible Sections */
+.collapsible-section {
+  transition: all 0.3s ease;
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+}
+
+.collapsible-section:hover {
+  border-color: var(--royal-blue-light);
+  box-shadow: 0 4px 12px rgba(65, 105, 225, 0.1);
+}
+
+.collapsible-header {
+  background: linear-gradient(135deg, rgba(65, 105, 225, 0.05) 0%, rgba(100, 149, 237, 0.05) 100%);
+  border-bottom: 1px solid var(--border-color);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  user-select: none;
+}
+
+.collapsible-header:hover {
+  background: linear-gradient(135deg, rgba(65, 105, 225, 0.1) 0%, rgba(100, 149, 237, 0.1) 100%);
+  transform: translateY(-1px);
+}
+
+.collapsible-header.collapsed {
+  border-bottom: none;
+}
+
+.collapse-icon {
+  transition: transform 0.3s ease;
+  font-size: 1.2rem;
+  color: var(--royal-blue);
+}
+
+.collapsible-header[aria-expanded="true"] .collapse-icon {
+  transform: rotate(180deg);
+}
+
+.collapsible-header[aria-expanded="false"] .collapse-icon {
+  transform: rotate(0deg);
+}
+
+/* Essential Information Card */
+.doctor-essential-info {
+  border: 2px solid var(--royal-blue);
+  box-shadow: 0 4px 20px rgba(65, 105, 225, 0.15);
+}
+
+.doctor-essential-info .card-header {
+  background: linear-gradient(135deg, var(--royal-blue) 0%, var(--royal-blue-dark) 100%) !important;
+  border-bottom: none;
+}
+
+/* Enhanced Icons in Doctor Profile */
+.collapsible-section .bi {
+  font-size: 1.1rem;
+}
+
+.collapsible-section .fs-4 {
+  font-size: 1.5rem !important;
+}
+
+/* Smooth Collapse Animations */
+.collapsible-section .collapse {
+  transition: height 0.35s ease;
+}
+
+.collapsible-section .collapsing {
+  transition: height 0.35s ease;
+}
+
+/* Visual Indicators for Section Status */
+.collapsible-section.expanded {
+  border-color: var(--royal-blue);
+  box-shadow: 0 6px 20px rgba(65, 105, 225, 0.15);
+}
+
+.collapsible-section.expanded .collapsible-header {
+  background: linear-gradient(135deg, rgba(65, 105, 225, 0.15) 0%, rgba(100, 149, 237, 0.15) 100%);
+  color: var(--royal-blue);
+  font-weight: 600;
+}
+
+/* Responsive Improvements */
+@media (max-width: 768px) {
+  .collapsible-header h5 {
+    font-size: 1rem;
+  }
+  
+  .collapse-icon {
+    font-size: 1rem;
+  }
+  
+  .doctor-essential-info .col-md-4 {
+    margin-bottom: 1rem;
+  }
+  
+  .collapsible-section .card-body {
+    padding: 1rem;
+  }
+}
+
+/* Quick Actions Enhancement */
+.doctor-essential-info + .card .card-header {
+  background: linear-gradient(135deg, rgba(40, 167, 69, 0.1) 0%, rgba(25, 135, 84, 0.1) 100%);
+  border-color: var(--success);
+}
+
+/* Enhanced Medical Records Interface */
+.medical-records-dashboard {
+  animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Statistics Cards */
+.stat-card {
+  transition: all 0.3s ease;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.stat-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.stat-card .display-4 {
+  font-size: 2.5rem;
+  opacity: 0.8;
+}
+
+/* Medical Record Cards */
+.medical-record-card {
+  transition: all 0.3s ease;
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.medical-record-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+}
+
+.medical-record-card.border-danger {
+  border-left: 5px solid var(--danger);
+}
+
+.medical-record-card.border-warning {
+  border-left: 5px solid var(--warning);
+}
+
+.medical-record-card.border-info {
+  border-left: 5px solid #17a2b8;
+}
+
+.medical-record-card.border-success {
+  border-left: 5px solid var(--success);
+}
+
+.medical-record-card .card-header {
+  background: linear-gradient(135deg, rgba(65, 105, 225, 0.02) 0%, rgba(100, 149, 237, 0.02) 100%);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.medical-record-card .card-header:hover {
+  background: linear-gradient(135deg, rgba(65, 105, 225, 0.05) 0%, rgba(100, 149, 237, 0.05) 100%);
+}
+
+/* Vital Signs Grid */
+.vital-signs-grid {
+  background: rgba(248, 249, 250, 0.8);
+  border-radius: 8px;
+  padding: 1rem;
+  border: 1px solid var(--border-color);
+}
+
+.vital-signs-grid .border-bottom:last-child {
+  border-bottom: none !important;
+}
+
+/* Medication Items */
+.medication-item {
+  background: rgba(40, 167, 69, 0.05);
+  border-left: 3px solid var(--success);
+  padding: 0.75rem;
+  border-radius: 6px;
+}
+
+/* Lab Results Table */
+.table-responsive .table {
+  margin-bottom: 0;
+}
+
+.table-responsive .table td {
+  padding: 0.5rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+/* Severity Badges */
+.badge.bg-danger,
+.badge.bg-warning,
+.badge.bg-info,
+.badge.bg-success {
+  font-size: 0.7rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Loading and Empty States */
+.spinner-border {
+  width: 3rem;
+  height: 3rem;
+}
+
+/* Alpine.js Transitions */
+[x-cloak] { 
+  display: none !important; 
+}
+
+/* Smooth transitions for Alpine.js */
+.transition-opacity {
+  transition: opacity 0.3s ease;
+}
+
+.transition-transform {
+  transition: transform 0.3s ease;
+}
+
+/* Filter Section */
+.card-body .form-select,
+.card-body .form-control {
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  transition: border-color 0.3s ease;
+}
+
+.card-body .form-select:focus,
+.card-body .form-control:focus {
+  border-color: var(--royal-blue);
+  box-shadow: 0 0 0 0.2rem rgba(65, 105, 225, 0.25);
+}
+
+/* Pagination Enhancements */
+.pagination .page-link {
+  border: 1px solid var(--border-color);
+  color: var(--royal-blue);
+  padding: 0.5rem 0.75rem;
+  margin: 0 0.25rem;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+}
+
+.pagination .page-link:hover {
+  background-color: rgba(65, 105, 225, 0.1);
+  border-color: var(--royal-blue);
+  transform: translateY(-1px);
+}
+
+.pagination .page-item.active .page-link {
+  background-color: var(--royal-blue);
+  border-color: var(--royal-blue);
+}
+
+/* Responsive Improvements */
+@media (max-width: 768px) {
+  .stat-card .display-4 {
+    font-size: 2rem;
+  }
+  
+  .medical-record-card .card-header {
+    padding: 0.75rem;
+  }
+  
+  .medical-record-card .card-body {
+    padding: 1rem;
+  }
+  
+  .btn-group .btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+  }
+  
+  .vital-signs-grid,
+  .medication-item {
+    padding: 0.5rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .medical-records-dashboard .row.mb-4 .col-md-3 {
+    margin-bottom: 1rem;
+  }
+  
+  .card-body .row .col-md-3 {
+    margin-bottom: 1rem;
+  }
+  
+  .medical-record-card .card-footer .btn-group {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .medical-record-card .card-footer .btn-group .btn {
+    margin-bottom: 0.25rem;
+  }
+}
+
+/* Modal Enhancements */
+.modal-content {
+  border-radius: 12px;
+  border: none;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+}
+
+.modal-header {
+  background: linear-gradient(135deg, var(--royal-blue) 0%, var(--royal-blue-dark) 100%);
+  color: white;
+  border-bottom: none;
+  border-radius: 12px 12px 0 0;
+}
+
+.modal-header .btn-close {
+  filter: invert(1);
+}
+
+/* Alpine.js Animation Classes */
+.x-transition-opacity {
+  transition: opacity 0.3s ease;
+}
+
+.x-transition-transform {
+  transition: transform 0.3s ease;
+}
+
+/* Custom scrollbar for medical content */
+.card-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.card-body::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.card-body::-webkit-scrollbar-thumb {
+  background: var(--royal-blue);
+  border-radius: 3px;
+}
+
+.card-body::-webkit-scrollbar-thumb:hover {
+  background: var(--royal-blue-dark);
+}
+
+/* Enhanced Prescription Management Interface */
+.prescriptions-dashboard {
+  animation: fadeIn 0.5s ease-in;
+}
+
+/* Prescription Cards */
+.prescription-card {
+  transition: all 0.3s ease;
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.prescription-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+}
+
+.prescription-card.border-success {
+  border-left: 5px solid var(--success);
+}
+
+.prescription-card.border-info {
+  border-left: 5px solid #17a2b8;
+}
+
+.prescription-card.border-warning {
+  border-left: 5px solid var(--warning);
+}
+
+.prescription-card.border-secondary {
+  border-left: 5px solid #6c757d;
+}
+
+.prescription-card .card-header {
+  background: linear-gradient(135deg, rgba(40, 167, 69, 0.02) 0%, rgba(25, 135, 84, 0.02) 100%);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.prescription-card .card-header:hover {
+  background: linear-gradient(135deg, rgba(40, 167, 69, 0.05) 0%, rgba(25, 135, 84, 0.05) 100%);
+}
+
+/* Prescription Details */
+.medication-details,
+.treatment-schedule {
+  background: rgba(248, 249, 250, 0.8);
+  border-radius: 8px;
+  padding: 1rem;
+  border: 1px solid var(--border-color);
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.25rem 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.detail-row:last-child {
+  border-bottom: none;
+}
+
+.detail-row small {
+  min-width: 120px;
+  font-weight: 500;
+}
+
+/* Instructions and Warnings */
+.instructions-text {
+  font-style: italic;
+  line-height: 1.5;
+  border-left: 3px solid var(--primary);
+}
+
+.alert-warning {
+  border-left: 3px solid var(--warning);
+  background: rgba(255, 193, 7, 0.1);
+}
+
+/* Status Indicators */
+.badge.bg-success,
+.badge.bg-info,
+.badge.bg-warning,
+.badge.bg-secondary {
+  font-size: 0.7rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Prescription Status Colors */
+.text-danger {
+  color: var(--danger) !important;
+}
+
+.text-warning {
+  color: var(--warning) !important;
+}
+
+.text-success {
+  color: var(--success) !important;
+}
+
+/* Filter Enhancements */
+.prescriptions-dashboard .form-check {
+  padding: 0.375rem 0;
+}
+
+.prescriptions-dashboard .form-check-input:checked {
+  background-color: var(--success);
+  border-color: var(--success);
+}
+
+/* Action Buttons */
+.btn-group .btn-sm {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  border-radius: 6px;
+}
+
+.btn-success {
+  background: linear-gradient(135deg, var(--success) 0%, #059669 100%);
+  border-color: var(--success);
+}
+
+.btn-info {
+  background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+  border-color: #17a2b8;
+}
+
+.btn-warning {
+  background: linear-gradient(135deg, var(--warning) 0%, #d39e00 100%);
+  border-color: var(--warning);
+  color: #000;
+}
+
+/* Responsive Improvements */
+@media (max-width: 768px) {
+  .prescription-card .card-header {
+    padding: 0.75rem;
+  }
+  
+  .prescription-card .card-body {
+    padding: 1rem;
+  }
+  
+  .detail-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .detail-row small {
+    min-width: auto;
+    margin-bottom: 0.25rem;
+  }
+  
+  .medication-details,
+  .treatment-schedule {
+    padding: 0.75rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .prescriptions-dashboard .row.mb-4 .col-md-3 {
+    margin-bottom: 1rem;
+  }
+  
+  .prescription-card .card-footer .btn-group {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .prescription-card .card-footer .btn-group .btn {
+    margin-bottom: 0.25rem;
+    width: 100%;
+  }
+  
+  .card-body .row .col-md-2,
+  .card-body .row .col-md-3 {
+    margin-bottom: 1rem;
+  }
+}
+
+/* Alpine.js Animations for Prescriptions */
+[x-cloak] { 
+  display: none !important; 
+}
+
+.prescription-card [x-transition] {
+  transition: all 0.3s ease;
+}
+
+/* Custom Icons for Prescription Types */
+.prescription-card .bi-capsule {
+  color: var(--success);
+  font-size: 1.1rem;
+}
+
+.prescription-card .bi-clock {
+  color: var(--warning);
+}
+
+.prescription-card .bi-exclamation-triangle {
+  color: var(--warning);
+}
+
+.prescription-card .bi-check-circle {
+  color: var(--success);
+}
+
+/* Pharmacy and Medical Info Styling */
+.bg-info.bg-opacity-10 {
+  background-color: rgba(23, 162, 184, 0.1) !important;
+  border-left: 3px solid #17a2b8;
+}
+
+/* Hover Effects for Interactive Elements */
+.prescription-card .card-header:hover .bi-capsule {
+  transform: rotate(15deg);
+  transition: transform 0.3s ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  transition: transform 0.2s ease;
+}
+
 /* Footer */
 .footer {
   background: linear-gradient(135deg, var(--royal-blue-dark) 0%, #1E40AF 100%);

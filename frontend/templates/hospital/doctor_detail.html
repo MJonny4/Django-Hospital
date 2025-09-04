@@ -96,14 +96,67 @@
 
         <!-- Doctor Information Details -->
         <div class="col-lg-8 mb-4">
-            <!-- Personal Information -->
-            <div class="card shadow-sm mb-4">
-                <div class="card-header">
-                    <h5 class="mb-0">
-                        <i class="bi bi-person-lines-fill me-2"></i>Información Personal
-                    </h5>
+            <!-- Essential Information (Always Visible) -->
+            <div class="card shadow-sm mb-4 doctor-essential-info">
+                <div class="card-header bg-primary text-white">
+                    <div class="row align-items-center">
+                        <div class="col-8">
+                            <h5 class="mb-0">
+                                <i class="bi bi-person-lines-fill me-2"></i>Información Esencial
+                            </h5>
+                        </div>
+                        <div class="col-4 text-end">
+                            <span class="badge bg-light text-primary">Siempre Visible</span>
+                        </div>
+                    </div>
                 </div>
                 <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-activity text-success me-3 fs-4"></i>
+                                <div>
+                                    <small class="text-muted">Especialidad</small>
+                                    <div class="fw-bold fs-6">{{ doctor.especialidad }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-envelope text-primary me-3 fs-4"></i>
+                                <div>
+                                    <small class="text-muted">Email</small>
+                                    <div class="fw-bold fs-6">{{ doctor.email }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-phone text-primary me-3 fs-4"></i>
+                                <div>
+                                    <small class="text-muted">Teléfono</small>
+                                    <div class="fw-bold fs-6">{{ doctor.telefono }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Personal Information (Collapsible) -->
+            <div class="card shadow-sm mb-4 collapsible-section">
+                <div class="card-header collapsible-header" role="button" 
+                     data-bs-toggle="collapse" data-bs-target="#personalInfo" 
+                     aria-expanded="false" aria-controls="personalInfo">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="bi bi-person-lines-fill me-2"></i>Información Personal Completa
+                        </h5>
+                        <i class="bi bi-chevron-down collapse-icon"></i>
+                    </div>
+                </div>
+                <div class="collapse" id="personalInfo">
+                    <div class="card-body">
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <div class="d-flex align-items-center">
@@ -130,20 +183,36 @@
                                     <small class="text-muted">Teléfono</small>
                                     <div class="fw-bold">{{ doctor.telefono }}</div>
                                 </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-card-text text-primary me-3"></i>
+                                <div>
+                                    <small class="text-muted">DNI</small>
+                                    <div class="fw-bold">{{ doctor.dni }}</div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Professional Information -->
-            <div class="card shadow-sm mb-4">
-                <div class="card-header">
-                    <h5 class="mb-0">
-                        <i class="bi bi-briefcase me-2"></i>Información Profesional
-                    </h5>
+            <!-- Professional Information (Collapsible) -->
+            <div class="card shadow-sm mb-4 collapsible-section">
+                <div class="card-header collapsible-header" role="button" 
+                     data-bs-toggle="collapse" data-bs-target="#professionalInfo" 
+                     aria-expanded="false" aria-controls="professionalInfo">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="bi bi-briefcase me-2"></i>Información Profesional
+                        </h5>
+                        <i class="bi bi-chevron-down collapse-icon"></i>
+                    </div>
                 </div>
-                <div class="card-body">
+                <div class="collapse" id="professionalInfo">
+                    <div class="card-body">
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <div class="d-flex align-items-center">
@@ -227,14 +296,20 @@
                 </div>
             </div>
 
-            <!-- Academic Formation -->
-            <div class="card shadow-sm mb-4">
-                <div class="card-header">
-                    <h5 class="mb-0">
-                        <i class="bi bi-mortarboard me-2"></i>Formación Académica
-                    </h5>
+            <!-- Academic Formation (Collapsible) -->
+            <div class="card shadow-sm mb-4 collapsible-section">
+                <div class="card-header collapsible-header" role="button" 
+                     data-bs-toggle="collapse" data-bs-target="#academicInfo" 
+                     aria-expanded="false" aria-controls="academicInfo">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="bi bi-mortarboard me-2"></i>Formación Académica
+                        </h5>
+                        <i class="bi bi-chevron-down collapse-icon"></i>
+                    </div>
                 </div>
-                <div class="card-body">
+                <div class="collapse" id="academicInfo">
+                    <div class="card-body">
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <div class="d-flex align-items-center">
@@ -269,15 +344,21 @@
                 </div>
             </div>
 
-            <!-- Additional Information -->
+            <!-- Additional Information (Collapsible) -->
             {% if doctor.idiomas or doctor.biografia %}
-            <div class="card shadow-sm mb-4">
-                <div class="card-header">
-                    <h5 class="mb-0">
-                        <i class="bi bi-chat-dots me-2"></i>Información Adicional
-                    </h5>
+            <div class="card shadow-sm mb-4 collapsible-section">
+                <div class="card-header collapsible-header" role="button" 
+                     data-bs-toggle="collapse" data-bs-target="#additionalInfo" 
+                     aria-expanded="false" aria-controls="additionalInfo">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="bi bi-chat-dots me-2"></i>Información Adicional
+                        </h5>
+                        <i class="bi bi-chevron-down collapse-icon"></i>
+                    </div>
                 </div>
-                <div class="card-body">
+                <div class="collapse" id="additionalInfo">
+                    <div class="card-body">
                     {% if doctor.idiomas %}
                     <div class="mb-3">
                         <div class="d-flex align-items-center">
@@ -301,17 +382,24 @@
                     </div>
                     {% endif %}
                 </div>
+                </div>
             </div>
             {% endif %}
 
-            <!-- System Information -->
-            <div class="card shadow-sm">
-                <div class="card-header">
-                    <h5 class="mb-0">
-                        <i class="bi bi-info-circle me-2"></i>Información del Sistema
-                    </h5>
+            <!-- System Information (Collapsible) -->
+            <div class="card shadow-sm collapsible-section">
+                <div class="card-header collapsible-header" role="button" 
+                     data-bs-toggle="collapse" data-bs-target="#systemInfo" 
+                     aria-expanded="false" aria-controls="systemInfo">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="bi bi-info-circle me-2"></i>Información del Sistema
+                        </h5>
+                        <i class="bi bi-chevron-down collapse-icon"></i>
+                    </div>
                 </div>
-                <div class="card-body">
+                <div class="collapse" id="systemInfo">
+                    <div class="card-body">
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <div class="d-flex align-items-center">
@@ -356,6 +444,7 @@
                             </div>
                         </div>
                     </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -379,13 +468,198 @@
 {% endif %}
 
     <script>
-        function checkAvailability(doctorProfileId) {
-            // Simple availability check - you can enhance this
-            const today = new Date().toISOString().split('T')[0];
-            alert(`Verificando disponibilidad para el médico (Profile ID: ${doctorProfileId}) para fecha: ${today}\n\nEsta funcionalidad se puede expandir para mostrar un calendario de disponibilidad.`);
+        // Enhanced Doctor Profile Functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize collapsible sections
+            initializeCollapsibleSections();
             
-            // You could redirect to a dedicated availability page:
-            // window.location.href = `/doctors/${doctorProfileId}/availability/?date=${today}`;
+            // Load saved section states
+            loadSectionStates();
+            
+            // Auto-expand important sections for mobile
+            autoExpandForMobile();
+        });
+        
+        function initializeCollapsibleSections() {
+            const collapsibleHeaders = document.querySelectorAll('.collapsible-header');
+            
+            collapsibleHeaders.forEach(header => {
+                header.addEventListener('click', function() {
+                    const targetId = this.getAttribute('data-bs-target');
+                    const section = this.closest('.collapsible-section');
+                    
+                    // Save section state
+                    setTimeout(() => {
+                        const isExpanded = this.getAttribute('aria-expanded') === 'true';
+                        saveSectionState(targetId, isExpanded);
+                        
+                        // Update visual indicators
+                        if (isExpanded) {
+                            section.classList.add('expanded');
+                        } else {
+                            section.classList.remove('expanded');
+                        }
+                    }, 50);
+                });
+                
+                // Handle keyboard navigation
+                header.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        this.click();
+                    }
+                });
+            });
         }
+        
+        function saveSectionState(sectionId, isExpanded) {
+            const doctorId = '{{ doctor.id }}';
+            const stateKey = `doctorProfile_${doctorId}_sections`;
+            
+            let savedStates = {};
+            try {
+                savedStates = JSON.parse(localStorage.getItem(stateKey) || '{}');
+            } catch (e) {
+                console.warn('Could not load saved section states');
+            }
+            
+            savedStates[sectionId] = isExpanded;
+            localStorage.setItem(stateKey, JSON.stringify(savedStates));
+        }
+        
+        function loadSectionStates() {
+            const doctorId = '{{ doctor.id }}';
+            const stateKey = `doctorProfile_${doctorId}_sections`;
+            
+            try {
+                const savedStates = JSON.parse(localStorage.getItem(stateKey) || '{}');
+                
+                Object.keys(savedStates).forEach(sectionId => {
+                    const isExpanded = savedStates[sectionId];
+                    const targetElement = document.querySelector(sectionId);
+                    const headerElement = document.querySelector(`[data-bs-target="${sectionId}"]`);
+                    
+                    if (targetElement && headerElement && isExpanded) {
+                        // Expand the section
+                        const collapse = new bootstrap.Collapse(targetElement, {show: true});
+                        headerElement.setAttribute('aria-expanded', 'true');
+                        headerElement.closest('.collapsible-section').classList.add('expanded');
+                    }
+                });
+            } catch (e) {
+                console.warn('Could not restore section states');
+            }
+        }
+        
+        function autoExpandForMobile() {
+            if (window.innerWidth <= 768) {
+                // Auto-expand professional info on mobile for better UX
+                const professionalSection = document.querySelector('#professionalInfo');
+                if (professionalSection && !professionalSection.classList.contains('show')) {
+                    const header = document.querySelector('[data-bs-target="#professionalInfo"]');
+                    if (header) {
+                        setTimeout(() => {
+                            header.click();
+                        }, 500);
+                    }
+                }
+            }
+        }
+        
+        // Smooth scroll to expanded sections
+        function scrollToSection(sectionId) {
+            const section = document.querySelector(sectionId);
+            if (section) {
+                section.scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'nearest' 
+                });
+            }
+        }
+        
+        // Add visual feedback for section interactions
+        function addSectionFeedback() {
+            const sections = document.querySelectorAll('.collapsible-section');
+            
+            sections.forEach(section => {
+                section.addEventListener('mouseenter', function() {
+                    if (!this.querySelector('.collapse').classList.contains('show')) {
+                        this.style.transform = 'translateY(-2px)';
+                    }
+                });
+                
+                section.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0)';
+                });
+            });
+        }
+        
+        // Initialize feedback on load
+        document.addEventListener('DOMContentLoaded', addSectionFeedback);
+        
+        // Original availability check function
+        function checkAvailability(doctorProfileId) {
+            const today = new Date().toISOString().split('T')[0];
+            
+            // Create a more sophisticated modal instead of alert
+            const modal = document.createElement('div');
+            modal.className = 'modal fade';
+            modal.innerHTML = `
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">
+                                <i class="bi bi-calendar-check me-2"></i>Verificar Disponibilidad
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="alert alert-info">
+                                <i class="bi bi-info-circle me-2"></i>
+                                Verificando disponibilidad para el Dr. {{ doctor.nombre }} {{ doctor.apellidos }}
+                            </div>
+                            <p><strong>Fecha seleccionada:</strong> ${today}</p>
+                            <p>Esta funcionalidad se puede expandir para mostrar un calendario completo de disponibilidad.</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                            <a href="{% url 'hospital:create_appointment' %}" class="btn btn-success">
+                                <i class="bi bi-calendar-plus me-1"></i>Agendar Cita
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            const bootstrapModal = new bootstrap.Modal(modal);
+            bootstrapModal.show();
+            
+            // Clean up modal after hiding
+            modal.addEventListener('hidden.bs.modal', function() {
+                document.body.removeChild(modal);
+            });
+        }
+        
+        // Keyboard shortcuts for power users
+        document.addEventListener('keydown', function(e) {
+            // Ctrl/Cmd + numbers to expand sections
+            if ((e.ctrlKey || e.metaKey) && e.key >= '1' && e.key <= '4') {
+                e.preventDefault();
+                const sectionMap = {
+                    '1': '#personalInfo',
+                    '2': '#professionalInfo', 
+                    '3': '#academicInfo',
+                    '4': '#additionalInfo'
+                };
+                
+                const targetSection = sectionMap[e.key];
+                const header = document.querySelector(`[data-bs-target="${targetSection}"]`);
+                if (header) {
+                    header.click();
+                    scrollToSection(targetSection);
+                }
+            }
+        });
     </script>
 {% endblock %}

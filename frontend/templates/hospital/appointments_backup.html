@@ -1,0 +1,567 @@
+{% extends 'hospital/base.html' %}
+
+{% block title %}
+    {% if appointments_data.active_role == 'patient' %}Mis Citas
+    {% elif appointments_data.active_role == 'doctor' %}Citas de Pacientes
+    {% elif appointments_data.active_role == 'admin' %}Todas las Citas
+    {% else %}Citas{% endif %} - Hospital Management System
+{% endblock %}
+
+{% block page_title %}
+    {% if appointments_data.active_role == 'patient' %}<i class="bi bi-calendar-check me-3"></i>Mis Citas como Paciente
+    {% elif appointments_data.active_role == 'doctor' %}<i class="bi bi-calendar-heart me-3"></i>Citas de Mis Pacientes
+    {% elif appointments_data.active_role == 'admin' %}<i class="bi bi-calendar3 me-3"></i>Todas las Citas del Sistema
+    {% else %}<i class="bi bi-calendar me-3"></i>Citas{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <!-- Role-specific header and actions -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        {% if appointments_data.active_role == 'patient' %}
+                            <p class="mb-2"><i class="bi bi-info-circle text-primary me-2"></i>Aquí puede ver las citas que ha programado con médicos.</p>
+                        {% elif appointments_data.active_role == 'doctor' %}
+                            <p class="mb-2"><i class="bi bi-info-circle text-primary me-2"></i>Aquí puede ver las citas que los pacientes han programado con usted.</p>
+                        {% elif appointments_data.active_role == 'admin' %}
+                            <p class="mb-2"><i class="bi bi-info-circle text-primary me-2"></i>Vista completa de todas las citas del sistema.</p>
+                        {% endif %}
+                        
+                        <h5 class="mb-0">
+                            <i class="bi bi-list-ul me-2 text-primary"></i>
+                            Lista de Citas 
+                            <span class="badge bg-primary">{{ appointments_data.total }} total</span>
+                        </h5>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        {% if appointments_data.active_role == 'patient' %}
+                            <a href="{% url 'hospital:create_appointment' %}" class="btn btn-success">
+                                <i class="bi bi-calendar-plus me-1"></i>Crear Nueva Cita
+                            </a>
+                        {% elif appointments_data.active_role == 'admin' %}
+                            <a href="{% url 'hospital:admin_panel' %}" class="btn btn-outline-primary">
+                                <i class="bi bi-gear me-1"></i>Panel de Administración
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+    
+<div class="row">
+    <div class="col-12">
+        {% if appointments_data.appointments %}
+            <!-- Enhanced Card-Based Appointment List -->
+            <div class="row">
+                {% for appointment in appointments_data.appointments %}
+                <div class="col-12 col-lg-6 mb-3">
+                    <div class="card shadow-sm appointment-card h-100" 
+                         data-appointment-id="{{ appointment.id }}" 
+                         data-status="{{ appointment.status }}"
+                         data-priority="{{ appointment.priority|default:'normal' }}"
+                         data-type="{{ appointment.appointment_type }}">
+                        <!-- Summary Header (Always Visible) -->
+                        <div class="card-header bg-white border-0 pb-2">
+                            <div class="row align-items-center">
+                                <div class="col-8">
+                                    <!-- Main Person Info (Doctor for Patient view, Patient for Doctor view) -->
+                                    {% if appointments_data.active_role == 'patient' %}
+                                        <h6 class="mb-1 fw-bold text-primary">
+                                            <i class="bi bi-person-badge me-1"></i>
+                                            {% if appointment.doctor_name %}Dr. {{ appointment.doctor_name }}{% else %}Médico #{{ appointment.doctor_profile_id }}{% endif %}
+                                        </h6>
+                                        {% if appointment.doctor_specialidad %}
+                                            <small class="text-muted">{{ appointment.doctor_specialidad }}</small>
+                                        {% endif %}
+                                    {% elif appointments_data.active_role == 'doctor' %}
+                                        <h6 class="mb-1 fw-bold text-primary">
+                                            <i class="bi bi-person me-1"></i>
+                                            {% if appointment.patient_name %}{{ appointment.patient_name }}{% else %}Paciente #{{ appointment.patient_id }}{% endif %}
+                                        </h6>
+                                        {% if appointment.patient_dni %}
+                                            <small class="text-muted">DNI: {{ appointment.patient_dni }}</small>
+                                        {% endif %}
+                                    {% else %}
+                                        <h6 class="mb-1 fw-bold text-primary">
+                                            <i class="bi bi-calendar-event me-1"></i>Cita #{{ appointment.id }}
+                                        </h6>
+                                        <small class="text-muted">
+                                            {% if appointment.patient_name %}{{ appointment.patient_name }}{% else %}ID: {{ appointment.patient_id }}{% endif %} 
+                                            → {% if appointment.doctor_name %}Dr. {{ appointment.doctor_name }}{% else %}ID: {{ appointment.doctor_profile_id }}{% endif %}
+                                        </small>
+                                    {% endif %}
+                                </div>
+                                <div class="col-4 text-end">
+                                    <!-- Status Badge -->
+                                    {% if appointment.status == 'scheduled' %}<span class="badge bg-warning">📅 Programada</span>
+                                    {% elif appointment.status == 'confirmed' %}<span class="badge bg-success">✅ Confirmada</span>
+                                    {% elif appointment.status == 'in_progress' %}<span class="badge bg-info">🔄 En Curso</span>
+                                    {% elif appointment.status == 'completed' %}<span class="badge bg-success">✅ Completada</span>
+                                    {% elif appointment.status == 'cancelled' %}<span class="badge bg-danger">❌ Cancelada</span>
+                                    {% elif appointment.status == 'no_show' %}<span class="badge bg-danger">❌ No Asistió</span>
+                                    {% elif appointment.status == 'rescheduled' %}<span class="badge bg-secondary">📅 Reprogramada</span>
+                                    {% else %}<span class="badge bg-light text-dark">{{ appointment.status }}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Essential Info (Always Visible) -->
+                        <div class="card-body pb-2">
+                            <div class="row">
+                                <div class="col-7">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <i class="bi bi-calendar3 text-primary me-2"></i>
+                                        <div>
+                                            <div class="fw-semibold">{{ appointment.appointment_date|date:"d/m/Y" }}</div>
+                                            <small class="text-muted">{{ appointment.appointment_date|date:"H:i" }}</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-5 text-end">
+                                    <!-- Type Badge -->
+                                    {% if appointment.appointment_type == 'consultation' %}<span class="badge bg-primary">🩺 Consulta</span>
+                                    {% elif appointment.appointment_type == 'follow_up' %}<span class="badge bg-info">🔄 Seguimiento</span>
+                                    {% elif appointment.appointment_type == 'emergency' %}<span class="badge bg-danger">🚨 Urgencia</span>
+                                    {% elif appointment.appointment_type == 'check_up' %}<span class="badge bg-success">✅ Revisión</span>
+                                    {% elif appointment.appointment_type == 'procedure' %}<span class="badge bg-warning">⚕️ Procedimiento</span>
+                                    {% elif appointment.appointment_type == 'vaccination' %}<span class="badge bg-secondary">💉 Vacunación</span>
+                                    {% else %}<span class="badge bg-light text-dark">{{ appointment.appointment_type }}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <!-- Expandable Details Toggle -->
+                            <div class="text-center">
+                                <button class="btn btn-sm btn-outline-secondary details-toggle" 
+                                        type="button" 
+                                        data-bs-toggle="collapse" 
+                                        data-bs-target="#details-{{ appointment.id }}" 
+                                        aria-expanded="false" 
+                                        aria-controls="details-{{ appointment.id }}">
+                                    <i class="bi bi-chevron-down me-1"></i>Ver Detalles
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Collapsible Details Section -->
+                        <div class="collapse" id="details-{{ appointment.id }}">
+                            <div class="card-body pt-0 border-top">
+                                <div class="row g-3">
+                                    <!-- Full Contact Information -->
+                                    {% if appointments_data.active_role == 'admin' %}
+                                        <div class="col-6">
+                                            <h6 class="text-primary mb-2"><i class="bi bi-person me-1"></i>Paciente</h6>
+                                            {% if appointment.patient_name %}
+                                                <div class="fw-semibold">{{ appointment.patient_name }}</div>
+                                                {% if appointment.patient_dni %}<small class="text-muted d-block">DNI: {{ appointment.patient_dni }}</small>{% endif %}
+                                                {% if appointment.patient_email %}<small class="text-muted d-block">{{ appointment.patient_email }}</small>{% endif %}
+                                                {% if appointment.patient_telefono %}<small class="text-muted d-block">{{ appointment.patient_telefono }}</small>{% endif %}
+                                            {% else %}
+                                                <span class="text-muted">ID: {{ appointment.patient_id }}</span>
+                                            {% endif %}
+                                        </div>
+                                        <div class="col-6">
+                                            <h6 class="text-primary mb-2"><i class="bi bi-person-badge me-1"></i>Médico</h6>
+                                            {% if appointment.doctor_name %}
+                                                <div class="fw-semibold">Dr. {{ appointment.doctor_name }}</div>
+                                                {% if appointment.doctor_specialidad %}<small class="text-muted d-block">{{ appointment.doctor_specialidad }}</small>{% endif %}
+                                                {% if appointment.doctor_email %}<small class="text-muted d-block">{{ appointment.doctor_email }}</small>{% endif %}
+                                                {% if appointment.doctor_telefono %}<small class="text-muted d-block">{{ appointment.doctor_telefono }}</small>{% endif %}
+                                            {% else %}
+                                                <span class="text-muted">ID: {{ appointment.doctor_profile_id }}</span>
+                                            {% endif %}
+                                        </div>
+                                    {% elif appointments_data.active_role == 'patient' %}
+                                        <div class="col-12">
+                                            <h6 class="text-primary mb-2"><i class="bi bi-person-badge me-1"></i>Información del Médico</h6>
+                                            {% if appointment.doctor_name %}
+                                                <div class="fw-semibold">Dr. {{ appointment.doctor_name }}</div>
+                                                {% if appointment.doctor_specialidad %}<small class="text-muted d-block">{{ appointment.doctor_specialidad }}</small>{% endif %}
+                                                {% if appointment.doctor_email %}<small class="text-muted d-block">{{ appointment.doctor_email }}</small>{% endif %}
+                                                {% if appointment.doctor_telefono %}<small class="text-muted d-block">{{ appointment.doctor_telefono }}</small>{% endif %}
+                                                {% if appointment.doctor_hospital %}<small class="text-muted d-block">{{ appointment.doctor_hospital }}</small>{% endif %}
+                                            {% endif %}
+                                        </div>
+                                    {% else %}
+                                        <div class="col-12">
+                                            <h6 class="text-primary mb-2"><i class="bi bi-person me-1"></i>Información del Paciente</h6>
+                                            {% if appointment.patient_name %}
+                                                <div class="fw-semibold">{{ appointment.patient_name }}</div>
+                                                {% if appointment.patient_dni %}<small class="text-muted d-block">DNI: {{ appointment.patient_dni }}</small>{% endif %}
+                                                {% if appointment.patient_email %}<small class="text-muted d-block">{{ appointment.patient_email }}</small>{% endif %}
+                                                {% if appointment.patient_telefono %}<small class="text-muted d-block">{{ appointment.patient_telefono }}</small>{% endif %}
+                                            {% endif %}
+                                        </div>
+                                    {% endif %}
+                                    
+                                    <!-- Appointment Details -->
+                                    <div class="col-12">
+                                        <h6 class="text-primary mb-2"><i class="bi bi-clipboard-data me-1"></i>Detalles de la Cita</h6>
+                                        <div class="row">
+                                            <div class="col-6">
+                                                <small class="text-muted">Duración:</small>
+                                                <div>{{ appointment.duration_minutes|default:"30" }} minutos</div>
+                                            </div>
+                                            <div class="col-6">
+                                                <small class="text-muted">Prioridad:</small>
+                                                <div>
+                                                    {% if appointment.priority == 'urgent' %}<span class="badge bg-danger">Urgente</span>
+                                                    {% elif appointment.priority == 'high' %}<span class="badge bg-warning">Alta</span>
+                                                    {% elif appointment.priority == 'normal' %}<span class="badge bg-success">Normal</span>
+                                                    {% else %}<span class="badge bg-secondary">Baja</span>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Reason/Notes -->
+                                        {% if appointment.reason %}
+                                            <div class="mt-2">
+                                                <small class="text-muted">Motivo de consulta:</small>
+                                                <div class="text-break">{{ appointment.reason }}</div>
+                                            </div>
+                                        {% endif %}
+                                        
+                                        {% if appointment.notes %}
+                                            <div class="mt-2">
+                                                <small class="text-muted">Notas adicionales:</small>
+                                                <div class="text-break">{{ appointment.notes }}</div>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <!-- Timeline Info -->
+                                    <div class="col-12">
+                                        <h6 class="text-primary mb-2"><i class="bi bi-clock-history me-1"></i>Información del Sistema</h6>
+                                        <div class="row">
+                                            <div class="col-6">
+                                                <small class="text-muted">Creada:</small>
+                                                <div>{{ appointment.created_at|date:"d/m/Y H:i" }}</div>
+                                            </div>
+                                            {% if appointment.updated_at %}
+                                            <div class="col-6">
+                                                <small class="text-muted">Modificada:</small>
+                                                <div>{{ appointment.updated_at|date:"d/m/Y H:i" }}</div>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Actions Footer -->
+                        <div class="card-footer bg-light border-0">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">ID: #{{ appointment.id }}</small>
+                                <div class="btn-group" role="group">
+                                    <a href="{% url 'hospital:appointment_detail' appointment.id %}" 
+                                       class="btn btn-sm btn-outline-primary" title="Ver detalles completos">
+                                        <i class="bi bi-eye me-1"></i>Ver Más
+                                    </a>
+                                    
+                                    <!-- Role-specific actions -->
+                                    {% if appointments_data.active_role == 'patient' %}
+                                        {% if appointment.status == 'scheduled' or appointment.status == 'confirmed' %}
+                                            <button type="button" class="btn btn-sm btn-outline-danger" 
+                                                    onclick="showCancelModal({{ appointment.id }}, '{{ appointment.doctor_name }}', '{{ appointment.appointment_date|date:"d/m/Y H:i" }}')"
+                                                    title="Cancelar cita">
+                                                <i class="bi bi-x-circle me-1"></i>Cancelar
+                                            </button>
+                                        {% endif %}
+                                    {% elif appointments_data.active_role == 'doctor' %}
+                                        {% if appointment.status == 'scheduled' %}
+                                            <a href="{% url 'hospital:confirm_appointment' appointment.id %}" 
+                                               class="btn btn-sm btn-outline-success"
+                                               onclick="return confirm('¿Confirmar esta cita?')"
+                                               title="Confirmar cita">
+                                                <i class="bi bi-check-circle me-1"></i>Confirmar
+                                            </a>
+                                        {% elif appointment.status == 'confirmed' %}
+                                            <a href="{% url 'hospital:complete_appointment' appointment.id %}" 
+                                               class="btn btn-sm btn-outline-info"
+                                               onclick="return confirm('¿Marcar como completada?')"
+                                               title="Completar cita">
+                                                <i class="bi bi-check2-all me-1"></i>Completar
+                                            </a>
+                                        {% endif %}
+                                    {% elif appointments_data.active_role == 'admin' %}
+                                        {% if appointment.status == 'scheduled' or appointment.status == 'confirmed' %}
+                                            <button type="button" class="btn btn-sm btn-outline-danger" 
+                                                    onclick="showCancelModal({{ appointment.id }}, '{{ appointment.doctor_name }}', '{{ appointment.appointment_date|date:"d/m/Y H:i" }}')"
+                                                    title="Eliminar cita">
+                                                <i class="bi bi-trash me-1"></i>Eliminar
+                                            </button>
+                                        {% endif %}
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+                    
+                    <!-- Pagination info -->
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <div class="text-muted">
+                            <i class="bi bi-info-circle me-1"></i>
+                            Página {{ appointments_data.page }} | Mostrando {{ appointments_data.size }} registros
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <!-- No appointments message -->
+            <div class="card shadow-sm">
+                <div class="card-body text-center py-5">
+                    {% if appointments_data.active_role == 'patient' %}
+                        <i class="bi bi-calendar-x display-1 text-muted mb-3"></i>
+                        <h4>No tiene citas programadas</h4>
+                        <p class="text-muted mb-4">Aún no has programado ninguna cita médica.</p>
+                        <a href="{% url 'hospital:create_appointment' %}" class="btn btn-success">
+                            <i class="bi bi-calendar-plus me-1"></i>Crear su primera cita
+                        </a>
+                    {% elif appointments_data.active_role == 'doctor' %}
+                        <i class="bi bi-calendar-heart display-1 text-muted mb-3"></i>
+                        <h4>No tiene citas con pacientes</h4>
+                        <p class="text-muted">Los pacientes pueden programar citas con usted desde la lista de médicos.</p>
+                    {% elif appointments_data.active_role == 'admin' %}
+                        <i class="bi bi-calendar3 display-1 text-muted mb-3"></i>
+                        <h4>No hay citas en el sistema</h4>
+                        <p class="text-muted">El sistema no tiene citas registradas actualmente.</p>
+                    {% else %}
+                        <i class="bi bi-calendar display-1 text-muted mb-3"></i>
+                        <h4>No hay citas disponibles</h4>
+                        <p class="text-muted">No se encontraron citas para mostrar.</p>
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Appointment Status Guide -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-info-circle me-2"></i>Guía de Estados de Citas
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-2">
+                        <span class="badge bg-warning me-2">📅 Programada</span>
+                        <small>Cita creada, esperando confirmación</small>
+                    </div>
+                    <div class="col-md-6 mb-2">
+                        <span class="badge bg-success me-2">✅ Confirmada</span>
+                        <small>Cita confirmada por el médico</small>
+                    </div>
+                    <div class="col-md-6 mb-2">
+                        <span class="badge bg-info me-2">🔄 En Curso</span>
+                        <small>Cita actualmente en desarrollo</small>
+                    </div>
+                    <div class="col-md-6 mb-2">
+                        <span class="badge bg-success me-2">✅ Completada</span>
+                        <small>Cita finalizada exitosamente</small>
+                    </div>
+                    <div class="col-md-6 mb-2">
+                        <span class="badge bg-danger me-2">❌ Cancelada</span>
+                        <small>Cita cancelada</small>
+                    </div>
+                    <div class="col-md-6 mb-2">
+                        <span class="badge bg-danger me-2">❌ No Asistió</span>
+                        <small>Paciente no se presentó</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Cancel Appointment Modal -->
+<div class="modal fade" id="cancelModal" tabindex="-1" aria-labelledby="cancelModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="cancelModalLabel">
+                    <i class="bi bi-exclamation-triangle text-warning me-2"></i>Cancelar Cita
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-warning">
+                    <strong>¿Está seguro de cancelar esta cita?</strong>
+                </div>
+                <div id="appointmentInfo" class="mb-3"></div>
+                <form id="cancelForm" method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="cancellation_reason" class="form-label">Motivo de la cancelación (opcional)</label>
+                        <textarea class="form-control" id="cancellation_reason" name="cancellation_reason" rows="3" placeholder="Describa el motivo de la cancelación..."></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x me-1"></i>Mantener Cita
+                </button>
+                <button type="button" class="btn btn-danger" onclick="submitCancel()">
+                    <i class="bi bi-trash me-1"></i>Cancelar Cita
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Enhanced appointment card functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize all detail toggles
+        const detailsToggles = document.querySelectorAll('.details-toggle');
+        
+        detailsToggles.forEach(toggle => {
+            toggle.addEventListener('click', function() {
+                const icon = this.querySelector('.bi-chevron-down');
+                const text = this.querySelector('.bi-chevron-down').nextSibling;
+                
+                // Update button text based on expanded state
+                setTimeout(() => {
+                    const isExpanded = this.getAttribute('aria-expanded') === 'true';
+                    if (isExpanded) {
+                        this.innerHTML = '<i class="bi bi-chevron-up me-1"></i>Ocultar Detalles';
+                        this.classList.remove('btn-outline-secondary');
+                        this.classList.add('btn-secondary');
+                    } else {
+                        this.innerHTML = '<i class="bi bi-chevron-down me-1"></i>Ver Detalles';
+                        this.classList.remove('btn-secondary');
+                        this.classList.add('btn-outline-secondary');
+                    }
+                }, 10);
+            });
+        });
+        
+        // Add visual status indicators to cards
+        const appointmentCards = document.querySelectorAll('.appointment-card');
+        appointmentCards.forEach(card => {
+            const status = card.getAttribute('data-status');
+            const priority = card.getAttribute('data-priority');
+            const type = card.getAttribute('data-type');
+            
+            // Add priority-based styling
+            if (priority === 'urgent' || type === 'emergency') {
+                card.style.borderLeft = '4px solid var(--danger)';
+                if (type === 'emergency') {
+                    card.style.boxShadow = '0 0 15px rgba(239, 68, 68, 0.2)';
+                }
+            } else if (priority === 'high') {
+                card.style.borderLeft = '4px solid var(--warning)';
+            } else if (status === 'completed') {
+                card.style.borderLeft = '4px solid var(--success)';
+                card.style.opacity = '0.8';
+            } else if (status === 'cancelled') {
+                card.style.borderLeft = '4px solid var(--danger)';
+                card.style.opacity = '0.7';
+            }
+            
+            // Add hover effect enhancement
+            card.addEventListener('mouseenter', function() {
+                if (status !== 'cancelled' && status !== 'completed') {
+                    this.style.transform = 'translateY(-3px)';
+                    this.style.boxShadow = '0 10px 30px rgba(65, 105, 225, 0.2)';
+                }
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+                this.style.boxShadow = '';
+                
+                // Restore emergency glow if needed
+                if (type === 'emergency') {
+                    this.style.boxShadow = '0 0 15px rgba(239, 68, 68, 0.2)';
+                }
+            });
+        });
+        
+        // Auto-expand urgent/emergency appointments
+        const urgentCards = document.querySelectorAll('.appointment-card[data-priority="urgent"], .appointment-card[data-type="emergency"]');
+        urgentCards.forEach(card => {
+            const appointmentId = card.getAttribute('data-appointment-id');
+            const toggle = card.querySelector('.details-toggle');
+            const collapse = card.querySelector(`#details-${appointmentId}`);
+            
+            if (toggle && collapse) {
+                // Auto-expand after a brief delay
+                setTimeout(() => {
+                    toggle.click();
+                }, 500);
+            }
+        });
+        
+        // Add keyboard navigation
+        appointmentCards.forEach(card => {
+            const toggle = card.querySelector('.details-toggle');
+            if (toggle) {
+                toggle.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        this.click();
+                    }
+                });
+            }
+        });
+    });
+    
+    // Original cancel modal functionality
+    function showCancelModal(appointmentId, doctorName, appointmentDate) {
+        const modal = new bootstrap.Modal(document.getElementById('cancelModal'));
+        const form = document.getElementById('cancelForm');
+        const appointmentInfo = document.getElementById('appointmentInfo');
+        
+        // Update form action
+        form.action = `/appointments/${appointmentId}/cancel/`;
+        
+        // Update appointment info
+        appointmentInfo.innerHTML = `
+            <div class="card bg-light">
+                <div class="card-body">
+                    <h6 class="card-title">Detalles de la Cita:</h6>
+                    <p class="card-text mb-1"><strong>Médico:</strong> Dr. ${doctorName}</p>
+                    <p class="card-text mb-0"><strong>Fecha y Hora:</strong> ${appointmentDate}</p>
+                </div>
+            </div>
+        `;
+        
+        modal.show();
+    }
+    
+    function submitCancel() {
+        document.getElementById('cancelForm').submit();
+    }
+    
+    // Add smooth scrolling to appointment cards
+    function scrollToAppointment(appointmentId) {
+        const card = document.querySelector(`[data-appointment-id="${appointmentId}"]`);
+        if (card) {
+            card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            
+            // Highlight the card briefly
+            card.style.backgroundColor = 'rgba(65, 105, 225, 0.1)';
+            setTimeout(() => {
+                card.style.backgroundColor = '';
+            }, 2000);
+        }
+    }
+</script>
+{% endblock %}

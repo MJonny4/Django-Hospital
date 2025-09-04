@@ -2,9 +2,20 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import pymysql
+import os
+from dotenv import load_dotenv
 
-# Database configuration
-DATABASE_URL = "mysql+pymysql://mjonny4:mjonny4@localhost:3306/hospital?charset=utf8mb4"
+# Load environment variables
+load_dotenv()
+
+# Database configuration from environment variables
+DB_HOST = os.getenv('DB_HOST', 'localhost')
+DB_PORT = os.getenv('DB_PORT', '3306')
+DB_NAME = os.getenv('DB_NAME', 'hospital')
+DB_USER = os.getenv('DB_USER', 'root')
+DB_PASSWORD = os.getenv('DB_PASSWORD', '')
+
+DATABASE_URL = f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}?charset=utf8mb4"
 
 # Create SQLAlchemy engine
 engine = create_engine(
